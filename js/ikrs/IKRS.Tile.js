@@ -84,7 +84,7 @@ IKRS.Tile.prototype.getTranslatedVertex = function( index ) {
     // (the position is applied later)
     //var vertex = this.polygon.getVertexAt( index ); // this.getVertexAt( index );
     //return vertex.clone().rotate( IKRS.Point2.ZERO_POINT, this.angle ).add( this.position );    
-    return this._translateVertex( this.polygon.getVertexAt(index) );
+    return this._translateVertex( this.polygon.getVertexAt(index));
 };
 
 /**

@@ -607,12 +607,6 @@ for( var t = 0; t < IKRS.Girih.TILE_ALIGN.length; t++ ) {
 */
 
 
-/* kirk
-new stuff to account for:
-  whatever.preamble.toSVG = function( options,
-  fontStyle ..."12pt bold Helvetica, sans-serif"
-*/
-
 // round is used to limit the number of digits included in the SVG output
 IKRS.Girih.round = function( n, digits) {
     // round n to the digits number of digits right of decimal point

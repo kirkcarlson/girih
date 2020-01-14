@@ -168,22 +168,22 @@ IKRS.BoundingBox3.prototype.getHeight = function() {
     return this.yMax - this.yMin;
 };
 
-//K IKRS.BoundingBox3.prototype.getLeftUpperPoint = function() {
-//K     return new IKRS.Point2( this.xMin, this.yMin );
-//K };
-//K 
-//K IKRS.BoundingBox3.prototype.getRightUpperPoint = function() {
-//K     return new IKRS.Point2( this.xMax, this.yMin );
-//K };
-//K 
-//K IKRS.BoundingBox3.prototype.getRightLowerPoint = function() {
-//K     return new IKRS.Point2( this.xMax, this.yMax );
-//K };
-//K 
-//K IKRS.BoundingBox3.prototype.getLeftLowerPoint = function() {
-//K     return new IKRS.Point2( this.xMin, this.yMax );
-//K };
-//K 
+IKRS.BoundingBox3.prototype.getLeftUpperPoint = function() {
+    return new IKRS.Point2( this.xMin, this.yMin );
+};
+
+IKRS.BoundingBox3.prototype.getRightUpperPoint = function() {
+    return new IKRS.Point2( this.xMax, this.yMin );
+};
+
+IKRS.BoundingBox3.prototype.getRightLowerPoint = function() {
+    return new IKRS.Point2( this.xMax, this.yMax );
+};
+
+IKRS.BoundingBox3.prototype.getLeftLowerPoint = function() {
+    return new IKRS.Point2( this.xMin, this.yMax );
+};
+
 //K IKRS.BoundingBox3.prototype.getCenterPoint = function() {
 //K     return new IKRS.Point2( this.xMin + this.getWidth()/2.0,
 //K 			    this.yMin + this.getHeight()/2.0
