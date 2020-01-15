@@ -241,6 +241,8 @@ function redrawGirih() {
     girihCanvasHandler.getDrawProperties().drawOutlines          = document.forms["girih_form"].elements["draw_outlines"].checked;
     girihCanvasHandler.getDrawProperties().drawTextures          = document.forms["girih_form"].elements["draw_textures"].checked;
     girihCanvasHandler.getDrawProperties().drawInnerPolygons     = document.forms["girih_form"].elements["draw_inner_polygons"].checked;
+    girihCanvasHandler.getDrawProperties().drawStrapping         = document.forms["girih_form"].elements["draw_strapping"].checked;
+    girihCanvasHandler.getDrawProperties().useFancyStrapping     = document.forms["girih_form"].elements["use_fancy_strapping"].checked;
 
     girihCanvasHandler.getDrawProperties().outerRandomColorFill      = document.forms["girih_form"].elements["outer_random_color_fill"].checked;
     girihCanvasHandler.getDrawProperties().innerRandomColorFill      = document.forms["girih_form"].elements["inner_random_color_fill"].checked;
