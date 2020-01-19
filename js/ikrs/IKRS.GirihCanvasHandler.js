@@ -478,12 +478,12 @@ IKRS.GirihCanvasHandler.prototype._locateTileAtPoint = function( point ) {
 
 // globals used by the vector graphics
 IKRS.GirihCanvasHandler.piTenths = 2 * Math.PI /20; // basic Girih angle = 18 degrees
-IKRS.GirihCanvasHandler.lineSpacing = 5;
+IKRS.GirihCanvasHandler.lineSpacing = 1//5;
 IKRS.GirihCanvasHandler.gap = 0.5;
-IKRS.GirihCanvasHandler.lineWidth = 0.5;
-IKRS.GirihCanvasHandler.cGap = IKRS.GirihCanvasHandler.lineSpacing/2 +
-                               IKRS.GirihCanvasHandler.lineWidth +
-                               IKRS.GirihCanvasHandler.gap;
+IKRS.GirihCanvasHandler.lineWidth = 0//0.5;
+IKRS.GirihCanvasHandler.capGap = IKRS.GirihCanvasHandler.lineSpacing/2 +
+                                 IKRS.GirihCanvasHandler.lineWidth +
+                                 IKRS.GirihCanvasHandler.gap;
 
 var piTenths    = IKRS.GirihCanvasHandler.piTenths;
 var lineSpacing = IKRS.GirihCanvasHandler.lineSpacing;
@@ -498,7 +498,8 @@ IKRS.GirihCanvasHandler.prototype.tile_pentagon_draw = function(tile) {
 	this.tile_pentagon_drawBoundingBox(tile); //### can use generic
     };
     if( this.drawProperties.drawOutlines || this.drawProperties.drawTextures) {
-	this.drawPentagon(tile); //####UNIQUE TO PENTAGON
+	//this.drawPentagon(tile); //####UNIQUE TO PENTAGON
+	this.drawPolygonFromFaces(tile);
     }
     if( this.drawProperties.drawTextures) {
 	this.context.fillStyle = "#7F7F00";
@@ -518,6 +519,166 @@ IKRS.GirihCanvasHandler.prototype.tile_pentagon_draw = function(tile) {
 	};
     };
 }
+
+IKRS.GirihCanvasHandler.prototype.tile_ghexagon_draw = function(tile) {
+/*
+    if( this.drawProperties.drawBoxes ) {
+	this.tile_pentagon_drawBoundingBox(tile); //### can use generic
+    };
+*/
+    if( this.drawProperties.drawOutlines || this.drawProperties.drawTextures) {
+	//this.drawGHexagon(tile); //####UNIQUE TO GHEXAGON
+	this.drawPolygonFromFaces(tile);
+    }
+/*
+    if( this.drawProperties.drawTextures) {
+	this.context.fillStyle = "#7F7F00";
+	this.context.fill();
+    };
+    // need texture image stuff here
+    if( this.drawProperties.drawInnerPolygons ) {
+	this._drawInnerTilePolygons( tile );
+	this._drawOuterTilePolygons( tile );
+    }
+*/
+
+    if( this.drawProperties.drawStrapping) {
+	if( this.drawProperties.useFancyStrapping) {
+	    this.drawFancyGHexagonStrapping( tile); //####UNIQUE TO GHEXAGON
+	} else {
+	    this._drawSimpleStrapping( tile);
+	};
+    };
+}
+
+
+IKRS.GirihCanvasHandler.prototype.tile_rhombus_draw = function(tile) {
+/*
+    if( this.drawProperties.drawBoxes ) {
+	this.tile_pentagon_drawBoundingBox(tile); //### can use generic
+    };
+*/
+    if( this.drawProperties.drawOutlines || this.drawProperties.drawTextures) {
+	//this.drawRhombus(tile); //####UNIQUE TO RHOMBUS
+	this.drawPolygonFromFaces(tile);
+    }
+/*
+    if( this.drawProperties.drawTextures) {
+	this.context.fillStyle = "#7F7F00";
+	this.context.fill();
+    };
+    // need texture image stuff here
+    if( this.drawProperties.drawInnerPolygons ) {
+	this._drawInnerTilePolygons( tile );
+	this._drawOuterTilePolygons( tile );
+    }
+*/
+
+    if( this.drawProperties.drawStrapping) {
+	if( this.drawProperties.useFancyStrapping) {
+	    this.drawFancyRhombusStrapping( tile); //####UNIQUE TO GHEXAGON
+	} else {
+	    this._drawSimpleStrapping( tile);
+	};
+    };
+}
+
+
+IKRS.GirihCanvasHandler.prototype.tile_penrose_rhombus_draw = function(tile) {
+/*
+    if( this.drawProperties.drawBoxes ) {
+	this.tile_pentagon_drawBoundingBox(tile); //### can use generic
+    };
+*/
+    if( this.drawProperties.drawOutlines || this.drawProperties.drawTextures) {
+	//this.drawRhombus(tile); //####UNIQUE TO RHOMBUS
+	this.drawPolygonFromFaces(tile);
+    }
+/*
+    if( this.drawProperties.drawTextures) {
+	this.context.fillStyle = "#7F7F00";
+	this.context.fill();
+    };
+    // need texture image stuff here
+    if( this.drawProperties.drawInnerPolygons ) {
+	this._drawInnerTilePolygons( tile );
+	this._drawOuterTilePolygons( tile );
+    }
+*/
+
+    if( this.drawProperties.drawStrapping) {
+	if( this.drawProperties.useFancyStrapping) {
+	    this.drawFancyPenroseRhombusStrapping( tile); //####UNIQUE TO GHEXAGON
+	} else {
+	    this._drawSimpleStrapping( tile);
+	};
+    };
+}
+
+
+IKRS.GirihCanvasHandler.prototype.tile_decagon_draw = function(tile) {
+/*
+    if( this.drawProperties.drawBoxes ) {
+	this.tile_decagon_drawBoundingBox(tile); //### can use generic
+    };
+*/
+    if( this.drawProperties.drawOutlines || this.drawProperties.drawTextures) {
+//	this.drawDecagon(tile); //####UNIQUE TO DECAGON
+	this.drawPolygonFromFaces(tile);
+    }
+/*
+    if( this.drawProperties.drawTextures) {
+	this.context.fillStyle = "#7F7F00";
+	this.context.fill();
+    };
+    // need texture image stuff here
+    if( this.drawProperties.drawInnerPolygons ) {
+	this._drawInnerTilePolygons( tile );
+	this._drawOuterTilePolygons( tile );
+    }
+*/
+
+    if( this.drawProperties.drawStrapping) {
+	if( this.drawProperties.useFancyStrapping) {
+	    this.drawFancyDecagonStrapping( tile); //####UNIQUE TO DECAGON
+	} else {
+	    this._drawSimpleStrapping( tile);
+	};
+    };
+}
+
+
+IKRS.GirihCanvasHandler.prototype.tile_bow_tie_draw = function(tile) {
+/*
+    if( this.drawProperties.drawBoxes ) {
+	this.tile_pentagon_drawBoundingBox(tile); //### can use generic
+    };
+*/
+    if( this.drawProperties.drawOutlines || this.drawProperties.drawTextures) {
+	//this.drawRhombus(tile); //####UNIQUE TO RHOMBUS
+	this.drawPolygonFromFaces(tile);
+    }
+/*
+    if( this.drawProperties.drawTextures) {
+	this.context.fillStyle = "#7F7F00";
+	this.context.fill();
+    };
+    // need texture image stuff here
+    if( this.drawProperties.drawInnerPolygons ) {
+	this._drawInnerTilePolygons( tile );
+	this._drawOuterTilePolygons( tile );
+    }
+*/
+
+    if( this.drawProperties.drawStrapping) {
+	if( this.drawProperties.useFancyStrapping) {
+	    this.drawFancyBowTieStrapping( tile); //####UNIQUE TO BOWTIE
+	} else {
+	    this._drawSimpleStrapping( tile);
+	};
+    };
+}
+
 
 /*
 IKRS.GirihCanvasHandler.prototype.tile_pentagon_drawPolygon = function (tile) {
@@ -576,7 +737,7 @@ const cGap        = IKRS.GirihCanvasHandler.cGap;
     this.moveToXY( tile.position.x, tile.position.y); // center of pentagon
     this.moveToAD( tile.angle + -3* piTenths, radial); //corner of pentagon
     this.lineToaD( 7*piTenths, tile.size/2); //corner of pentagon, ready for side
-    for( var i = 0; i<5; i++) {
+    
 	this.lineToaD( 3* piTenths, 0);
 	this.gline( 0.425 * tile.size, lineSpacing, 7* piTenths, 6* piTenths, false, false);
 	this.lineToaD( -2* piTenths, 0);
@@ -648,6 +809,36 @@ IKRS.GirihCanvasHandler.prototype._drawTile = function( tile ) {
 
     if( tile.tileType === IKRS.Girih.TILE_TYPE_PENTAGON) {
 	this.tile_pentagon_draw( tile)
+	if( this.drawProperties.drawOutlines || tile._props.selected ) {
+	    this._drawCrosshairAt( tile.position, tile._props.selected );
+	}
+	return;
+    } else if( tile.tileType === IKRS.Girih.TILE_TYPE_DECAGON) {
+	this.tile_decagon_draw( tile)
+	if( this.drawProperties.drawOutlines || tile._props.selected ) {
+	    this._drawCrosshairAt( tile.position, tile._props.selected );
+	}
+	return;
+    } else if( tile.tileType === IKRS.Girih.TILE_TYPE_IRREGULAR_HEXAGON) {
+	this.tile_ghexagon_draw( tile)
+	if( this.drawProperties.drawOutlines || tile._props.selected ) {
+	    this._drawCrosshairAt( tile.position, tile._props.selected );
+	}
+	return;
+    } else if( tile.tileType === IKRS.Girih.TILE_TYPE_RHOMBUS) {
+	this.tile_rhombus_draw( tile)
+	if( this.drawProperties.drawOutlines || tile._props.selected ) {
+	    this._drawCrosshairAt( tile.position, tile._props.selected );
+	}
+	return;
+    } else if( tile.tileType === IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS) {
+	this.tile_penrose_rhombus_draw( tile)
+	if( this.drawProperties.drawOutlines || tile._props.selected ) {
+	    this._drawCrosshairAt( tile.position, tile._props.selected );
+	}
+	return;
+    } else if( tile.tileType === IKRS.Girih.TILE_TYPE_BOW_TIE) {
+	this.tile_bow_tie_draw( tile)
 	if( this.drawProperties.drawOutlines || tile._props.selected ) {
 	    this._drawCrosshairAt( tile.position, tile._props.selected );
 	}
@@ -865,16 +1056,15 @@ IKRS.GirihCanvasHandler.prototype.gline = function( distance, spacing, startAngl
     } else {
         this.moveToaD( startAngle - 10* piTenths, startDiag/2);
     }
-    this.moveToaD( -startAngle, 0);
 //color( saveColor)
 //svgAttribute ( 'class="gstroke"')
-    this.context.strokeStyle = "#000000";
-    this.context.lineWidth = "2pt";
+    this.context.strokeStyle = "#FF0000";
+    this.context.lineWidth = "4pt";
     this.context.stroke();
     this.context.closePath();
 
     // move to the end of the segment
-    this.moveToaD( 0, distance);
+    this.moveToaD( -startAngle, distance);
 }
 
 
@@ -895,7 +1085,7 @@ IKRS.GirihCanvasHandler.prototype._drawPolygonFromPoints = function( points,
 								     imageObject,
 								     highlightedEdgeIndex,
 								     drawOutlines
-								   ) {  
+								   ) {
     
     if( !points ) {
 	return;
@@ -999,6 +1189,24 @@ IKRS.GirihCanvasHandler.prototype._drawPolygonFromPoints = function( points,
     this.context.restore();
 
 };
+
+
+IKRS.GirihCanvasHandler.prototype.drawPolygonFromFaces = function( tile) {
+    this.context.beginPath();
+    this.moveToXY( tile.position.x, tile.position.y)
+    this.lineToAD( tile.angle + tile.faces[0].offsetAngle, tile.faces[0].radialCoefficient * tile.size)
+    this.lineToaD( Math.PI - tile.faces[0].angleToCenter, 0)
+    for (var i = 0; i<  tile.faces.length; i++) {
+        var face = tile.faces[ i % tile.faces.length]
+        this.lineToaD( face.angleToNextVertice, tile.size * face.lengthCoefficient)
+    }
+    this.context.strokeStyle = "#FF0000";
+    this.context.lineWidth = "1pt";
+    this.context.stroke();
+    this.context.closePath();
+}
+
+
 
 
 IKRS.GirihCanvasHandler.prototype._drawHighlightedPolygonEdge = function( points,

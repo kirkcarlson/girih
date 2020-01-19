@@ -42,6 +42,11 @@ IKRS.Tile.Pentagon = function( size, position, angle ) {
 		
     }
 
+    this.faces = [];
+    for (var i=0; i<5; i++) {
+        this.faces.push( new IKRS.Face( -3* piTenths, 4* piTenths, 1, 7* piTenths, 1/(2* Math.sin(2* piTenths))));
+    }
+
     this.imageProperties = {
 	source: {	x:      7/500.0,
 			y:      (303-15)/460.0, // -16
@@ -128,7 +133,6 @@ var piTenths    = IKRS.GirihCanvasHandler.piTenths;
 var lineSpacing = IKRS.GirihCanvasHandler.lineSpacing;
 var gap         = IKRS.GirihCanvasHandler.gap;
 var lineWidth   = IKRS.GirihCanvasHandler.lineWidth;
-var cGap        = IKRS.GirihCanvasHandler.cGap;
 
 
 // Nasty Trick #1
@@ -160,20 +164,19 @@ IKRS.GirihCanvasHandler.prototype.drawFancyPentagonStrapping = function(tile) {
     // each segment in this function is its own path/segment
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
 
-    var lineNumber = 0
-    var radial = tile.size/(2 * Math.sin( 2 * piTenths));
+    const capGap = IKRS.GirihCanvasHandler.capGap;
 
     this.moveToXY( tile.position.x, tile.position.y); // center of pentagon
-    this.moveToAD( tile.angle + -3* piTenths, radial); //corner of pentagon
-    this.lineToaD( 7*piTenths, tile.size/2); //corner of pentagon, ready for side
+    this.moveToAD( tile.angle + tile.faces[0].offsetAngle , tile.faces[0].radialCoefficient * tile.size); //corner of pentagon
+    this.lineToaD( Math.PI - tile.faces[0].angleToCenter + tile.faces[0].angleToNextVertice, tile.size/2); //midpoint of side
     for( var i = 0; i<5; i++) {
+	lineNumber = i
 	this.lineToaD( 3* piTenths, 0);
 	this.gline( 0.425 * tile.size, lineSpacing, 7* piTenths, 6* piTenths, false, false);
 	this.lineToaD( -2* piTenths, 0);
-	this.gline( 0.425 * tile.size - cGap, lineSpacing, 6* piTenths, 4* piTenths, false, true);
-	this.moveToaD( 0, cGap);
+	this.gline( 0.425 * tile.size - capGap, lineSpacing, 6* piTenths, 4* piTenths, false, true);
+	this.moveToaD( 0, capGap);
 	this.lineToaD( 3* piTenths, 0);
-	lineNumber = lineNumber + 1
     }
 }
 

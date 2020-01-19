@@ -52,6 +52,17 @@ IKRS.Tile.BowTie = function( size, position, angle ) {
 		
     }
 
+    this.faces = [];
+    var halfLongWidth = Math.sin(4* piTenths);
+    var radialShort = 1/2 - Math.cos( 4* piTenths)
+    var radialInsideAngle =  Math.atan(halfLongWidth/(1/2))
+    var radialLong = Math.sqrt( 1/4 * halfLongWidth*halfLongWidth) // 1/4 is equivalent to side/2 * side/2)
+    for (var i=0; i<2; i++) {
+        this.faces.push( new IKRS.Face( -4* piTenths, -2* piTenths, 1, 4* piTenths,                     radialShort));
+        this.faces.push( new IKRS.Face( -4* piTenths,  6* piTenths, 1, radialInsideAngle + 6* piTenths, radialLong));
+        this.faces.push( new IKRS.Face( -4* piTenths,  6* piTenths, 1, Math.PI - radialInsideAngle,     radialLong));
+    }
+
     this.imageProperties = {
 	source: { x:      288/500.0, // 287,
 		  y:      7/460.0,
@@ -129,6 +140,57 @@ IKRS.Tile.BowTie.prototype._buildOuterPolygons = function() {
     this.outerTilePolygons.push( centerTile );
 };
 
+
+IKRS.GirihCanvasHandler.prototype.drawFancyBowTieStrapping = function(tile) {
+    // each segment in this function is its own path/segment
+    // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
+
+    //color( lineColor)
+    //width( lineWidth)
+    const capGap = IKRS.GirihCanvasHandler.capGap;
+    //color( lineColor)
+    //width( lineWidth)
+
+    var shortBentLength = 0.35845 * tile.size
+    var longDirectLength = 0.58 * tile.size
+    var lineNumber = 0
+
+    this.moveToXY( tile.position.x, tile.position.y)
+    this.lineToAD( tile.angle + tile.faces[0].offsetAngle, tile.faces[0].radialCoefficient * tile.size); //waist of bowtie
+    this.lineToaD( Math.PI - tile.faces[0].angleToCenter + tile.faces[0].angleToNextVertice, tile.size/2); //ready to start
+
+    for (var i = 0; i<2; i++ ) {
+        //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
+        this.moveToaD( 3* piTenths, 0) // mid to end
+        this.gline( longDirectLength - capGap, lineSpacing, 3* piTenths, 4* piTenths, false, true) 
+        this.moveToaD( 0, capGap)
+        //endGroup()
+        lineNumber = lineNumber + 1
+
+        //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
+        this.moveToaD( 6* piTenths, 0) // edge to start
+        this.gline( longDirectLength - capGap, lineSpacing, 3* piTenths, 4* piTenths, false, true)
+        this.moveToaD( 0, capGap)
+        //endGroup()
+        lineNumber = lineNumber + 1
+
+        //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
+        this.moveToaD ( 6* piTenths, 0) //back toward start
+        this.gline( shortBentLength, lineSpacing, 3* piTenths, 4* piTenths, false, false)
+        this.moveToaD ( 2* piTenths, 0) //mid
+        this.gline( shortBentLength - capGap, lineSpacing, 4* piTenths, 4* piTenths, false, true) 
+        this.moveToaD( 0, capGap)
+        //endGroup()
+        lineNumber = lineNumber + 1
+
+        //set up for the other end
+        this.moveToXY( tile.position.x, tile.position.y)
+        this.lineToAD( tile.angle + tile.faces[0].offsetAngle + Math.PI, tile.faces[0].radialCoefficient * tile.size); //waist of bowtie
+        this.lineToaD( Math.PI - tile.faces[0].angleToCenter + tile.faces[0].angleToNextVertice, tile.size/2); //ready to start
+    }
+}
+
+
 // This is totally shitty. Why object inheritance when I still
 // have to inherit object methods manually??!
 IKRS.Tile.BowTie.prototype.computeBounds           = IKRS.Tile.prototype.computeBounds;
@@ -145,4 +207,3 @@ IKRS.Tile.BowTie.prototype.getVertexAt             = IKRS.Tile.prototype.getVert
 IKRS.Tile.BowTie.prototype.toSVG                   = IKRS.Tile.prototype.toSVG;
 
 IKRS.Tile.BowTie.prototype.constructor             = IKRS.Tile.BowTie;
-

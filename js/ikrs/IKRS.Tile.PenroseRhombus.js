@@ -55,6 +55,14 @@ IKRS.Tile.PenroseRhombus = function( size, position, angle, opt_addCenterPolygon
 		
     }
 
+    this.faces = [];
+    var shortRadial = Math.sin( 1* piTenths);
+    var longRadial = Math.cos( 1* piTenths);
+    for (var i=0; i<2; i++) {
+        this.faces.push( new IKRS.Face( 4* piTenths, 2* piTenths, 1, 6* piTenths, shortRadial));
+        this.faces.push( new IKRS.Face( 4* piTenths, 8* piTenths, 1, 9* piTenths, longRadial));
+    }
+
     
     this.imageProperties = {
 	source: { x:      2/500.0,
@@ -163,6 +171,49 @@ IKRS.Tile.PenroseRhombus.prototype._buildOuterPolygons = function( centerPolygon
 IKRS.Tile.PenroseRhombus.prototype.getCenterPolygonIndex = function() {
     return 2;
 };
+
+
+IKRS.GirihCanvasHandler.prototype.drawFancyPenroseRhombusStrapping = function(tile) {
+//inputs: size, position, angle, context
+    // each segment in this function is its own path/segment
+    // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
+    const capGap        = IKRS.GirihCanvasHandler.capGap;
+    const shortSegmentLength = 0.163 * tile.size;
+    const longSegmentLength = 0.587 * tile.size;
+    //color( lineColor)
+    //width( lineWidth)
+    this.context.beginPath();
+    this.moveToXY( tile.position.x, tile.position.y); // Center of rhombus
+    this.lineToAD( tile.angle + tile.faces[0].offsetAngle, tile.faces[0].radialCoefficient * tile.size); //corner of rhombus
+    this.lineToaD( Math.PI - tile.faces[0].angleToCenter + tile.faces[0].angleToNextVertice, tile.size/2); //ready to start
+    this.moveToaD( 3* piTenths, 0); // ready to go
+
+    this.context.strokeStyle = "#FF0000";
+    this.context.stroke()
+    this.context.closePath();
+
+    var lineNumber = 0
+
+    for (var i = 0; i<2; i++ ) {
+        //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
+        this.gline( shortSegmentLength, lineSpacing, 7* piTenths, 4* piTenths, false, false)
+        this.moveToaD( 2* piTenths, 0)
+        this.gline( shortSegmentLength - capGap, lineSpacing, 6* piTenths, 4* piTenths, false, true)
+        this.moveToaD( 0, capGap)
+        this.moveToaD( 6* piTenths, 0)
+        //endGroup()
+
+        lineNumber = lineNumber + 1
+        //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
+        this.gline( longSegmentLength, lineSpacing, 7* piTenths, 6* piTenths, false, false)
+        this.moveToaD( -4* piTenths, 0)
+        this.gline( longSegmentLength - capGap, lineSpacing, 6* piTenths, 4* piTenths, false, true)
+        this.moveToaD( 0, capGap)
+        this.moveToaD( 6* piTenths, 0)
+        lineNumber = lineNumber + 1
+        //endGroup()
+    }
+}
 
 
 // This is totally shitty. Why object inheritance when I still

@@ -55,6 +55,17 @@ IKRS.Tile.IrregularHexagon = function( size, position, angle ) {
 		
     }
 
+    this.faces = [];
+    var halfNarrowWidth = Math.sin( 2* piTenths); // assuming size = 1
+    var radialShort = Math.sqrt( halfNarrowWidth*halfNarrowWidth + 1/4);
+    var radialLong =  Math.cos(2* piTenths) + 1/2 ;//half the long width of the hexagon
+    var radialAngle = Math.atan( 2* halfNarrowWidth)
+    for (var i=0; i<2; i++) {
+        this.faces.push( new IKRS.Face( -2* piTenths - radialAngle, 2* piTenths, 1, Math.PI - radialAngle, radialShort));
+        this.faces.push( new IKRS.Face( -2* piTenths - radialAngle, 6* piTenths, 1, 8* piTenths,           radialLong))
+        this.faces.push( new IKRS.Face( -2* piTenths - radialAngle, 2* piTenths, 1, Math.PI - radialAngle, radialShort));
+    }
+
     this.imageProperties = {
 	source: { x:      77/500.0, // 75,
 		  y:      11/460.0,
@@ -69,6 +80,80 @@ IKRS.Tile.IrregularHexagon = function( size, position, angle ) {
     this._buildInnerPolygons();
     this._buildOuterPolygons();   // Only call AFTER the inner polygons were created!
 };
+
+
+IKRS.GirihCanvasHandler.prototype.drawGHexagon = function (tile) {
+//inputs: size, position, angle, context
+    this.context.beginPath();
+console.log("hexagon tile position:" + IKRS.Girih.round(tile.position.x) +","+
+                                       IKRS.Girih.round(tile.position.y) +" angle:"+
+                                       IKRS.Girih.round( IKRS.Girih.rad2deg(tile.angle)) +" size:" + tile.size)
+        //assume tile angle 0 is east, and first tile segment is sloping to right top
+    var height = tile.size * Math.sin( 2* piTenths);
+    var radial = Math.sqrt( height*height + tile.size*tile.size/4);
+    var radialAngle = Math.atan( height/ (tile.size/2))
+console.log("height:" + IKRS.Girih.round(height,2) +" radial:" + IKRS.Girih.round(radial,2) +" radialAngle:"+ IKRS.Girih.round(radialAngle,2) +":"+ IKRS.Girih.round(radialAngle*180/Math.PI,2))
+    this.moveToXY( tile.position.x, tile.position.y); // Center of hexagon
+    this.lineToAD( tile.angle - radialAngle - 2* piTenths, radial); //corner of hexagon
+    this.lineToaD( radialAngle, 0); //ready to start
+
+    this.lineToaD( 2* piTenths, tile.size);
+    this.lineToaD( 6* piTenths, tile.size);
+    this.lineToaD( 2* piTenths, tile.size);
+    this.lineToaD( 2* piTenths, tile.size);
+    this.lineToaD( 6* piTenths, tile.size);
+    this.lineToaD( 2* piTenths, tile.size);
+
+    this.context.strokeStyle = "#0000FF";
+    this.context.stroke();
+    this.context.closePath();
+}
+
+IKRS.GirihCanvasHandler.prototype.drawFancyGHexagonStrapping = function(tile) {
+//inputs: size, position, angle, context
+    // each segment in this function is its own path/segment
+    // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
+
+    //color( lineColor)
+    //width( lineWidth)
+    const capGap = IKRS.GirihCanvasHandler.capGap;
+    hexStrappingDistance = 0.587 * tile.size
+    var height = tile.size * Math.sin( 2* piTenths);
+    var radial = Math.sqrt( height*height + tile.size*tile.size/4);
+    var radialAngle = Math.atan( height/ (tile.size/2))
+    var lineNumber = 0
+
+    this.context.beginPath()
+    this.moveToXY( tile.position.x, tile.position.y); // Center of hexagon
+    this.lineToAD( tile.angle - radialAngle - 2* piTenths, radial); //corner of hexagon
+    this.lineToaD( radialAngle, 0); //ready to start
+    this.lineToaD( 2*piTenths, tile.size/2); //center of side
+    this.moveToaD( 3* piTenths, 0); // ready to go
+
+    this.context.strokeStyle = "#FF0000";
+    this.context.stroke();
+    this.context.closePath();
+
+    for( var j = 0; j< 2; j++) {
+        //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
+        this.gline( hexStrappingDistance - capGap, lineSpacing, 7* piTenths, 4* piTenths, false, true)
+        this.moveToaD( 0, capGap);
+        this.moveToaD( 6* piTenths, 0);
+        lineNumber = lineNumber + 1
+        //endGroup()
+
+        for( var i = 0; i< 2; i++) {
+            //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
+            this.gline( hexStrappingDistance, lineSpacing, 7* piTenths, 7* piTenths, false, false)
+            this.moveToaD( -4* piTenths, 0);
+            this.gline( hexStrappingDistance - capGap, lineSpacing, 7* piTenths, 4* piTenths, false, true)
+            this.moveToaD( 0, capGap);
+            this.moveToaD( 6* piTenths, 0);
+            lineNumber = lineNumber + 1
+            //endGroup()
+        }
+    }
+}
 
 
 IKRS.Tile.IrregularHexagon.prototype._buildInnerPolygons = function() {
