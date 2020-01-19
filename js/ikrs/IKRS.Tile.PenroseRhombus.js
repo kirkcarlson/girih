@@ -11,7 +11,7 @@
  **/
 
 
-IKRS.Tile.PenroseRhombus = function( size, position, angle, opt_addCenterPolygon ) {
+IKRS.Tile.PenroseRhombus = function( size, position, angle, opt_addCenterPolygon, fillColor ) {
     
     IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS  );
 
@@ -63,7 +63,12 @@ IKRS.Tile.PenroseRhombus = function( size, position, angle, opt_addCenterPolygon
         this.faces.push( new IKRS.Face( 4* piTenths, 8* piTenths, 1, 9* piTenths, longRadial));
     }
 
-    
+    if (fillColor !== undefined) {
+        this.fillColor = fillColor;
+    } else {
+        this.fillColor = girihCanvasHandler.drawProperties.penroseRhombusFillColor;
+    }
+
     this.imageProperties = {
 	source: { x:      2/500.0,
 		  y:      8/460.0,
@@ -177,37 +182,33 @@ IKRS.GirihCanvasHandler.prototype.drawFancyPenroseRhombusStrapping = function(ti
 //inputs: size, position, angle, context
     // each segment in this function is its own path/segment
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
-    const capGap        = IKRS.GirihCanvasHandler.capGap;
+    var capGap = this.capGap();
+    var strapWidth = this.drawProperties.strappingWidth;
     const shortSegmentLength = 0.163 * tile.size;
     const longSegmentLength = 0.587 * tile.size;
     //color( lineColor)
     //width( lineWidth)
-    this.context.beginPath();
     this.moveToXY( tile.position.x, tile.position.y); // Center of rhombus
     this.lineToAD( tile.angle + tile.faces[0].offsetAngle, tile.faces[0].radialCoefficient * tile.size); //corner of rhombus
     this.lineToaD( Math.PI - tile.faces[0].angleToCenter + tile.faces[0].angleToNextVertice, tile.size/2); //ready to start
     this.moveToaD( 3* piTenths, 0); // ready to go
 
-    this.context.strokeStyle = "#FF0000";
-    this.context.stroke()
-    this.context.closePath();
-
     var lineNumber = 0
 
     for (var i = 0; i<2; i++ ) {
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
-        this.gline( shortSegmentLength, lineSpacing, 7* piTenths, 4* piTenths, false, false)
+        this.gline( shortSegmentLength, strapWidth, 7* piTenths, 4* piTenths, false, false)
         this.moveToaD( 2* piTenths, 0)
-        this.gline( shortSegmentLength - capGap, lineSpacing, 6* piTenths, 4* piTenths, false, true)
+        this.gline( shortSegmentLength - capGap, strapWidth, 6* piTenths, 4* piTenths, false, true)
         this.moveToaD( 0, capGap)
         this.moveToaD( 6* piTenths, 0)
         //endGroup()
 
         lineNumber = lineNumber + 1
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
-        this.gline( longSegmentLength, lineSpacing, 7* piTenths, 6* piTenths, false, false)
+        this.gline( longSegmentLength, strapWidth, 7* piTenths, 6* piTenths, false, false)
         this.moveToaD( -4* piTenths, 0)
-        this.gline( longSegmentLength - capGap, lineSpacing, 6* piTenths, 4* piTenths, false, true)
+        this.gline( longSegmentLength - capGap, strapWidth, 6* piTenths, 4* piTenths, false, true)
         this.moveToaD( 0, capGap)
         this.moveToaD( 6* piTenths, 0)
         lineNumber = lineNumber + 1

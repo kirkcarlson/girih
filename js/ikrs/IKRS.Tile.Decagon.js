@@ -7,7 +7,7 @@
  **/
 
 
-IKRS.Tile.Decagon = function( size, position, angle ) {
+IKRS.Tile.Decagon = function( size, position, angle, fillColor ) {
     
     IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_DECAGON );
     
@@ -38,7 +38,13 @@ IKRS.Tile.Decagon = function( size, position, angle ) {
 
     this.faces = [];
     for (var i=0; i<10; i++) {
-        this.faces.push( new IKRS.Face( -4* piTenths, 2* piTenths, 1, 6* piTenths, 1/(2* Math.sin(piTenths))));
+	this.faces.push( new IKRS.Face( -4* piTenths, 2* piTenths, 1, 6* piTenths, 1/(2* Math.sin(piTenths))));
+    }
+
+    if (fillColor !== undefined) {
+        this.fillColor = fillColor;
+    } else {
+        this.fillColor = girihCanvasHandler.drawProperties.decagonFillColor;
     }
 
     this.imageProperties = {
@@ -59,6 +65,7 @@ IKRS.Tile.Decagon = function( size, position, angle ) {
 };
 
 
+/*
 IKRS.GirihCanvasHandler.prototype.drawDecagon = function (tile) {
 //inputs: size, position, angle, context
     this.context.beginPath();
@@ -77,6 +84,7 @@ console.log("decagon tile position:" + IKRS.Girih.round(tile.position.x) +","+
     this.context.stroke();
     this.context.closePath();
 }
+*/
 
 IKRS.GirihCanvasHandler.prototype.drawFancyDecagonStrapping = function(tile) {
 //inputs: size, position, angle, context
@@ -84,75 +92,49 @@ IKRS.GirihCanvasHandler.prototype.drawFancyDecagonStrapping = function(tile) {
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
 
     var lineNumber = 0
-    var decaLineSide = 0.95 * tile.size // overall length of each strap
-    var dl1 = 0.585 * decaLineSide // start part of strap
-    var dl1 = 0.620 * decaLineSide // start part of strap
-    var dl2 = decaLineSide - dl1 // end part of strap
-    var radial = tile.size/(2 * Math.sin( 1 * piTenths));
-    const capGap = IKRS.GirihCanvasHandler.capGap;
+    var strapLength = 0.95 * tile.size // overall length of each strap
+    var startBrokenStrap = 0.589 * tile.size
+    var endBrokenStrap = strapLength - startBrokenStrap // end part of strap
+    var capGap = this.capGap();
+    var lineSpacing = this.drawProperties.strappingWidth;
 
-    this.context.beginPath();
     this.lineToXY( tile.position.x, tile.position.y); // center of decagon
-    this.lineToAD( tile.angle + -4* piTenths, radial); //corner of decagon
-    this.lineToaD( 6*piTenths, tile.size/2); //corner of pentagon, ready for side
-	this.lineToaD( 3* piTenths, 0); // ready for girih
-    this.context.strokeStyle = "#0000FF";
-    this.context.stroke();
-    this.context.closePath();
-var saveX = this.position.x
-var saveY = this.position.y
-        // do the even numbered straps
-        for( var i = 0; i<5; i++) {
-            //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber} , ["strap"]))
-            this.gline( dl1 - capGap, lineSpacing, 7* piTenths, 4* piTenths, false, true)
-            //forward( capGap * 2)
-	    this.moveToaD( 0, capGap * 2); // gap on each side of strap
-            this.gline( dl2 - capGap, lineSpacing, 6* piTenths, 6* piTenths, true, false)
-            //left( 2 * 18)
-	    this.moveToaD( -2* piTenths, 0);
-            this.gline( decaLineSide - capGap, lineSpacing, 6* piTenths, 4* piTenths, false, true)
-            //forward( capGap)
-	    this.moveToaD( 0, capGap);
-            //right( 6 * 18)
-	    this.moveToaD( 6* piTenths, 0);
-            //endGroup()
-            lineNumber = lineNumber + 2
-        }
+    this.lineToAD( tile.angle + tile.faces[0].offsetAngle, tile.faces[0].radialCoefficient * tile.size); //corner of decagon
+    this.lineToaD( 6*piTenths, tile.size/2); //center of decagon side, ready for side
+    this.lineToaD( 3* piTenths, 0); // ready for strapping
 
-        // do the odd numbered straps
-    this.context.beginPath();
-        lineNumber = 1
-        //penup()
-        //left( 3 * 18)
-        //forward( tile.size / 2)
-	this.lineToaD( -3* piTenths, tile.size / 2);
-        //right( 2 * 18)
-        //forward( tile.size / 2)
-	this.lineToaD( 2* piTenths, tile.size / 2);
-        //right( 3 * 18)
-	this.lineToaD( 3* piTenths, 0);
-    this.context.strokeStyle = "#0000FF";
-    this.context.stroke();
-    this.context.closePath();
-var saveX = this.position.x
-var saveY = this.position.y
+    // do the even numbered straps
+    for( var i = 0; i<5; i++) {
+	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber} , ["strap"]))
+	this.gline( startBrokenStrap - capGap, lineSpacing, 7* piTenths, 4* piTenths, false, true)
+	this.moveToaD( 0, capGap * 2); // gap on each side of strap
+	this.gline( endBrokenStrap - capGap, lineSpacing, 6* piTenths, 6* piTenths, true, false)
+	this.moveToaD( -2* piTenths, 0);
+	this.gline( strapLength - capGap, lineSpacing, 6* piTenths, 4* piTenths, false, true)
+	this.moveToaD( 0, capGap);
+	this.moveToaD( 6* piTenths, 0);
+	lineNumber = lineNumber + 2
+	//endGroup()
+    }
 
-        for( var i = 0; i<5; i++) {
-            //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber} , ["strap"]))
-            this.gline( dl1 - capGap, lineSpacing, 7* piTenths, 4* piTenths, false, true)
-            //forward( capGap * 2)
-	    this.moveToaD( 0, capGap * 2); // why is this *2?
-            this.gline( dl2 - capGap, lineSpacing, 6* piTenths, 6* piTenths, true, false)
-            //left( 2 * 18)
-	    this.moveToaD( -2* piTenths, 0);
-            this.gline( decaLineSide - capGap, lineSpacing, 6* piTenths, 4* piTenths, false, true)
-            //forward( capGap)
-	    this.moveToaD( 0, capGap);
-            //right( 6 * 18)
-	    this.moveToaD( 6* piTenths, 0);
-            //endGroup()
-            lineNumber = lineNumber + 2
-        }
+    // do the odd numbered straps
+    lineNumber = 1
+    this.lineToaD( -3* piTenths, tile.size / 2);
+    this.lineToaD( 2* piTenths, tile.size / 2);
+    this.lineToaD( 3* piTenths, 0);
+
+    for( var i = 0; i<5; i++) {
+	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber} , ["strap"]))
+	this.gline( startBrokenStrap - capGap, lineSpacing, 7* piTenths, 4* piTenths, false, true)
+	this.moveToaD( 0, capGap * 2); // why is this *2?
+	this.gline( endBrokenStrap - capGap, lineSpacing, 6* piTenths, 6* piTenths, true, false)
+	this.moveToaD( -2* piTenths, 0);
+	this.gline( strapLength - capGap, lineSpacing, 6* piTenths, 4* piTenths, false, true)
+	this.moveToaD( 0, capGap);
+	this.moveToaD( 6* piTenths, 0);
+	//endGroup()
+	lineNumber = lineNumber + 2
+    }
 }
 
 
@@ -173,7 +155,6 @@ IKRS.Tile.Decagon.prototype._buildInnerPolygons = function( edgeLength ) {
 	innerTile.addVertex( leftPoint );
 
 	this.innerTilePolygons.push( innerTile );
-
 
 	centralStar.addVertex( leftPoint.clone() );
 	centralStar.addVertex( bottomPoint.clone() );
@@ -198,11 +179,9 @@ IKRS.Tile.Decagon.prototype._buildOuterPolygons = function( edgeLength ) {
 	outerTile.addVertex( this.innerTilePolygons[i].getVertexAt(0).clone() );
 	outerTile.addVertex( this.innerTilePolygons[i].getVertexAt(3).clone() );
 	outerTile.addVertex( this.getInnerTilePolygonAt( i==0 ? 9 : i-1 ).getVertexAt(0).clone() );
-	
 
 	this.outerTilePolygons.push( outerTile );
     }
-    
 };
 
 

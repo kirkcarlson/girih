@@ -7,7 +7,7 @@
  **/
 
 
-IKRS.Tile.Pentagon = function( size, position, angle ) {
+IKRS.Tile.Pentagon = function( size, position, angle, fillColor ) {
     
     IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_PENTAGON );
 
@@ -45,6 +45,12 @@ IKRS.Tile.Pentagon = function( size, position, angle ) {
     this.faces = [];
     for (var i=0; i<5; i++) {
         this.faces.push( new IKRS.Face( -3* piTenths, 4* piTenths, 1, 7* piTenths, 1/(2* Math.sin(2* piTenths))));
+    }
+
+    if (fillColor !== undefined) {
+        this.fillColor = fillColor;
+    } else {
+        this.fillColor = girihCanvasHandler.drawProperties.pentagonFillColor;
     }
 
     this.imageProperties = {
@@ -127,13 +133,6 @@ IKRS.Tile.Pentagon.prototype._buildOuterPolygons = function() {
 
 };
 
-// Nasty Trick #2
-//this is a way to have constant defined in one module and used in another
-var piTenths    = IKRS.GirihCanvasHandler.piTenths;
-var lineSpacing = IKRS.GirihCanvasHandler.lineSpacing;
-var gap         = IKRS.GirihCanvasHandler.gap;
-var lineWidth   = IKRS.GirihCanvasHandler.lineWidth;
-
 
 // Nasty Trick #1
 //the following three functions are really in the wrong place
@@ -164,7 +163,8 @@ IKRS.GirihCanvasHandler.prototype.drawFancyPentagonStrapping = function(tile) {
     // each segment in this function is its own path/segment
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
 
-    const capGap = IKRS.GirihCanvasHandler.capGap;
+    var capGap = this.capGap();
+    var strapWidth = this.drawProperties.strappingWidth;
 
     this.moveToXY( tile.position.x, tile.position.y); // center of pentagon
     this.moveToAD( tile.angle + tile.faces[0].offsetAngle , tile.faces[0].radialCoefficient * tile.size); //corner of pentagon
@@ -172,9 +172,9 @@ IKRS.GirihCanvasHandler.prototype.drawFancyPentagonStrapping = function(tile) {
     for( var i = 0; i<5; i++) {
 	lineNumber = i
 	this.lineToaD( 3* piTenths, 0);
-	this.gline( 0.425 * tile.size, lineSpacing, 7* piTenths, 6* piTenths, false, false);
+	this.gline( 0.425 * tile.size, strapWidth, 7* piTenths, 6* piTenths, false, false);
 	this.lineToaD( -2* piTenths, 0);
-	this.gline( 0.425 * tile.size - capGap, lineSpacing, 6* piTenths, 4* piTenths, false, true);
+	this.gline( 0.425 * tile.size - capGap, strapWidth, 6* piTenths, 4* piTenths, false, true);
 	this.moveToaD( 0, capGap);
 	this.lineToaD( 3* piTenths, 0);
     }

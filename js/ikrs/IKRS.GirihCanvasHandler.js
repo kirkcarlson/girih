@@ -28,19 +28,36 @@ IKRS.GirihCanvasHandler = function( imageObject ) {
   
     this.girih                     = new IKRS.Girih();
 
-    this.drawProperties            = { drawCoordinateSystem:     false,  // Currently not editable (no UI component)
-				       drawBoxes:                false,
-				       drawOutlines:             true,
-				       drawTextures:             true,
-				       drawInnerPolygons:        true,
-				       drawStrapping:            true,
-				       useFancyStrapping:        true,
-				       innerRandomColorFill:     false, //true
-				       outerRandomColorFill:     false,
-				       backgroundColor:          "#ffffff" //"#F0F0F0"
+    this.drawProperties            = { drawCoordinateSystem:       false,  // Currently not editable (no UI component)
+				       drawBoxes:                  false,
+				       drawOutlines:               true,
+				       drawTextures:               true,
+				       drawInnerPolygons:          true,
+				       drawStrapping:              true,
+				       useFancyStrapping:          true,
+				       innerRandomColorFill:       false, //true
+				       outerRandomColorFill:       false,
+				       backgroundColor:            "#ffffff", //"#F0F0F0"
+
+				       polygonStrokeColor:         "#00003f",
+				       polygonSelectedStrokeColor: "#e80088",
+				       polygonFillColor:           "#ffffff",
+				       hexagonFillColor:           "#bce897",
+				       decagonFillColor:           "#97dce8",
+				       pentagonFillColor:          "#e8e297",
+				       bowTieFillColor:            "#e89798",
+				       rhombusFillColor:           "#979be8",
+				       penroseRhombusFillColor:    "#ff837e",
+				       simpleStrappingStrokeColor: "#00A800",
+				       strappingStrokeColor:       "#000000",
+				       strappingFillColor:         "#ffff00",
+				       boundingBoxColor:           "#c8c8ff",
+				       strappingWidth:             3, //in pixels
+				       strappingStrokeWidth:       0, // in pixels
+				       strappingGap:               0.5 // in pixels
 				     };
-    this.properties                = { allowPenroseTile:         true,
-				       drawPenroseCenterPolygon: true
+    this.properties                = { allowPenroseTile:           true,
+				       drawPenroseCenterPolygon:   true
 				     };
     
     this.adjacentTileOptionPointer = 0;
@@ -147,7 +164,7 @@ IKRS.GirihCanvasHandler.prototype.mouseDownHandler = function( e ) {
 											tile.angle,
 											tileBounds, // tile.computeBounds(),  // tileBounds,
 											{ unselectedEdgeColor: "#000000",
-											  selectedEdgeColor:   "#e80088"
+											  selectedEdgeColor:    this.girihCanvasHandler.drawProperties.polygonSelectedStrokeColor,
 											},
 											tile.imageProperties,
 											this.girihCanvasHandler.imageObject,
@@ -370,7 +387,7 @@ IKRS.GirihCanvasHandler.prototype._performAddCurrentAdjacentPresetTile = functio
 								 tile.angle,
 								 tileBounds, 
 								 { unselectedEdgeColor: "#000000",
-								   selectedEdgeColor:   "#e80088"
+								   selectedEdgeColor:   this.drawProperties.polygonSelectedStrokeColor,
 								 },
 								 tile.imageProperties,
 								 this.imageObject,
@@ -481,276 +498,15 @@ IKRS.GirihCanvasHandler.piTenths = 2 * Math.PI /20; // basic Girih angle = 18 de
 IKRS.GirihCanvasHandler.lineSpacing = 1//5;
 IKRS.GirihCanvasHandler.gap = 0.5;
 IKRS.GirihCanvasHandler.lineWidth = 0//0.5;
-IKRS.GirihCanvasHandler.capGap = IKRS.GirihCanvasHandler.lineSpacing/2 +
-                                 IKRS.GirihCanvasHandler.lineWidth +
-                                 IKRS.GirihCanvasHandler.gap;
 
 var piTenths    = IKRS.GirihCanvasHandler.piTenths;
-var lineSpacing = IKRS.GirihCanvasHandler.lineSpacing;
-var gap         = IKRS.GirihCanvasHandler.gap;
-var lineWidth   = IKRS.GirihCanvasHandler.lineWidth;
-var cGap        = IKRS.GirihCanvasHandler.cGap;
+//var lineSpacing = IKRS.GirihCanvasHandler.lineSpacing;
+//var gap         = IKRS.GirihCanvasHandler.gap;
+//var lineWidth   = IKRS.GirihCanvasHandler.lineWidth;
+//var cGap        = IKRS.GirihCanvasHandler.cGap;
 
 
-/* this may become a generic routine for all polygons */
-IKRS.GirihCanvasHandler.prototype.tile_pentagon_draw = function(tile) {
-    if( this.drawProperties.drawBoxes ) {
-	this.tile_pentagon_drawBoundingBox(tile); //### can use generic
-    };
-    if( this.drawProperties.drawOutlines || this.drawProperties.drawTextures) {
-	//this.drawPentagon(tile); //####UNIQUE TO PENTAGON
-	this.drawPolygonFromFaces(tile);
-    }
-    if( this.drawProperties.drawTextures) {
-	this.context.fillStyle = "#7F7F00";
-	this.context.fill();
-    };
-    // need texture image stuff here
-    if( this.drawProperties.drawInnerPolygons ) {
-	this._drawInnerTilePolygons( tile );
-	this._drawOuterTilePolygons( tile );
-    }
-
-    if( this.drawProperties.drawStrapping) {
-	if( this.drawProperties.useFancyStrapping) {
-	    this.drawFancyPentagonStrapping( tile); //####UNIQUE TO PENTAGON
-	} else {
-	    this._drawSimpleStrapping( tile);
-	};
-    };
-}
-
-IKRS.GirihCanvasHandler.prototype.tile_ghexagon_draw = function(tile) {
-/*
-    if( this.drawProperties.drawBoxes ) {
-	this.tile_pentagon_drawBoundingBox(tile); //### can use generic
-    };
-*/
-    if( this.drawProperties.drawOutlines || this.drawProperties.drawTextures) {
-	//this.drawGHexagon(tile); //####UNIQUE TO GHEXAGON
-	this.drawPolygonFromFaces(tile);
-    }
-/*
-    if( this.drawProperties.drawTextures) {
-	this.context.fillStyle = "#7F7F00";
-	this.context.fill();
-    };
-    // need texture image stuff here
-    if( this.drawProperties.drawInnerPolygons ) {
-	this._drawInnerTilePolygons( tile );
-	this._drawOuterTilePolygons( tile );
-    }
-*/
-
-    if( this.drawProperties.drawStrapping) {
-	if( this.drawProperties.useFancyStrapping) {
-	    this.drawFancyGHexagonStrapping( tile); //####UNIQUE TO GHEXAGON
-	} else {
-	    this._drawSimpleStrapping( tile);
-	};
-    };
-}
-
-
-IKRS.GirihCanvasHandler.prototype.tile_rhombus_draw = function(tile) {
-/*
-    if( this.drawProperties.drawBoxes ) {
-	this.tile_pentagon_drawBoundingBox(tile); //### can use generic
-    };
-*/
-    if( this.drawProperties.drawOutlines || this.drawProperties.drawTextures) {
-	//this.drawRhombus(tile); //####UNIQUE TO RHOMBUS
-	this.drawPolygonFromFaces(tile);
-    }
-/*
-    if( this.drawProperties.drawTextures) {
-	this.context.fillStyle = "#7F7F00";
-	this.context.fill();
-    };
-    // need texture image stuff here
-    if( this.drawProperties.drawInnerPolygons ) {
-	this._drawInnerTilePolygons( tile );
-	this._drawOuterTilePolygons( tile );
-    }
-*/
-
-    if( this.drawProperties.drawStrapping) {
-	if( this.drawProperties.useFancyStrapping) {
-	    this.drawFancyRhombusStrapping( tile); //####UNIQUE TO GHEXAGON
-	} else {
-	    this._drawSimpleStrapping( tile);
-	};
-    };
-}
-
-
-IKRS.GirihCanvasHandler.prototype.tile_penrose_rhombus_draw = function(tile) {
-/*
-    if( this.drawProperties.drawBoxes ) {
-	this.tile_pentagon_drawBoundingBox(tile); //### can use generic
-    };
-*/
-    if( this.drawProperties.drawOutlines || this.drawProperties.drawTextures) {
-	//this.drawRhombus(tile); //####UNIQUE TO RHOMBUS
-	this.drawPolygonFromFaces(tile);
-    }
-/*
-    if( this.drawProperties.drawTextures) {
-	this.context.fillStyle = "#7F7F00";
-	this.context.fill();
-    };
-    // need texture image stuff here
-    if( this.drawProperties.drawInnerPolygons ) {
-	this._drawInnerTilePolygons( tile );
-	this._drawOuterTilePolygons( tile );
-    }
-*/
-
-    if( this.drawProperties.drawStrapping) {
-	if( this.drawProperties.useFancyStrapping) {
-	    this.drawFancyPenroseRhombusStrapping( tile); //####UNIQUE TO GHEXAGON
-	} else {
-	    this._drawSimpleStrapping( tile);
-	};
-    };
-}
-
-
-IKRS.GirihCanvasHandler.prototype.tile_decagon_draw = function(tile) {
-/*
-    if( this.drawProperties.drawBoxes ) {
-	this.tile_decagon_drawBoundingBox(tile); //### can use generic
-    };
-*/
-    if( this.drawProperties.drawOutlines || this.drawProperties.drawTextures) {
-//	this.drawDecagon(tile); //####UNIQUE TO DECAGON
-	this.drawPolygonFromFaces(tile);
-    }
-/*
-    if( this.drawProperties.drawTextures) {
-	this.context.fillStyle = "#7F7F00";
-	this.context.fill();
-    };
-    // need texture image stuff here
-    if( this.drawProperties.drawInnerPolygons ) {
-	this._drawInnerTilePolygons( tile );
-	this._drawOuterTilePolygons( tile );
-    }
-*/
-
-    if( this.drawProperties.drawStrapping) {
-	if( this.drawProperties.useFancyStrapping) {
-	    this.drawFancyDecagonStrapping( tile); //####UNIQUE TO DECAGON
-	} else {
-	    this._drawSimpleStrapping( tile);
-	};
-    };
-}
-
-
-IKRS.GirihCanvasHandler.prototype.tile_bow_tie_draw = function(tile) {
-/*
-    if( this.drawProperties.drawBoxes ) {
-	this.tile_pentagon_drawBoundingBox(tile); //### can use generic
-    };
-*/
-    if( this.drawProperties.drawOutlines || this.drawProperties.drawTextures) {
-	//this.drawRhombus(tile); //####UNIQUE TO RHOMBUS
-	this.drawPolygonFromFaces(tile);
-    }
-/*
-    if( this.drawProperties.drawTextures) {
-	this.context.fillStyle = "#7F7F00";
-	this.context.fill();
-    };
-    // need texture image stuff here
-    if( this.drawProperties.drawInnerPolygons ) {
-	this._drawInnerTilePolygons( tile );
-	this._drawOuterTilePolygons( tile );
-    }
-*/
-
-    if( this.drawProperties.drawStrapping) {
-	if( this.drawProperties.useFancyStrapping) {
-	    this.drawFancyBowTieStrapping( tile); //####UNIQUE TO BOWTIE
-	} else {
-	    this._drawSimpleStrapping( tile);
-	};
-    };
-}
-
-
-/*
-IKRS.GirihCanvasHandler.prototype.tile_pentagon_drawPolygon = function (tile) {
-//inputs: size, position, angle, context
-    this.context.beginPath();
-console.log("tile position:" + IKRS.Girih.round(tile.position.x) +","+
-                               IKRS.Girih.round(tile.position.y) +" angle:"+
-                               IKRS.Girih.round( IKRS.Girih.rad2deg(tile.angle)) +" size:" + tile.size)
-        //assume tile angle 0 is east, and first tile segment is sloping to right top
-    var radial = tile.size/(2 * Math.sin( 2 * piTenths));
-    this.moveToXY( tile.position.x, tile.position.y); // center of pentagon
-    this.lineToAD( tile.angle -3* piTenths, radial); //corner of pentagon
-    this.moveToAD( tile.angle, 0); //corner of pentagon, ready for side
-    for (var i=0; i<5; i++) {
-        this.lineToaD( 4* piTenths, tile.size);
-    }
-    this.context.strokeStyle = "#0000FF";
-    this.context.stroke();
-    this.context.closePath();
-}
-
-IKRS.GirihCanvasHandler.prototype.tile_pentagon_drawBoundingBox = function(tile) {
-//inputs: size, position, angle, context
-// maybe this should use the boundingBox structure and not be shape dependent
-    var height = tile.size * (Math.sin( 2* piTenths) + Math.cos( 1* piTenths));
-    var width = tile.size * (1+Math.cos( 3* piTenths));
-    var radial = tile.size/(2 * Math.sin( 2 * piTenths));
-
-    this.context.beginPath();
-
-    this.moveToXY( tile.position.x, tile.position.y); // center of pentagon
-    this.moveToAD( tile.angle -7* piTenths, radial); //top of pentagon
-    this.lineToaD( -3* piTenths, tile.size/2 * Math.cos( 3* piTenths)); //NW corner of boundingSquare
-    this.lineToaD( 10* piTenths, width); //NE corner of boundingSquare
-    this.lineToaD( 5* piTenths, height); //SE corner of boundingSquare
-    this.lineToaD( 5* piTenths, width); //SW corner of boundingSquare
-    this.lineToaD( 5* piTenths, height); //NW corner of boundingSquare
-
-    this.context.strokeStyle = "#c8c8ff";
-    this.context.stroke();
-    this.context.closePath();
-}
-
-IKRS.GirihCanvasHandler.prototype.tile_pentagon_drawFancyStrapping = function(tile) {
-//inputs: size, position, angle, context
-    // each segment in this function is its own path/segment
-    // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
-const piTenths    = IKRS.GirihCanvasHandler.piTenths;
-const lineSpacing = IKRS.GirihCanvasHandler.lineSpacing;
-const gap         = IKRS.GirihCanvasHandler.gap;
-const lineWidth   = IKRS.GirihCanvasHandler.lineWidth;
-const cGap        = IKRS.GirihCanvasHandler.cGap;
-    var lineNumber = 0
-    var radial = tile.size/(2 * Math.sin( 2 * piTenths));
-
-    this.moveToXY( tile.position.x, tile.position.y); // center of pentagon
-    this.moveToAD( tile.angle + -3* piTenths, radial); //corner of pentagon
-    this.lineToaD( 7*piTenths, tile.size/2); //corner of pentagon, ready for side
-    
-	this.lineToaD( 3* piTenths, 0);
-	this.gline( 0.425 * tile.size, lineSpacing, 7* piTenths, 6* piTenths, false, false);
-	this.lineToaD( -2* piTenths, 0);
-	this.gline( 0.425 * tile.size - cGap, lineSpacing, 6* piTenths, 4* piTenths, false, true);
-	this.moveToaD( 0, cGap);
-	this.lineToaD( 3* piTenths, 0);
-	lineNumber = lineNumber + 1
-    }
-}
-*/
-
-
-IKRS.GirihCanvasHandler.prototype.tile_pentagon_drawTextures = function( imgProperties, imageObject, originalBounds) {
+IKRS.GirihCanvasHandler.prototype._drawTextures = function( imgProperties, imageObject, originalBounds) {
     // inputs: imgProperties, imageObject, originalBounds
     // this is another function that may work better as a generalized polygon
     // Build absolute image bounds from relative
@@ -763,7 +519,7 @@ IKRS.GirihCanvasHandler.prototype.tile_pentagon_drawTextures = function( imgProp
 					  originalBounds.getHeight() / imgBounds.getHeight()
 					);
 
-// RED FLAG!!! this needs something in the context to clip, say a polygon
+// RED FLAG!!! (kirk) this needs something in the context to clip, say a polygon
 // at this point not sure what all this other stuff is doing, seems complex
 // at a minimum it needs a context with the polygon scribed.
     this.context.clip();
@@ -799,99 +555,100 @@ IKRS.GirihCanvasHandler.prototype._drawTile = function( tile ) {
 	return;
     }
 
-//kirk Test code begin
-/* open questions
-    should there be an object which keeps track of the overall scale and rotation?
-    the rotation checkbox affects only individual tiles, the positon and angle of individual
-    tiles changes quite a bit.
-*/
-
-
-    if( tile.tileType === IKRS.Girih.TILE_TYPE_PENTAGON) {
-	this.tile_pentagon_draw( tile)
-	if( this.drawProperties.drawOutlines || tile._props.selected ) {
-	    this._drawCrosshairAt( tile.position, tile._props.selected );
-	}
-	return;
-    } else if( tile.tileType === IKRS.Girih.TILE_TYPE_DECAGON) {
-	this.tile_decagon_draw( tile)
-	if( this.drawProperties.drawOutlines || tile._props.selected ) {
-	    this._drawCrosshairAt( tile.position, tile._props.selected );
-	}
-	return;
-    } else if( tile.tileType === IKRS.Girih.TILE_TYPE_IRREGULAR_HEXAGON) {
-	this.tile_ghexagon_draw( tile)
-	if( this.drawProperties.drawOutlines || tile._props.selected ) {
-	    this._drawCrosshairAt( tile.position, tile._props.selected );
-	}
-	return;
-    } else if( tile.tileType === IKRS.Girih.TILE_TYPE_RHOMBUS) {
-	this.tile_rhombus_draw( tile)
-	if( this.drawProperties.drawOutlines || tile._props.selected ) {
-	    this._drawCrosshairAt( tile.position, tile._props.selected );
-	}
-	return;
-    } else if( tile.tileType === IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS) {
-	this.tile_penrose_rhombus_draw( tile)
-	if( this.drawProperties.drawOutlines || tile._props.selected ) {
-	    this._drawCrosshairAt( tile.position, tile._props.selected );
-	}
-	return;
-    } else if( tile.tileType === IKRS.Girih.TILE_TYPE_BOW_TIE) {
-	this.tile_bow_tie_draw( tile)
-	if( this.drawProperties.drawOutlines || tile._props.selected ) {
-	    this._drawCrosshairAt( tile.position, tile._props.selected );
-	}
-	return;
-    }
-
-//kirk Test code end
-
     var tileBounds = tile.computeBounds();
     if( this.drawProperties.drawBoxes ) {
 	this._drawBoundingBox( tile.position,
 			       tileBounds,
-			       tile.angle 
+			       tile.angle
 			     );
     }
-    this._drawPolygonFromPoints( tile.polygon.vertices, 
-				 tile.position, 
-				 tile.angle,
-				 tileBounds,
-				 { unselectedEdgeColor: "#000000",
-				   selectedEdgeColor:   "#e80088",
-				   fillColor:           null        // Do not fill
-				 },
-				 tile.imageProperties,
-				 this.imageObject,
-				 tile._props.highlightedEdgeIndex,
-				 this.drawProperties.drawOutlines
-			       );
+
+    if( this.drawProperties.drawOutlines || this.drawProperties.drawTextures) {
+	this.drawPolygonFromFaces(tile);
+    }
+
+    if( this.drawProperties.drawTextures) {
+    // need texture image stuff here
+    // this.drawTextures()
+	this.context.fillStyle = tile.fillColor;
+	this.context.fill();
+    };
+
+
     if( this.drawProperties.drawInnerPolygons ) {
-	//if( tile.tileType == IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS && this.getProperties().drawPenroseCenterPolygon )
-	//    this._drawInnerTilePolygons( tile, [ tile.getCenterPolygonIndex() ] );
-	//else 
 	this._drawInnerTilePolygons( tile );
 	this._drawOuterTilePolygons( tile );
     }
+
+    if( this.drawProperties.drawStrapping) {
+	if( this.drawProperties.useFancyStrapping) {
+	    switch(tile.tileType) {
+	    case IKRS.Girih.TILE_TYPE_PENTAGON:
+		this.drawFancyPentagonStrapping( tile);
+		break;
+	    case IKRS.Girih.TILE_TYPE_DECAGON:
+		this.drawFancyDecagonStrapping( tile);
+		break;
+	    case IKRS.Girih.TILE_TYPE_IRREGULAR_HEXAGON:
+		this.drawFancyGirihHexagonStrapping( tile);
+		break;
+	    case IKRS.Girih.TILE_TYPE_RHOMBUS:
+		this.drawFancyRhombusStrapping( tile);
+		break;
+	    case IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS: this.drawFancyPenroseRhombusStrapping( tile);
+		break;
+	    case IKRS.Girih.TILE_TYPE_BOW_TIE:
+		this.drawFancyBowTieStrapping( tile);
+		break;
+	    default:
+		this._drawSimpleStrapping( tile);
+		break;
+	    }
+	} else {
+	    this._drawSimpleStrapping( tile);
+	};
+    };
+
     if( this.drawProperties.drawOutlines || tile._props.selected ) {
 	this._drawCrosshairAt( tile.position, tile._props.selected );
     }
 };
 
-//kirk test code begin
-// draw line to absolute angle and distance from current position
-// hides the zoom and offset from user
-// this.position is the raw x,y point from the user perspective
+/*************************************************************************
+ *  moveToXY(  newX, newY)
+ *  move to an absolute coordinate on the canvas
+ *  This uses normal coordinates and distance and tranlated them to a canvas
+ *  which may pan and zoom.
+
+ *  Parameters:
+ *      newX: destination x coordinate
+ *      newX: destination y coordinate
+
+ *  Returns:
+ *      None
+*************************************************************************/
 IKRS.GirihCanvasHandler.prototype.moveToXY = function (newX, newY) {
     this.position.x = newX;
     this.position.y = newY;
-/// this.context.moveTo( point.x * this.zoomFactor + this.drawOffset.x + position.x * this.zoomFactor, 
     this.context.moveTo( (this.position.x + this.drawOffset.x) * this.zoomFactor,
 			 (this.position.y + this.drawOffset.y) * this.zoomFactor
 		       );
 };
 
+
+/*************************************************************************
+ *  lineToXY(  newX, newY)
+ *  draw a line from current postion to an absolute coordinate on the canvas
+ *  This uses normal coordinates and distance and tranlated them to a canvas
+ *  which may pan and zoom.
+ *
+ *  Parameters:
+ *      newX: destination x coordinate
+ *      newX: destination y coordinate
+ *
+ *  Returns:
+ *      None
+*************************************************************************/
 IKRS.GirihCanvasHandler.prototype.lineToXY = function (newX, newY) {
     this.position.x = newX;
     this.position.y = newY;
@@ -902,9 +659,20 @@ IKRS.GirihCanvasHandler.prototype.lineToXY = function (newX, newY) {
 };
 
 
-// draw line to absolute angle and distance from current position
-// angle 0 is toward the east
-// angle in radians
+/*************************************************************************
+ *  lineToAD(  ang, len)
+ *  draw a line from current postion to an absolute angle and distance
+ *  This uses normal coordinates and distance and tranlated them to a canvas
+ *  which may pan and zoom.
+ *
+ *  Parameters:
+ *      ang: absolute angle (0 is toward East and increases clockwise)
+ *           (in radians)
+ *      len: lenght of line in pixels
+ *
+ *  Returns:
+ *      None
+*************************************************************************/
 IKRS.GirihCanvasHandler.prototype.lineToAD = function ( ang, len) {
     var newX = this.position.x + len * Math.cos(ang)
     var newY = this.position.y + len * Math.sin(ang)
@@ -917,13 +685,23 @@ IKRS.GirihCanvasHandler.prototype.lineToAD = function ( ang, len) {
 };
 
 
-// draw line to relative angle and distance from current position
-// angle 0 is in same direction, positive angles to right
-// angle in radians
+/*************************************************************************
+ *  lineToAD(  ang, len)
+ *  draw a line from current postion to a relative angle and distance
+ *  This uses normal coordinates and distance and tranlated them to a canvas
+ *  which may pan and zoom.
+ *
+ *  Parameters:
+ *      ang: relative angle (0 is in current direction increases clockwise)
+ *           (in radians)
+ *      len: lenght of line in pixels
+ *
+ *  Returns:
+ *      None
+*************************************************************************/
 IKRS.GirihCanvasHandler.prototype.lineToaD = function ( ang, len) {
     var newX = this.position.x + len * Math.cos(this.angle + ang)
     var newY = this.position.y + len * Math.sin(this.angle + ang)
-/// this.context.lineTo( point.x * this.zoomFactor + this.drawOffset.x + position.x * this.zoomFactor, 
     this.context.lineTo(newX * this.zoomFactor + this.drawOffset.x,
 			newY * this.zoomFactor + this.drawOffset.y);
     this.position.x = newX;
@@ -932,9 +710,20 @@ IKRS.GirihCanvasHandler.prototype.lineToaD = function ( ang, len) {
 };
 
 
-// move to absolute angle and distance from current position
-// angle 0 is toward the east
-// angle in radians
+/*************************************************************************
+ *  moveToAD(  ang, len)
+ *  move from current postion to an absolute angle and distance
+ *  This uses normal coordinates and distance and tranlated them to a canvas
+ *  which may pan and zoom.
+ *
+ *  Parameters:
+ *      ang: absolute angle (0 is toward East and increases clockwise)
+ *           (in radians)
+ *      len: lenght of move in pixels
+ *
+ *  Returns:
+ *      None
+*************************************************************************/
 IKRS.GirihCanvasHandler.prototype.moveToAD = function ( ang, len) {
     var newX = this.position.x + len * Math.cos(ang)
     var newY = this.position.y + len * Math.sin(ang)
@@ -946,9 +735,20 @@ IKRS.GirihCanvasHandler.prototype.moveToAD = function ( ang, len) {
 };
 
 
-// move to relative angle and distance from current position
-// angle 0 is in same direction, positive angles to right
-// angle in radians
+/*************************************************************************
+ *  moveToaD(  ang, len)
+ *  move from current postion to a relative angle and distance
+ *  This uses normal coordinates and distance and tranlated them to a canvas
+ *  which may pan and zoom.
+ *
+ *  Parameters:
+ *      ang: relative angle (0 is in current direction increases clockwise)
+ *           (in radians)
+ *      len: length of move in pixels
+ *
+ *  Returns:
+ *      None
+*************************************************************************/
 IKRS.GirihCanvasHandler.prototype.moveToaD = function ( ang, len) {
     var newX = this.position.x + len * Math.cos(this.angle + ang)
     var newY = this.position.y + len * Math.sin(this.angle + ang)
@@ -961,29 +761,30 @@ IKRS.GirihCanvasHandler.prototype.moveToaD = function ( ang, len) {
 
 
 /**************************************************************************
- *  computeCGap -- compute the spacing for the end cap of a crossing line
+ *  capGap -- compute the spacing for the end cap of a crossing line
  *
  *  parameters:
- *    lineSpacing number of points between double lines
- *    lineWidth: width of the double lines in points
- *    gap: intended gap in points between line end cap and crossing line
+ *    none passed
  *
  *  returns
- *    the required spacing for the end cap
- *
- *  returns:
- *    None
+ *    the required spacing for the end cap in pixels
  *************************************************************************/
-function computeCGap( lineSpacing, lineWidth, gap) {
-    return lineSpacing/2 + lineWidth + gap
+IKRS.GirihCanvasHandler.prototype.capGap = function () {
+    return this.drawProperties.strappingWidth/2 +
+           this.drawProperties.strappingStrokeWidth +
+           this.drawProperties.strappingGap;
 }
+
+
 
 /**************************************************************************
  *  gline -- draw a double girih line with slanted ends
+ *  This uses normal coordinates and distance and tranlated them to a canvas
+ *  which may pan and zoom.
  *
  *  parameters:
- *    distance is the nominal length of the line in points
- *    spacing is the distance between twin line centers in points
+ *    distance is the nominal length of the line in pixels
+ *    spacing is the distance between twin line centers in pixels
  *    startAngle is the cut angle at the start of the line with respect to the turtle
  *    endAngle is the cut angle at the end of the line with respect to the turtle
  *    startCap is true when a start cap is desired
@@ -1000,17 +801,8 @@ IKRS.GirihCanvasHandler.prototype.gline = function( distance, spacing, startAngl
     var startDiag = Math.abs(spacing / Math.sin( startAngle))
     var endDiag = Math.abs(spacing / Math.sin( -endAngle))
 
-    //HOLD if (fill === undefined) {
-    //HOLD     fill = "transparent"
-    //HOLD }
-
     // stroke the segment for the fill (and connect unstroked ends)
-    //HOLD var saveWidth = turtle.width
-    //HOLD var saveColor = turtle.color
     // lay down the color
-    //HOLD width( 0) // stroke width
-    //HOLD color( fill) // stroke color
-    //HOLD pendown()
         //beginShape()
     this.context.beginPath();
     //HOLD svgAttribute ( 'class="gfill"')
@@ -1020,7 +812,7 @@ IKRS.GirihCanvasHandler.prototype.gline = function( distance, spacing, startAngl
     this.lineToaD( endAngle + 10* piTenths, distance + startLeftDist + endLeftDist);
     this.lineToaD( startAngle - 10* piTenths, startDiag/2);
     this.lineToaD( -startAngle, 0);
-    this.context.fillStyle = "#FFFF00";
+    this.context.fillStyle = this.drawProperties.strappingFillColor;
     this.context.fillOpacity = 1;
     this.context.fill();
     this.context.closePath();
@@ -1058,8 +850,9 @@ IKRS.GirihCanvasHandler.prototype.gline = function( distance, spacing, startAngl
     }
 //color( saveColor)
 //svgAttribute ( 'class="gstroke"')
-    this.context.strokeStyle = "#FF0000";
-    this.context.lineWidth = "4pt";
+    this.context.strokeStyle = this.drawProperties.strappingStrokeColor;
+    this.context.fillStyle = "";
+    this.context.lineWidth = this.drawProperties.strappingStrokeWidth;
     this.context.stroke();
     this.context.closePath();
 
@@ -1200,7 +993,7 @@ IKRS.GirihCanvasHandler.prototype.drawPolygonFromFaces = function( tile) {
         var face = tile.faces[ i % tile.faces.length]
         this.lineToaD( face.angleToNextVertice, tile.size * face.lengthCoefficient)
     }
-    this.context.strokeStyle = "#FF0000";
+    this.context.strokeStyle = this.drawProperties.polygonStrokeColor,
     this.context.lineWidth = "1pt";
     this.context.stroke();
     this.context.closePath();
@@ -1333,17 +1126,17 @@ IKRS.GirihCanvasHandler.prototype._drawCrosshairAt = function( position,
 		      5.0,
 		      0.0, 
 		      Math.PI*2.0,
-		      false 
+		      false
 		    );
 
-    this.context.stroke(); 
+    this.context.stroke();
     this.context.closePath();
 };
 
 
 IKRS.GirihCanvasHandler.prototype._drawBoundingBox = function( position,
 							       bounds,
-							       angle ) {  
+							       angle ) {
 
 
     var points = [ bounds.getLeftUpperPoint(),
@@ -1353,12 +1146,13 @@ IKRS.GirihCanvasHandler.prototype._drawBoundingBox = function( position,
 		 ];
     
     this.context.strokeStyle = "#c8c8ff";
-    this._drawPolygonFromPoints( points, 
-				 position, 
+    this.context.fillStyle = "";
+    this._drawPolygonFromPoints( points,
+				 position,
 				 angle,
 				 bounds,
-				 { unselectedEdgeColor: "#c8c8ff",
-				   selectedEdgeColor:   "#c8c8ff",
+				 { unselectedEdgeColor: this.drawProperties.polygonSelectedStrokeColor,
+ 				   selectedEdgeColor:   this.drawProperties.polygonSelectedStrokeColor,
 				   fillColor:           null
 				 },
 				 null,   // imgProperties,
@@ -1373,7 +1167,7 @@ IKRS.GirihCanvasHandler.prototype._drawBoundingBox = function( position,
 
 IKRS.GirihCanvasHandler.prototype._drawCoordinateSystem = function() {  
 
-    this.context.strokeStyle = "#c8c8c8";
+    this.context.strokeStyle = this.drawProperties.boundingBoxColor,
     this.context.beginPath();
 
     this.context.moveTo( this.drawOffset.x,
@@ -1432,8 +1226,8 @@ IKRS.GirihCanvasHandler.prototype._drawOuterTilePolygons = function( tile ) {
 				     tile.position, 
 				     tile.angle,
 				     IKRS.BoundingBox2.computeFromPoints(polygon.vertices), //originalBounds,
-				     { unselectedEdgeColor: null, // "#00a800",
-				       selectedEdgeColor:   null, // "#00a800",
+				     { unselectedEdgeColor: null,
+				       selectedEdgeColor:   null,
 				       fillColor:           randomColor //"rgba(255,255,0,0.5)" //"#ffff00"
 				     },    // colors,
 				     null, // imgProperties,
@@ -1463,8 +1257,8 @@ IKRS.GirihCanvasHandler.prototype._drawInnerTile = function( tile, index ) {
 				 tile.position, 
 				 tile.angle,
 				 IKRS.BoundingBox2.computeFromPoints(polygon.vertices), //originalBounds,
-				 { unselectedEdgeColor: "#00a800",
-				   selectedEdgeColor:   "#00a800",
+				 { unselectedEdgeColor: this.drawProperties.simpleStrappingStrokeColor,
+				   selectedEdgeColor: this.drawProperties.simpleStrappingStrokeColor,
 				   fillColor:           randomColor // null
 				 },    // colors,
 				 null, // imgProperties,
@@ -1489,8 +1283,8 @@ IKRS.GirihCanvasHandler.prototype._drawSimpleStrapping = function( tile ) {
 				     tile.position,
 				     tile.angle,
 				     IKRS.BoundingBox2.computeFromPoints(polygon.vertices), //originalBounds,
-				     { unselectedEdgeColor: "#00a800",
-				       selectedEdgeColor:   "#00a800",
+				     { unselectedEdgeColor: this.drawProperties.simpleStrappingStrokeColor,
+				       selectedEdgeColor:   this.drawProperties.simpleStrappingStrokeColor,
 				       fillColor:           null // null do not fill
 				     },    // colors,
 				     null, // imgProperties,

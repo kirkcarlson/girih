@@ -7,7 +7,7 @@
  **/
 
 
-IKRS.Tile.Rhombus = function( size, position, angle ) {
+IKRS.Tile.Rhombus = function( size, position, angle, fillColor) {
     
     IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_RHOMBUS  );
     
@@ -53,6 +53,12 @@ IKRS.Tile.Rhombus = function( size, position, angle ) {
     for (var i=0; i<2; i++) {
         this.faces.push( new IKRS.Face( 3* piTenths, 4* piTenths, 1, 7* piTenths, shortRadial));
         this.faces.push( new IKRS.Face( 3* piTenths, 6* piTenths, 1, 8* piTenths, longRadial));
+    }
+
+    if (fillColor !== undefined) {
+        this.fillColor = fillColor;
+    } else {
+        this.fillColor = girihCanvasHandler.drawProperties.rhombusFillColor;
     }
 
     this.imageProperties = {
@@ -145,7 +151,8 @@ IKRS.GirihCanvasHandler.prototype.drawFancyRhombusStrapping = function(tile) {
 //inputs: size, position, angle, context
     // each segment in this function is its own path/segment
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
-    const capGap        = IKRS.GirihCanvasHandler.capGap;
+    var capGap = this.capGap();
+    var strapWidth = this.drawProperties.strappingWidth;
 
     //color( lineColor)
     //width( lineWidth)
@@ -165,16 +172,16 @@ IKRS.GirihCanvasHandler.prototype.drawFancyRhombusStrapping = function(tile) {
 
     for (var i = 0; i<2; i++ ) {
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
-        this.gline( directSegmentLength - capGap, lineSpacing, 7* piTenths, 4* piTenths, false, true)
+        this.gline( directSegmentLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true)
         this.moveToaD( 0, capGap)
         this.moveToaD( 6 * piTenths, 0)
         //endGroup()
 
         lineNumber = lineNumber + 1
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
-        this.gline( bentSegmentLength, lineSpacing, 7* piTenths, 6* piTenths, false, false)
+        this.gline( bentSegmentLength, strapWidth, 7* piTenths, 6* piTenths, false, false)
         this.moveToaD( -2* piTenths, 0)
-        this.gline( bentSegmentLength - capGap, lineSpacing, 6* piTenths, 4* piTenths, false, true)
+        this.gline( bentSegmentLength - capGap, strapWidth, 6* piTenths, 4* piTenths, false, true)
         this.moveToaD( 0, capGap)
         this.moveToaD( 6* piTenths, 0)
         lineNumber = lineNumber + 1

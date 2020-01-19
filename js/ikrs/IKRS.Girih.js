@@ -659,7 +659,7 @@ IKRS.Girih.prototype.toSVG = function( options,
     options.indent = oldIndent;
 
 
-var preamble = `<svg id="girih-svg" xmlns="http://www.w3.org/2000/svg" version="1.1"
+var svgPreamble = `<svg id="girih-svg" xmlns="http://www.w3.org/2000/svg" version="1.1"
     height="` + IKRS.Girih.round( highWater.getHeight(), IKRS.Girih.SVG_PRECISION) + `"
     width="` + IKRS.Girih.round( highWater.getWidth(), IKRS.Girih.SVG_PRECISION) + `">
 <style>
@@ -680,7 +680,7 @@ text {
     IKRS.Girih.round( -highWater.getXMin(), IKRS.Girih.SVG_PRECISION) + ` ` +
     IKRS.Girih.round( -highWater.getYMin(), IKRS.Girih.SVG_PRECISION) + `)">
 `
-trailer = `
+svgTrailer = `
 </g>
 <script>
 /* for any runtime JavaScript to control or animate the girih */
@@ -689,8 +689,8 @@ trailer = `
 </svg>`
 
     // put the pieces together
-    buffer.unshift( preamble)
-    buffer.push( trailer)
+    buffer.unshift( svgPreamble)
+    buffer.push( svgTrailer)
     return buffer
 }
 

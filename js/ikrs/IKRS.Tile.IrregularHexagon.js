@@ -7,7 +7,7 @@
  **/
 
 
-IKRS.Tile.IrregularHexagon = function( size, position, angle ) {
+IKRS.Tile.IrregularHexagon = function( size, position, angle, fillColor ) {
     
     IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_IRREGULAR_HEXAGON );
 
@@ -66,6 +66,12 @@ IKRS.Tile.IrregularHexagon = function( size, position, angle ) {
         this.faces.push( new IKRS.Face( -2* piTenths - radialAngle, 2* piTenths, 1, Math.PI - radialAngle, radialShort));
     }
 
+    if (fillColor !== undefined) {
+        this.fillColor = fillColor;
+    } else {
+        this.fillColor = girihCanvasHandler.drawProperties.hexagonFillColor;
+    }
+
     this.imageProperties = {
 	source: { x:      77/500.0, // 75,
 		  y:      11/460.0,
@@ -82,6 +88,7 @@ IKRS.Tile.IrregularHexagon = function( size, position, angle ) {
 };
 
 
+/*
 IKRS.GirihCanvasHandler.prototype.drawGHexagon = function (tile) {
 //inputs: size, position, angle, context
     this.context.beginPath();
@@ -108,35 +115,28 @@ console.log("height:" + IKRS.Girih.round(height,2) +" radial:" + IKRS.Girih.roun
     this.context.stroke();
     this.context.closePath();
 }
+*/
 
-IKRS.GirihCanvasHandler.prototype.drawFancyGHexagonStrapping = function(tile) {
+IKRS.GirihCanvasHandler.prototype.drawFancyGirihHexagonStrapping = function(tile) {
 //inputs: size, position, angle, context
     // each segment in this function is its own path/segment
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
 
     //color( lineColor)
     //width( lineWidth)
-    const capGap = IKRS.GirihCanvasHandler.capGap;
-    hexStrappingDistance = 0.587 * tile.size
-    var height = tile.size * Math.sin( 2* piTenths);
-    var radial = Math.sqrt( height*height + tile.size*tile.size/4);
-    var radialAngle = Math.atan( height/ (tile.size/2))
+    var capGap = this.capGap();
+    var strapWidth = this.drawProperties.strappingWidth;
+    var strapLength = 0.587 * tile.size
+
     var lineNumber = 0
-
-    this.context.beginPath()
     this.moveToXY( tile.position.x, tile.position.y); // Center of hexagon
-    this.lineToAD( tile.angle - radialAngle - 2* piTenths, radial); //corner of hexagon
-    this.lineToaD( radialAngle, 0); //ready to start
-    this.lineToaD( 2*piTenths, tile.size/2); //center of side
+    this.lineToAD( tile.angle + tile.faces[0].offsetAngle, tile.faces[0].radialCoefficient * tile.size); //at polygon vertice
+    this.lineToaD( Math.PI - tile.faces[0].angleToCenter + tile.faces[0].angleToNextVertice, tile.size/2); //at midpoint
     this.moveToaD( 3* piTenths, 0); // ready to go
-
-    this.context.strokeStyle = "#FF0000";
-    this.context.stroke();
-    this.context.closePath();
 
     for( var j = 0; j< 2; j++) {
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
-        this.gline( hexStrappingDistance - capGap, lineSpacing, 7* piTenths, 4* piTenths, false, true)
+        this.gline( strapLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true)
         this.moveToaD( 0, capGap);
         this.moveToaD( 6* piTenths, 0);
         lineNumber = lineNumber + 1
@@ -144,9 +144,9 @@ IKRS.GirihCanvasHandler.prototype.drawFancyGHexagonStrapping = function(tile) {
 
         for( var i = 0; i< 2; i++) {
             //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
-            this.gline( hexStrappingDistance, lineSpacing, 7* piTenths, 7* piTenths, false, false)
+            this.gline( strapLength, strapWidth, 7* piTenths, 7* piTenths, false, false)
             this.moveToaD( -4* piTenths, 0);
-            this.gline( hexStrappingDistance - capGap, lineSpacing, 7* piTenths, 4* piTenths, false, true)
+            this.gline( strapLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true)
             this.moveToaD( 0, capGap);
             this.moveToaD( 6* piTenths, 0);
             lineNumber = lineNumber + 1
