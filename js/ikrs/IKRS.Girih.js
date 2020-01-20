@@ -23,6 +23,10 @@ IKRS.Girih.prototype.addChain = function( chain ) {
     this.chains.push( chain );
 };
 
+IKRS.Girih.prototype.deleteAllChains = function() {
+    this.chains = [];
+};
+
 IKRS.Girih.prototype._minimizeTiles = function ( tiles) {
     // returns an object that is the essence of the passed tile object
     // returns an array of mimimized file objects that is the essence of the passed tile object
@@ -104,10 +108,94 @@ IKRS.Girih.prototype.setTilesJSON = function( jsonFile) {
 }
 
 
-IKRS.Girih.prototype.findAllChains = function() {
+IKRS.Girih.prototype.buildTheConnectors = function( tiles) {
+    console.log ('build the connectors');
+    console.log("Number of tiles:"+ tiles.length)
+    for (var i=0; i<tiles.length; i++) { // all tiles
+        tiles[i].connectors = []; // clear any existing connectors
+        for (var j=0; j<tiles[i].polygon.vertices.length; j++) { // all sides of each tile
+            var edge = tiles[i].polygon.getEdgeAt( j);
+            var midpoint = new IKRS.Point2 ((edge.pointA.x + edge.pointB.x)/2, (edge.pointA.y + edge.pointB.y)/2);
+            // ignoring pan, zoom and overall rotation for the midpoints
+            midpoint.rotate( IKRS.Point2.ZERO_POINT, tiles[i].angle ).addXY( tiles[i].position.x, tiles[i].position.y);
+            var connector = new IKRS.Connector( j, midpoint);
+            tiles[i].connectors.push( connector);
+        }
+    }
+
+
+    var DEBUG = true;
+    // print out the connections
+    if ( DEBUG) {
+        for (var i=0; i<tiles.length; i++) {
+            connectors = tiles[i].connectors;
+            for (var j=0; j<connectors.length; j++) {
+                console.log ("polygon=:"+ i + " connector:"+ j + " " + connectors[j].toString())
+            }
+        }
+    }
+}
+
+IKRS.Girih.prototype.findTheConnections = function( tiles, chains) {
+    console.log ('find the connections');
+    // find connectors at the same position
+    for (var i=0; i<tiles.length; i++) {
+         connectors = tiles[i].connectors;
+         for (var j=0; j<connectors.length; j++) {
+             var point = connectors[j].point;
+             var startK = i;
+             var startL = j+1;
+             if (j === connectors.length - 1) {
+                 startL = 0
+                 startK = i+1
+             }
+             for (var k=startK; k<tiles.length; k++) {
+                for (var l=startL; l<tiles[k].connectors.length; l++) {
+/*
+console.log("x,y:"+
+IKRS.Girih.round( point.x, IKRS.Girih.SVG_PRECISION) + "," +
+IKRS.Girih.round( point.y, IKRS.Girih.SVG_PRECISION) + " polyA:" + i + "-"+ j + " polyB:" + k + "-" + l +"x,y:" +
+IKRS.Girih.round( tiles[k].connectors[l].point.x, IKRS.Girih.SVG_PRECISION)  + "," +
+IKRS.Girih.round( tiles[k].connectors[l].point.y, IKRS.Girih.SVG_PRECISION));
+*/
+                    if (point.inRange( tiles[k].connectors[l].point, IKRS.Girih.EPSILON)) {
+/*
+                        console.log("Match x,y:"+
+IKRS.Girih.round( point.x, IKRS.Girih.SVG_PRECISION) + "," +
+IKRS.Girih.round( point.y, IKRS.Girih.SVG_PRECISION) + " " +
+IKRS.Girih.round( tiles[k].connectors[l].point.x, IKRS.Girih.SVG_PRECISION) + "," +
+IKRS.Girih.round( tiles[k].connectors[l].point.y, IKRS.Girih.SVG_PRECISION) + " " + " polyA:" + i + "-"+ j + " polyB:" + k + "-" + l);
+*/
+                        console.log("common connectors: "+ + i + ","+ j + " " + k + "," + l);
+                        // ensure that a third connector is not shared
+                        if (connectors[j].isShared()) {
+                            console.log("Share link already in use:" + new IKRS.Link (i, j).toString() + "  " + connectors[j].shared.toString());
+                        } else if (tiles[k].connectors[l].isShared()) {
+                            console.log("Share link already in use:" + new IKRS.Link (k, l).toString() + "  " + tiles[k].connectors[l].shared.toString());
+                        } else {
+                        // mark both connectors as shared
+                            connectors[j].setShared( new IKRS.Link (k, l));
+                            tiles[k].connectors[l].setShared( new IKRS.Link (i, j));
+                        }
+                    }
+                }
+                startL = 0
+            }
+        }
+    } //find connectors loop
+}
+
+
+IKRS.Girih.prototype.findAllChains = function( tiles) {
+    //find all of the chains in the design and list them
+    // a object should start with the girihCanvasHandler, but code is written for the chain class
+    // this function walks through all of the connectors on each tile... a fairly high level function
+    // not a Chain level function
+
+    console.log ('find all chains');
     // for all connectors in the figure
     var chainNumber = 0;
-    girihCanvasHandler.girih.chains = []; // delete existing chains
+    girihCanvasHandler.girih.deleteAllChains();
     for (var i=0; i<girihCanvasHandler.girih.tiles.length; i++) {
 	var tileType = girihCanvasHandler.girih.tiles[i].tileType;
 	for( var j=0; j<girihCanvasHandler.girih.tiles[i].connectors.length; j++) {
@@ -169,6 +257,15 @@ console.log ("looping chain:"+ chainNumber)
 		} //done walking in either direction
 	    } //else connnector shared
 	}
+    }
+    var DEBUG = true;
+    if (DEBUG) {
+        for (var i=0; i<girihCanvasHandler.girih.chains.length; i++) {
+            var chain = girihCanvasHandler.girih.chains[i];
+            if (chain.links.length > 1) {
+                console.log (chain.toString());
+            }
+        }
     }
 }
 

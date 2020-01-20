@@ -507,6 +507,13 @@ var piTenths    = IKRS.GirihCanvasHandler.piTenths;
 
 
 IKRS.GirihCanvasHandler.prototype._drawTextures = function( imgProperties, imageObject, originalBounds) {
+/*
+    This function applies a clipped portion of an external image file to be used as the background of a tile.
+    This image may be generalized texture (e.g., wood, stone, water, etc.) or it may be a very specific 
+    structure that incorporates features, like strapping or sub-polygon coloring, to individual tiles.
+    This latter feature requires that the tile size be 50 and the imgProperties defines the portion of the
+    image to clip
+*/
     // inputs: imgProperties, imageObject, originalBounds
     // this is another function that may work better as a generalized polygon
     // Build absolute image bounds from relative
@@ -579,7 +586,10 @@ IKRS.GirihCanvasHandler.prototype._drawTile = function( tile ) {
 	this._drawInnerTilePolygons( tile );
 	this._drawOuterTilePolygons( tile );
     }
+}
 
+
+IKRS.GirihCanvasHandler.prototype._drawStrapping = function( tile ) {
     if( this.drawProperties.drawStrapping) {
 	if( this.drawProperties.useFancyStrapping) {
 	    switch(tile.tileType) {
@@ -608,10 +618,6 @@ IKRS.GirihCanvasHandler.prototype._drawTile = function( tile ) {
 	    this._drawSimpleStrapping( tile);
 	};
     };
-
-    if( this.drawProperties.drawOutlines || tile._props.selected ) {
-	this._drawCrosshairAt( tile.position, tile._props.selected );
-    }
 };
 
 /*************************************************************************
@@ -1300,8 +1306,26 @@ IKRS.GirihCanvasHandler.prototype._drawSimpleStrapping = function( tile ) {
 
 IKRS.GirihCanvasHandler.prototype._drawTiles = function() { 
     
-    for( var i = 0; i < this.girih.tiles.length; i++ ) {	
+    // draw the basic tile
+    for( var i = 0; i < this.girih.tiles.length; i++ ) {
 	this._drawTile( this.girih.tiles[i] );
+    }
+
+    // find all chains
+    if( this.drawProperties.drawStrapping && this.drawProperties.useFancyStrapping) {
+        this.girih.buildTheConnectors( this.girih.tiles);
+        this.girih.findTheConnections( this.girih.tiles);
+        this.girih.findAllChains( this.girih.tiles);
+    }
+
+    // draw the strapping
+    for( var i = 0; i < this.girih.tiles.length; i++ ) {
+	var tile = this.girih.tiles[i];
+	this._drawStrapping( tile);
+
+        if( this.drawProperties.drawOutlines || tile._props.selected ) {
+	    this._drawCrosshairAt( tile.position, tile._props.selected );
+        }
     }
 
     // Finally draw the selected tile's hovering edge
@@ -1314,7 +1338,7 @@ IKRS.GirihCanvasHandler.prototype._drawTiles = function() {
 					  tile.angle,
 					  tileBounds, 
 					  { unselectedEdgeColor: "#000000",
-					    selectedEdgeColor:   "#ffaf30", 
+					    selectedEdgeColor:   this.drawProperties.polygonSelectedStrokeColor,
 					    fillColor:           null
 					  },
 					  tile.imageProperties,
@@ -1331,8 +1355,8 @@ IKRS.GirihCanvasHandler.prototype._drawTiles = function() {
 							 selectedEdgeColor:   null, // "#d80000",
 							 fillColor:           null
 						       },
-						       tile.imageProperties,
-						       this.imageObject,
+						       null,//tile.imageProperties,
+						       null,//this.imageObject,
 						       tile._props.highlightedEdgeIndex,
 						       this.drawProperties.drawOutlines
 						     );
