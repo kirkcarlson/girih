@@ -171,10 +171,13 @@ IKRS.GirihCanvasHandler.prototype.drawFancyPentagonStrapping = function(tile) {
     this.lineToaD( Math.PI - tile.faces[0].angleToCenter + tile.faces[0].angleToNextVertice, tile.size/2); //midpoint of side
     for( var i = 0; i<5; i++) {
 	lineNumber = i
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+
 	this.lineToaD( 3* piTenths, 0);
-	this.gline( 0.425 * tile.size, strapWidth, 7* piTenths, 6* piTenths, false, false);
+	this.gline( 0.425 * tile.size, strapWidth, 7* piTenths, 6* piTenths, false, false, chainColor);
 	this.lineToaD( -2* piTenths, 0);
-	this.gline( 0.425 * tile.size - capGap, strapWidth, 6* piTenths, 4* piTenths, false, true);
+	this.gline( 0.425 * tile.size - capGap, strapWidth, 6* piTenths, 4* piTenths, false, true, chainColor);
 	this.moveToaD( 0, capGap);
 	this.lineToaD( 3* piTenths, 0);
     }

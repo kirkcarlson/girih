@@ -165,25 +165,32 @@ IKRS.GirihCanvasHandler.prototype.drawFancyBowTieStrapping = function(tile) {
     this.lineToaD( Math.PI - tile.faces[0].angleToCenter + tile.faces[0].angleToNextVertice, tile.size/2); //ready to start
 
     for (var i = 0; i<2; i++ ) {
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
         this.moveToaD( 3* piTenths, 0) // mid to end
-        this.gline( longDirectLength - capGap, strapWidth, 3* piTenths, 4* piTenths, false, true) 
+        this.gline( longDirectLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true, chainColor)
         this.moveToaD( 0, capGap)
         //endGroup()
         lineNumber = lineNumber + 1
 
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
         this.moveToaD( 6* piTenths, 0) // edge to start
-        this.gline( longDirectLength - capGap, strapWidth, 3* piTenths, 4* piTenths, false, true)
+        this.gline( longDirectLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true, chainColor)
         this.moveToaD( 0, capGap)
         //endGroup()
         lineNumber = lineNumber + 1
 
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
         this.moveToaD ( 6* piTenths, 0) //back toward start
-        this.gline( shortBentLength, strapWidth, 3* piTenths, 4* piTenths, false, false)
+        this.gline( shortBentLength, strapWidth, 7* piTenths, 4* piTenths, false, false, chainColor)
         this.moveToaD ( 2* piTenths, 0) //mid
-        this.gline( shortBentLength - capGap, strapWidth, 4* piTenths, 4* piTenths, false, true) 
+        this.gline( shortBentLength - capGap, strapWidth, 4* piTenths, 4* piTenths, false, true, chainColor)
         this.moveToaD( 0, capGap)
         //endGroup()
         lineNumber = lineNumber + 1

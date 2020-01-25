@@ -105,12 +105,20 @@ IKRS.GirihCanvasHandler.prototype.drawFancyDecagonStrapping = function(tile) {
 
     // do the even numbered straps
     for( var i = 0; i<5; i++) {
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+if (chainNumber === undefined) {
+    console.log("bad chain number for tile")
+}
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+if (chainColor === undefined) {
+    console.log( "chain fill color not defined")
+}
 	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber} , ["strap"]))
-	this.gline( startBrokenStrap - capGap, lineSpacing, 7* piTenths, 4* piTenths, false, true)
+	this.gline( startBrokenStrap - capGap, lineSpacing, 7* piTenths, 4* piTenths, false, true, chainColor)
 	this.moveToaD( 0, capGap * 2); // gap on each side of strap
-	this.gline( endBrokenStrap - capGap, lineSpacing, 6* piTenths, 6* piTenths, true, false)
+	this.gline( endBrokenStrap - capGap, lineSpacing, 6* piTenths, 6* piTenths, true, false, chainColor)
 	this.moveToaD( -2* piTenths, 0);
-	this.gline( strapLength - capGap, lineSpacing, 6* piTenths, 4* piTenths, false, true)
+	this.gline( strapLength - capGap, lineSpacing, 6* piTenths, 4* piTenths, false, true, chainColor)
 	this.moveToaD( 0, capGap);
 	this.moveToaD( 6* piTenths, 0);
 	lineNumber = lineNumber + 2
@@ -124,12 +132,20 @@ IKRS.GirihCanvasHandler.prototype.drawFancyDecagonStrapping = function(tile) {
     this.lineToaD( 3* piTenths, 0);
 
     for( var i = 0; i<5; i++) {
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+if (chainNumber === undefined) {
+    console.log("bad chain number for tile");
+}
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+if (chainColor === undefined) {
+    console.log( "chain fill color not defined");
+}
 	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber} , ["strap"]))
-	this.gline( startBrokenStrap - capGap, lineSpacing, 7* piTenths, 4* piTenths, false, true)
+	this.gline( startBrokenStrap - capGap, lineSpacing, 7* piTenths, 4* piTenths, false, true, chainColor)
 	this.moveToaD( 0, capGap * 2); // why is this *2?
-	this.gline( endBrokenStrap - capGap, lineSpacing, 6* piTenths, 6* piTenths, true, false)
+	this.gline( endBrokenStrap - capGap, lineSpacing, 6* piTenths, 6* piTenths, true, false, chainColor)
 	this.moveToaD( -2* piTenths, 0);
-	this.gline( strapLength - capGap, lineSpacing, 6* piTenths, 4* piTenths, false, true)
+	this.gline( strapLength - capGap, lineSpacing, 6* piTenths, 4* piTenths, false, true, chainColor)
 	this.moveToaD( 0, capGap);
 	this.moveToaD( 6* piTenths, 0);
 	//endGroup()

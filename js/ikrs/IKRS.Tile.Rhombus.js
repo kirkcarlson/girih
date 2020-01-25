@@ -158,8 +158,8 @@ IKRS.GirihCanvasHandler.prototype.drawFancyRhombusStrapping = function(tile) {
     //width( lineWidth)
     this.context.beginPath()
     this.moveToXY( tile.position.x, tile.position.y); // Center of rhombus
-    this.lineToAD( tile.angle + tile.faces[0].offsetAngle, tile.faces[0].radialCoefficient * tile.size); //corner of rhombus
-    this.lineToaD( Math.PI - tile.faces[0].angleToCenter + tile.faces[0].angleToNextVertice, tile.size/2); //ready to start
+    this.moveToAD( tile.angle + tile.faces[0].offsetAngle, tile.faces[0].radialCoefficient * tile.size); //corner of rhombus
+    this.moveToaD( Math.PI - tile.faces[0].angleToCenter + tile.faces[0].angleToNextVertice, tile.size/2); //ready to start
     this.moveToaD( 3* piTenths, 0); // ready to go
 
     this.context.strokeStyle = "#FF0000";
@@ -171,17 +171,21 @@ IKRS.GirihCanvasHandler.prototype.drawFancyRhombusStrapping = function(tile) {
     var directSegmentLength = 0.587 * tile.size // direct cross segment
 
     for (var i = 0; i<2; i++ ) {
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
-        this.gline( directSegmentLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true)
+        this.gline( directSegmentLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true, chainColor)
         this.moveToaD( 0, capGap)
         this.moveToaD( 6 * piTenths, 0)
         //endGroup()
 
         lineNumber = lineNumber + 1
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
-        this.gline( bentSegmentLength, strapWidth, 7* piTenths, 6* piTenths, false, false)
+        this.gline( bentSegmentLength, strapWidth, 7* piTenths, 6* piTenths, false, false, chainColor)
         this.moveToaD( -2* piTenths, 0)
-        this.gline( bentSegmentLength - capGap, strapWidth, 6* piTenths, 4* piTenths, false, true)
+        this.gline( bentSegmentLength - capGap, strapWidth, 6* piTenths, 4* piTenths, false, true, chainColor)
         this.moveToaD( 0, capGap)
         this.moveToaD( 6* piTenths, 0)
         lineNumber = lineNumber + 1

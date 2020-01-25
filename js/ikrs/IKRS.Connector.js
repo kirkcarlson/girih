@@ -258,6 +258,14 @@ IKRS.Connector.prototype.setChainID= function( CW, id) {
     }
 }
 
+IKRS.Connector.prototype.getChainID= function( CW) {
+    if (CW) {
+        return this.CWchainID
+    } else {
+        return this.CCWchainID
+    }
+}
+
 /* kirk
 IKRS.Connector.prototype.setCCWChainID= function( id) {
     this.CCWchainID = id

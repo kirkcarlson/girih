@@ -196,19 +196,23 @@ IKRS.GirihCanvasHandler.prototype.drawFancyPenroseRhombusStrapping = function(ti
     var lineNumber = 0
 
     for (var i = 0; i<2; i++ ) {
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
-        this.gline( shortSegmentLength, strapWidth, 7* piTenths, 4* piTenths, false, false)
+        this.gline( shortSegmentLength, strapWidth, 7* piTenths, 4* piTenths, false, false, chainColor)
         this.moveToaD( 2* piTenths, 0)
-        this.gline( shortSegmentLength - capGap, strapWidth, 6* piTenths, 4* piTenths, false, true)
+        this.gline( shortSegmentLength - capGap, strapWidth, 6* piTenths, 4* piTenths, false, true, chainColor)
         this.moveToaD( 0, capGap)
         this.moveToaD( 6* piTenths, 0)
         //endGroup()
 
         lineNumber = lineNumber + 1
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
-        this.gline( longSegmentLength, strapWidth, 7* piTenths, 6* piTenths, false, false)
+        this.gline( longSegmentLength, strapWidth, 7* piTenths, 6* piTenths, false, false, chainColor)
         this.moveToaD( -4* piTenths, 0)
-        this.gline( longSegmentLength - capGap, strapWidth, 6* piTenths, 4* piTenths, false, true)
+        this.gline( longSegmentLength - capGap, strapWidth, 6* piTenths, 4* piTenths, false, true, chainColor)
         this.moveToaD( 0, capGap)
         this.moveToaD( 6* piTenths, 0)
         lineNumber = lineNumber + 1

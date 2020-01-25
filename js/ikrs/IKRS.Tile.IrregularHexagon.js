@@ -135,18 +135,22 @@ IKRS.GirihCanvasHandler.prototype.drawFancyGirihHexagonStrapping = function(tile
     this.moveToaD( 3* piTenths, 0); // ready to go
 
     for( var j = 0; j< 2; j++) {
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
-        this.gline( strapLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true)
+        this.gline( strapLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true, chainColor)
         this.moveToaD( 0, capGap);
         this.moveToaD( 6* piTenths, 0);
         lineNumber = lineNumber + 1
         //endGroup()
 
         for( var i = 0; i< 2; i++) {
+            var chainNumber = tile.connectors[ lineNumber].CWchainID
+            var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
             //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
-            this.gline( strapLength, strapWidth, 7* piTenths, 7* piTenths, false, false)
+            this.gline( strapLength, strapWidth, 7* piTenths, 7* piTenths, false, false, chainColor)
             this.moveToaD( -4* piTenths, 0);
-            this.gline( strapLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true)
+            this.gline( strapLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true, chainColor)
             this.moveToaD( 0, capGap);
             this.moveToaD( 6* piTenths, 0);
             lineNumber = lineNumber + 1
