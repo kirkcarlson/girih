@@ -235,22 +235,29 @@ function rotateByAmount( amount ) {
 }
 
 function redrawGirih() {
-    
+
     // Fetch the form settings and apply them to the handler's draw options
     girihCanvasHandler.getDrawProperties().drawBoxes             = document.forms["girih_form"].elements["draw_boxes"].checked;
     girihCanvasHandler.getDrawProperties().drawOutlines          = document.forms["girih_form"].elements["draw_outlines"].checked;
-    girihCanvasHandler.getDrawProperties().drawTextures          = document.forms["girih_form"].elements["draw_textures"].checked;
-    girihCanvasHandler.getDrawProperties().drawInnerPolygons     = document.forms["girih_form"].elements["draw_inner_polygons"].checked;
-    girihCanvasHandler.getDrawProperties().drawStrapping         = document.forms["girih_form"].elements["draw_strapping"].checked;
-    girihCanvasHandler.getDrawProperties().useFancyStrapping     = document.forms["girih_form"].elements["use_fancy_strapping"].checked;
 
+    girihCanvasHandler.getDrawProperties().drawTextures          = document.forms["girih_form"].elements["draw_textures"].checked;
+    // custom/default texture_type affects only the image file used
+
+    girihCanvasHandler.getDrawProperties().drawPolygonColor      = document.forms["girih_form"].elements["draw_polygon_color"].checked;
+    girihCanvasHandler.getDrawProperties().polygonColorType  = document.forms["girih_form"].elements["polygon_color_type"].value;
+
+    girihCanvasHandler.getDrawProperties().drawInnerPolygons     = document.forms["girih_form"].elements["draw_inner_polygons"].checked;
     girihCanvasHandler.getDrawProperties().outerRandomColorFill      = document.forms["girih_form"].elements["outer_random_color_fill"].checked;
     girihCanvasHandler.getDrawProperties().innerRandomColorFill      = document.forms["girih_form"].elements["inner_random_color_fill"].checked;
 
-    girihCanvasHandler.getProperties().allowPenroseTile          = document.forms["girih_form"].elements["allow_penrose_tile"].checked;    
+    girihCanvasHandler.getDrawProperties().drawStrapping         = document.forms["girih_form"].elements["draw_strapping"].checked;
+    girihCanvasHandler.getDrawProperties().drawStrappingType     = document.forms["girih_form"].elements["draw_strapping_type"].value;
+
+
+    girihCanvasHandler.getProperties().allowPenroseTile          = document.forms["girih_form"].elements["allow_penrose_tile"].checked;
     //girihCanvasHandler.getProperties().drawPenroseCenterPolygon  = document.forms["girih_form"].elements["draw_penrose_center_polygon"].checked;
 
-  
+
     // Then trigger redraw
     girihCanvasHandler.redraw();
 }

@@ -1,6 +1,9 @@
 /**
  * @author Ikaros Kappler
  * @date 2013-12-12
+ *
+ * @author Ikaros Kappler
+ * @date 2020-01-20
  **/
 
 body {
@@ -20,7 +23,7 @@ button {
 }
 
 .tooltip {
-    display: inline;
+    Ldisplay: inline;
     position: relative;
     font-size: 10pt;
  }
@@ -82,7 +85,7 @@ br{
     width:240pt;
 }
 #panAndZoom{
-    height: 70pt;
+    height: 90pt;
     position:relative;
     width: 100%;
 }
@@ -90,18 +93,25 @@ br{
     position:relative;
     float: left;
     height: 70pt;
-    width: 70pt;
+    width: 60pt;
 }
 #zoomKeys{
     float: left;
     height: 70pt;
+    margin-left:10pt;
+    position:relative;
+    width: 50pt;
+}
+#rotationKeys{
+    float: left;
+    height: 70pt;
+    margin-left:10pt;
     position:relative;
     width: 70pt;
 }
-#rotationKeys{
-    height: 50pt;
-    position:relative;
-    width: 140pt;
+.navLabel{
+    font-size: 1.2em;
+    font-weight: bold;
 }
 button {
     font-family:Arial, sans-serif;
@@ -117,14 +127,18 @@ button {
     margin-right:6pt;
 }
 #upKey{
-    left:30px;
+    margin-left: 35%;
+    margin-right: 35%;
     position:absolute;
     top:0;
+    width: 30%;
 }
 #downKey{
+    margin-left: 35%;
+    margin-right: 35%;
     bottom:0;
-    left:30px;
     position:absolute;
+    width: 30%;
 }
 #rightKey{
     position:absolute;
@@ -136,9 +150,11 @@ button {
     position:absolute;
     top:30px;
 }
-#rotateRightKey{
-}
+#rotateRightKey,
 #rotateLeftKey{
+    height: 20pt;
+    margin:5pt;
+    width: 20pt;
 }
 #rotateAll{
 }

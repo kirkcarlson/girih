@@ -86,35 +86,62 @@ Press [e] to save an image file."></canvas>
 
   <div id="controlPane">
     <form name="girih_form">
-      [Main Settings]<br/>
-      <input type="checkbox" name="draw_boxes" onclick="redrawGirih()" /> Draw Boxes<br/>
-      <input type="checkbox" name="draw_outlines" onclick="redrawGirih()" checked="checked" /> Draw Outlines</br>
-      <input type="checkbox" name="draw_textures" onclick="redrawGirih()" checked="checked" /> Draw Textures</br>
-      <input type="checkbox" name="draw_inner_polygons" onclick="redrawGirih();" checked="checked" /> Draw Inner Polygons</br>
-      <input type="checkbox" name="draw_strapping" onclick="redrawGirih();" checked="checked" /> Draw Strapping</br>
-      &nbsp;&nbsp;&nbsp;<input type="checkbox" name="use_fancy_strapping" onclick="redrawGirih();" checked="checked" /> Use Fancy Strapping</br>
+      <span class="navLabel">Drawing Options</br></span>
+      <label>
+        <input type="checkbox" name="draw_boxes" onclick="redrawGirih()" /> Draw Boxes<br/>
+      </label>
+      <label>
+        <input type="checkbox" name="draw_outlines" onclick="redrawGirih()" checked="checked" /> Draw Outlines</br>
+      </label>
+      <label>
+        <input type="checkbox" name="draw_textures" onclick="redrawGirih()" checked="checked" /> Draw Textures</br>
+      </label>
+      &nbsp;&nbsp;&nbsp;<input type="radio" name="texture_type" id="texture_type_default" onclick="document.getElementById('custom_texture_file').disabled = this.checked; if( this.checked ) { girihCanvasHandler.setTextureImage( defaultTextureImage, true ); }" value="default" checked="checked" /> Default Background<br/>
+      <label>
+      &nbsp;&nbsp;&nbsp;<input type="radio" name="texture_type" id="texture_type_custom" onclick="document.getElementById('custom_texture_file').disabled = !this.checked; document.getElementById('custom_texture_file').click();" value="custom" /><span x-style="margin-left: 32px;"><input type="file" name="custom_texture_file" id="custom_texture_file" onchange="ImageFileReader.readTextureImage();" /></span></br>
+      </label>
+      <label>
+        <input type="checkbox" name="draw_polygon_color" onclick="redrawGirih()" checked="checked" /> Draw Polygon Color</br>
+      </label>
+      <label>
+        &nbsp;&nbsp;&nbsp;<input type="radio" name="polygon_color_type" id="polygon_color_type_default" onclick="redrawGirih();" value="default" checked="checked" /> Default Colors<br/>
+      </label>
+      <label>
+        &nbsp;&nbsp;&nbsp;<input type="radio" name="polygon_color_type" id="polygon_color_type_random"  onclick="redrawGirih();" value="random" /> Random Colors<br/>
+      </label>
+      <label>
+        <input type="checkbox" name="draw_inner_polygons" onclick="redrawGirih();" checked="checked" /> Draw Inner Polygons</br>
+      </label>
+      <label>
+        &nbsp;&nbsp;&nbsp;<input type="checkbox" name="outer_random_color_fill" onclick="redrawGirih();" />Random Color Outer Facets<br/>
+      </label>
+      <label>
+        &nbsp;&nbsp;&nbsp;<input type="checkbox" name="inner_random_color_fill" onclick="redrawGirih();" />Random Color Inner Facets<br/>
+      </label>
+      <label>
+        <input type="checkbox" name="draw_strapping" onclick="redrawGirih();" checked="checked" /> Draw Strapping</br>
+      </label>
+      <label>
+        &nbsp;&nbsp;&nbsp;<input type="radio" name="draw_strapping_type" id="draw_strapping_type_basic"   onclick="redrawGirih();" value="basic" />Basic Strapping<br/>
+      </label>
+      <label>
+        &nbsp;&nbsp;&nbsp;<input type="radio" name="draw_strapping_type" id="draw_strapping_type_fancy"   onclick="redrawGirih();" value="fancy" checked="checked" />Fancy Strapping<br/>
+      </label>
+      <label>
+        &nbsp;&nbsp;&nbsp;<input type="radio" name="draw_strapping_type" id="draw_strapping_type_colored" onclick="redrawGirih();" value="colored" />Color Chains Randomly<br/>
+      </label>
       <br/>
-      <input type="checkbox" name="allow_penrose_tile" onclick="redrawGirih()" checked="checked" /> Allow Penrose Tile</br>
+      <label>
+        <input type="checkbox" name="allow_penrose_tile" onclick="redrawGirih()" checked="checked" /> Allow Penrose Tile</br>
+      </label>
       <!--
       <span style="margin-left: 15px;"><input type="checkbox" name="draw_penrose_center_polygon" id="draw_penrose_center_polygon" onclick="redrawGirih();" checked="checked" /> Draw center penrose polygon</span><br/>
       -->
-      <br/>
-      <br/>
-      [Texture Settings]<br/>
-      <input type="radio" name="texture_type" id="texture_type_default" onclick="document.getElementById('custom_texture_file').disabled = this.checked; if( this.checked ) { girihCanvasHandler.setTextureImage( defaultTextureImage, true ); }" value="default" checked="checked" /> Default Background<br/>
-      <input type="radio" name="texture_type" id="texture_type_custom" onclick="document.getElementById('custom_texture_file').disabled = !this.checked; document.getElementById('custom_texture_file').click();" value="custom" /> Custom:<br/>
-      <span style="margin-left: 32px;"><input type="file" name="custom_texture_file" id="custom_texture_file" onchange="ImageFileReader.readTextureImage();" /></span>
-      <br/>
-      <br/>
-      <br/>
-      [Development Settings]<br/>
-      <input type="checkbox" name="outer_random_color_fill" onclick="redrawGirih();" />Color Outer Facets Randomly<br/>
-      <input type="checkbox" name="inner_random_color_fill" onclick="redrawGirih();" />Color Inner Facets Randomly<br/>
     </form>
 
     <br/>
-    [pan and zoom]
     <div id="panAndZoom">
+      <span class="navLabel">Navigation Controls</br></span>
       <div id="directionKeys">
         <button id="upKey" onclick="moveUp()";">&uarr;</button>
         <button id="downKey" onclick="moveDown()";">&darr;</button>
@@ -123,29 +150,36 @@ Press [e] to save an image file."></canvas>
       </div>
       <div id="zoomKeys">
         <button id="zoomInKey" onclick="increaseZoom();">Zoom +</button>
-        <button id="zoomOutKey" onclick="decreaseZoom();">Zoom -</button>
+        <button id="zoomOutKey" onclick="decreaseZoom();">Zoom &ndash;</button>
+      </div>
+      <div id="rotationKeys">
+        <form name="rotation_form">
+          <span class="navLabel">Rotate</br></span>
+          <button id="rotateLeftKey" onclick="rotateLeft();return false;">&#x27f2;</button>
+          <button id="rotateRightKey" onclick="rotateRight();return false;">&#x27f3;</button>
+          <br/>
+<!--
+          <input id="rotateAll" type="checkbox" name="rotate_all" checked="checked" /> Rotate all
+-->
+          <label>
+            <input type="radio" name="rotate_type" id="rotate_type_all"  onclick="redrawGirih();" value="all" checked="checked" /> All<br/>
+          </label>
+          <label>
+            <input type="radio" name="rotate_type" id="rotate_type_tile" onclick="redrawGirih();" value="tile" /> Tile<br/>
+          </label>
+        </form>
       </div>
     </div>
     <br/>
-    [rotate]
-    <div id="rotationKeys">
-      <form name="rotation_form">
-        Rotate selected tile:
-        <button id="rotateLeftKey" onclick="rotateLeft();return false;">&#x27f2;</button>
-        <button id="rotateRightKey" onclick="rotateRight();return false;">&#x27f3;</button>
-        <br/>
-        <input id="rotateAll" type="checkbox" name="rotate_all" checked="checked" /> Rotate all
-      </form>
-    </div>
-    <br/>
-    [Tools]<br/>
+    <div id="saveButtons">
       <span class="fileInput">Load</span><input type="file" id="importButton" />
       <button id="exportSVGKey"   onclick="exportSVG();return   false">Save SVG</button><br/>
       <button id="exportTilesKey" onclick="exportTiles();return false">Save</button><br/>
       <input type="text" id="downloadFilename" placeholder="girih">
+    </div>
     <br/>
     <br/>
-    [Debug]<br/>
+    <span class="navLabel">Debug Messages</br></span>
       <textarea id="debug" rows="5" cols="30"></textarea>
       <script>
         function DEBUG( msg ) {
