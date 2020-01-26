@@ -198,27 +198,59 @@ function rotateRight() {
 
 function rotateByAmount( amount ) {
 
+    var rotateAll = document.forms[ "rotation_form" ].elements[ "rotate_type" ].value === "all"; //true;
     var index     = girihCanvasHandler._locateSelectedTile();
-    if( index == -1 ) {
-	DEBUG( "No tile selected." );
-	return;
-    }
-
-    var tile      = girihCanvasHandler.girih.tiles[ index ];
-    var rotateAll = document.forms[ "rotation_form" ].elements[ "rotate_all" ].checked; //true;
 
     if( rotateAll ) {
-	for( var i = 0; i < girihCanvasHandler.girih.tiles.length; i++ ) {
-	    var tmpTile = girihCanvasHandler.girih.tiles[i];
-	    tmpTile.position.rotate( tile.position, amount ); 
-	    tmpTile.angle += amount; 
+
+	if( index == -1 ) {
+            var tmpCenter = new IKRS.Point2(
+                 (girihCanvasHandler.canvasCenter.x -
+                 girihCanvasHandler.drawOffset.x) / girihCanvasHandler.zoomFactor,
+                 (girihCanvasHandler.canvasCenter.y -
+                 girihCanvasHandler.drawOffset.y) / girihCanvasHandler.zoomFactor);
+console.log( "canvasCenter="+ girihCanvasHandler.canvasCenter.toString() +" drawOffset="+ girihCanvasHandler.drawOffset.toString() +" tempCenter="+ tmpCenter.toString())
+/*
+   --->             drawOffset
+   ---------->      canvasCenter
+   ---------->      canvasCenter -(drawOffset - canvasCenter) // for  drawOffset = 0
+          <---
+          ------>j
+   ---------->      canvasCenter -(drawOffset - canvasCenter) // for  drawOffset = 40
+<-------------
+---------->
+
+if dO = 200 and cC = 512
+  left edge of screen is -200
+  center is now at 312
+*/
+
+	    for( var i = 0; i < girihCanvasHandler.girih.tiles.length; i++ ) {
+	        var tmpTile = girihCanvasHandler.girih.tiles[i];
+	        tmpTile.position.rotate( tmpCenter, amount );
+	        tmpTile.angle += amount;
+	    }
+	} else { // tile selected
+
+            var tile = girihCanvasHandler.girih.tiles[ index ];
+
+	    for( var i = 0; i < girihCanvasHandler.girih.tiles.length; i++ ) {
+	        var tmpTile = girihCanvasHandler.girih.tiles[i];
+	        tmpTile.position.rotate( tile.position, amount ); 
+	        tmpTile.angle += amount; 
+	    }
 	}
-    } else {
-	tile.angle += amount; 
-    } 
-    
-    DEBUG( "" + IKRS.Girih.rad2deg(tile.angle) + "&deg;" );
-	
+    } else { // rotate a single tile
+	if( index == -1 ) {
+	    DEBUG( "No tile selected." );
+	    return;
+	}
+        var tile = girihCanvasHandler.girih.tiles[ index ];
+	tile.angle += amount;
+    }
+
+    //DEBUG( "" + IKRS.Girih.rad2deg(tile.angle) + "&deg;" );
+
 
     /*
     var first = true;

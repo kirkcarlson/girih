@@ -10,18 +10,22 @@ IKRS.GirihCanvasHandler = function( imageObject ) {
     
     IKRS.Object.call( this );
     
+    var width = 1024;
+    var height = 768;
+    this.canvasCenter              = new IKRS.Point2( width/2, height/2);
+
     this.imageObject               = imageObject;
 
     // this should be responsive to the size of the browser window
-    this.canvasWidth               = 1024;
-    this.canvasHeight              = 768;
+    this.canvasWidth               = width;
+    this.canvasHeight              = height;
     
     this.canvas                    = document.getElementById("girih_canvas");
     // Make a back-reference for event handling
     this.canvas.girihCanvasHandler = this;
     this.context                   = this.canvas.getContext( "2d" );
     
-    this.drawOffset                = new IKRS.Point2( 512, 384 );
+    this.drawOffset                = this.canvasCenter.clone();
     this.zoomFactor                = 1.0;
 
     this.position                  = new IKRS.Point2( 0,0);
@@ -29,7 +33,7 @@ IKRS.GirihCanvasHandler = function( imageObject ) {
   
     this.girih                     = new IKRS.Girih();
 
-    this.drawProperties            = { drawCoordinateSystem:       false,  // Currently not editable (no UI component)
+    this.drawProperties            = { drawCoordinateSystem:       true,  // Currently not editable (no UI component)
 				       drawBoxes:                  false,
 				       drawOutlines:               true,
 				       drawTextures:               true,
@@ -396,8 +400,16 @@ IKRS.GirihCanvasHandler.prototype._performAddCurrentAdjacentPresetTile = functio
 	return;
     }
 
+
+
     var tile         = this.girih.tiles[ hoveredTileIndex ]; 
     var tileBounds   = tile.computeBounds();
+
+    if (tile.connectors[ tile._props.highlightedEdgeIndex].isShared()) {
+	return
+    }
+
+    // need to reject if the adjacent tile overlaps with any existing tile
 
     var adjacentTile = this._resolveCurrentAdjacentTilePreset(   tile.tileType,
 								 tile.polygon.vertices, 
