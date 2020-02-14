@@ -499,6 +499,8 @@ IKRS.GirihCanvasHandler.prototype.addTile = function( tile ) {
 		    highlightedEdgeIndex:  -1,
 		  };
     this.girih.addTile( tile );
+    // update the connections
+    this.girih.buildConnectors( this.girih.tiles); // slow but does job for now
 };
 
 
@@ -1363,8 +1365,8 @@ IKRS.GirihCanvasHandler.prototype._drawTiles = function() {
             this.drawProperties.drawStrappingType === "colored")) {
 	if (this.lastTileCount !== this.girih.tiles.length ||
             this.lastDrawStrappingType !== this.drawProperties.drawStrappingType) { // when tile added or deleted
-	    this.girih.buildTheConnectors( this.girih.tiles);
-	    this.girih.findTheConnections( this.girih.tiles);
+	    this.girih.buildConnectors( this.girih.tiles);
+	    this.girih.findConnections( this.girih.tiles);
 	    this.girih.findAllChains( this.girih.tiles);
 	    this.lastTileCount = this.girih.tiles.length;
 	}

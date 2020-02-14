@@ -37,9 +37,9 @@ IKRS.Girih.prototype._minimizeTiles = function ( tiles) {
 	// get the essense of the tile position
 	var tileType = tiles [i].tileType;
 	var size =     tiles [i].size;
-	var x =        tiles [i].position.x;
-	var y =        tiles [i].position.y;
-	var angle =    tiles [i].angle;
+	var x =        this.round(tiles [i].position.x, 3);
+	var y =        this.round(tiles [i].position.y, 3);
+	var angle =    this.round(tiles [i].angle, 3);
 
 	obj.push ({ "tileType": tileType,
 		    "size": size,
@@ -108,7 +108,7 @@ IKRS.Girih.prototype.setTilesJSON = function( jsonFile) {
 }
 
 
-IKRS.Girih.prototype.buildTheConnectors = function( tiles) {
+IKRS.Girih.prototype.buildConnectors = function( tiles) {
     console.log ('build the connectors');
     console.log("Number of tiles:"+ tiles.length)
     for (var i=0; i<tiles.length; i++) { // all tiles
@@ -136,7 +136,7 @@ IKRS.Girih.prototype.buildTheConnectors = function( tiles) {
     }
 }
 
-IKRS.Girih.prototype.findTheConnections = function( tiles, chains) {
+IKRS.Girih.prototype.findConnections = function( tiles, chains) {
     console.log ('find the connections');
     // find connectors at the same position
     for (var i=0; i<tiles.length; i++) {

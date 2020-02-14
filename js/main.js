@@ -159,12 +159,123 @@ function _makeTest_Octagon( tileSize ) {
 }
 
 function increaseZoom() {
-    girihCanvasHandler.zoomFactor *= 1.2;
+    /*
+let's try to figure this out
+Propotion = (centerx -drawOffset1)/width of image)
+propotion =  (centerx -drawOffset2)/(1.2* width of image)
+
+1.2* (centerx -drawOffset1) = (centerx -drawOffset2)
+(1.2-1)* centerx = drawOffset1 -drawOffset2
+drawOffset2 = drawOffset1 -.2*centerx
+
+really need the image width, not the screen width
+try again
+
+point is to stay where it is
+point is determined by its position and drawOffset
+in zoom postion will move from origin by 1.2 * position
+draw offset should decrease to compensate
+
+second problem is that the origin move from the center as well
+this distance is the positional coordinate of the center
+This is tied to the zoom factor, so
+drawOffset + center position*zoom factor = canvas center
+
+for starting out
+center position = canvas center -draw offset
+zooming in:
+center position = (canvas center -drawOffset) /zoom factor
+
+solving for change in draw offset
+center position1 = (canvas center -drawOffset1) /zoom factor1
+center position2 = (canvas center -drawOffset2) /zoom factor2
+(canvas center -drawOffset2) /zoom factor2 =  (canvas center -drawOffset1) /zoom factor
+let zoom factor 1 be 1 and zoom factor 2 be 1.2
+
+
+
+position1 + drawOffset2 = center
+1.2* postion1 + x * drawOffset1 = center
+x = (center - 1.2* position1) /drawOffset1
+*/
+    var index     = girihCanvasHandler._locateSelectedTile();
+    if( index == -1 ) { // no tile selected, use center
+        var ax = (girihCanvasHandler.canvasCenter.x - girihCanvasHandler.drawOffset.x ) / girihCanvasHandler.zoomFactor;
+        girihCanvasHandler.drawOffset.x = girihCanvasHandler.drawOffset.x  - 0.2 * girihCanvasHandler.zoomFactor * ax
+        var ay = (girihCanvasHandler.canvasCenter.y - girihCanvasHandler.drawOffset.y ) / girihCanvasHandler.zoomFactor
+        girihCanvasHandler.drawOffset.y = girihCanvasHandler.drawOffset.y  - 0.2 * girihCanvasHandler.zoomFactor * ay
+
+        girihCanvasHandler.zoomFactor = 1.2 * girihCanvasHandler.zoomFactor
+/*
+        var factor = girihCanvasHandler.canvasCenter.x - 1.2* tmpCenter.x;
+        girihCanvasHandler.drawOffset.x = factor * girihCanvasHandler.drawOffset.x;
+        factor = girihCanvasHandler.canvasCenter.y - 1.2* tmpCenter.y;
+        girihCanvasHandler.drawOffset.y = factor * girihCanvasHandler.drawOffset.y;
+*/
+    } else {
+        //girihCanvasHandler.drawOffset.x = girihCanvasHandler.drawOffset.x / 1.2;
+        //             girihCanvasHandler.canvasCenter.x -
+        //girihCanvasHandler.drawOffset.x = girihCanvasHandler.drawOffset.x / 1.2;
+        //girihCanvasHandler.drawOffset.y = girihCanvasHandler.drawOffset.y / 1.2;
+
+        //girihCanvasHandler.drawOffset.x = girihCanvasHandler.drawOffset.x -
+        //                                  0.2* girihCanvasHandler.canvasCenter.x;
+        //girihCanvasHandler.drawOffset.y = girihCanvasHandler.drawOffset.y -
+        //                                  0.2* girihCanvasHandler.canvasCenter.y;
+
+        girihCanvasHandler.drawOffset.x = girihCanvasHandler.drawOffset.x  -
+                0.2 * girihCanvasHandler.zoomFactor * girihCanvasHandler.girih.tiles[ index].position.x;
+        girihCanvasHandler.drawOffset.y = girihCanvasHandler.drawOffset.y  -
+                0.2 * girihCanvasHandler.zoomFactor * girihCanvasHandler.girih.tiles[ index].position.y;
+        girihCanvasHandler.zoomFactor *= 1.2;
+
+//        var ax = (girihCanvasHandler.canvasCenter.x - girihCanvasHandler.drawOffset.x ) / girihCanvasHandler.zoomFactor;
+//        girihCanvasHandler.drawOffset.x = girihCanvasHandler.drawOffset.x -
+//                                          0.2* girihCanvasHandler.canvasCenter.x;
+//        girihCanvasHandler.drawOffset.y = girihCanvasHandler.drawOffset.y -
+//                                          0.2* girihCanvasHandler.canvasCenter.y;
+    }
+console.log( "zoom: " + girihCanvasHandler.zoomFactor)
     redrawGirih();
 }
 
 function decreaseZoom() {
-    girihCanvasHandler.zoomFactor /= 1.2;
+    /*
+let's try to figure this out
+Propotion = (centerx -drawOffset1)/width of image)
+propotion =  (centerx -drawOffset2)/(width of image/1.2)
+
+(centerx -drawOffset1)/1.2 = (centerx -drawOffset2)
+(1/1.2-1)* centerx = drawOffset1 -drawOffset2
+(1/1.2-1.2/1.2)* centerx = drawOffset1 -drawOffset2
+(-0.2/1.2)* centerx = drawOffset1 -drawOffset2
+drawOffset2 = drawOffset1 +.2/1.2*centerx
+*/
+    var index     = girihCanvasHandler._locateSelectedTile();
+    if( index == -1 ) { // no tile selected, use center
+        var ax = (girihCanvasHandler.canvasCenter.x - girihCanvasHandler.drawOffset.x ) / girihCanvasHandler.zoomFactor;
+        girihCanvasHandler.drawOffset.x = girihCanvasHandler.drawOffset.x  + 0.2/1.2 * girihCanvasHandler.zoomFactor * ax
+        var ay = (girihCanvasHandler.canvasCenter.y - girihCanvasHandler.drawOffset.y ) / girihCanvasHandler.zoomFactor
+        girihCanvasHandler.drawOffset.y = girihCanvasHandler.drawOffset.y  + 0.2/1.2 * girihCanvasHandler.zoomFactor * ay
+
+        girihCanvasHandler.zoomFactor = girihCanvasHandler.zoomFactor / 1.2
+
+console.log( "zoom: " + girihCanvasHandler.zoomFactor)
+
+
+    } else {
+        girihCanvasHandler.drawOffset.x = girihCanvasHandler.drawOffset.x  +
+                0.2/1.2 * girihCanvasHandler.zoomFactor * girihCanvasHandler.girih.tiles[ index].position.x;
+        girihCanvasHandler.drawOffset.y = girihCanvasHandler.drawOffset.y  +
+                0.2/1.2 * girihCanvasHandler.zoomFactor * girihCanvasHandler.girih.tiles[ index].position.y;
+
+        girihCanvasHandler.zoomFactor /= 1.2;
+
+        //girihCanvasHandler.drawOffset.x = girihCanvasHandler.drawOffset.x +
+        //                                  0.167* girihCanvasHandler.canvasCenter.x;
+        //girihCanvasHandler.drawOffset.y = girihCanvasHandler.drawOffset.y +
+        //                                  0.167* girihCanvasHandler.canvasCenter.y;
+    }
     redrawGirih();
 }
 
@@ -210,20 +321,6 @@ function rotateByAmount( amount ) {
                  (girihCanvasHandler.canvasCenter.y -
                  girihCanvasHandler.drawOffset.y) / girihCanvasHandler.zoomFactor);
 console.log( "canvasCenter="+ girihCanvasHandler.canvasCenter.toString() +" drawOffset="+ girihCanvasHandler.drawOffset.toString() +" tempCenter="+ tmpCenter.toString())
-/*
-   --->             drawOffset
-   ---------->      canvasCenter
-   ---------->      canvasCenter -(drawOffset - canvasCenter) // for  drawOffset = 0
-          <---
-          ------>j
-   ---------->      canvasCenter -(drawOffset - canvasCenter) // for  drawOffset = 40
-<-------------
----------->
-
-if dO = 200 and cC = 512
-  left edge of screen is -200
-  center is now at 312
-*/
 
 	    for( var i = 0; i < girihCanvasHandler.girih.tiles.length; i++ ) {
 	        var tmpTile = girihCanvasHandler.girih.tiles[i];
@@ -295,40 +392,40 @@ function redrawGirih() {
 }
 
 /*
-function DEBUG( msg ) {
-    this.document.getElementById("debug").innerHTML = msg;
-}
-*/
+   function DEBUG( msg ) {
+   this.document.getElementById("debug").innerHTML = msg;
+   }
+ */
 
 window.addEventListener( "load", onLoad );
 
 
 
 function exportSVG() {
-    var svg = girihCanvasHandler.getSVG( { indent: "" }, // options
-					 null            // style
-				       );
-				      
-    
-    downloadFilename = document.getElementById( "downloadFilename");
-    saveAs(
-	new Blob([svg], {type : "image/svg+xml"}),
-	(downloadFilename.value || downloadFilename.placeholder) + ".svg"
-    );
-    return false;
+	var svg = girihCanvasHandler.getSVG( { indent: "" }, // options
+			null            // style
+			);
+
+
+	downloadFilename = document.getElementById( "downloadFilename");
+	saveAs(
+			new Blob([svg], {type : "image/svg+xml"}),
+			(downloadFilename.value || downloadFilename.placeholder) + ".svg"
+	      );
+	return false;
 }
 
 function exportTiles() {
-    var tilesJSON = girihCanvasHandler.girih.getTilesJSON()
+	var tilesJSON = girihCanvasHandler.girih.getTilesJSON()
 
-    downloadFilename = document.getElementById( "downloadFilename");
-    saveAs(
-        new Blob([tilesJSON], {type : "application/json"}),
-        (downloadFilename.value || downloadFilename.placeholder) + ".json"
-    );
-    console.log ("exportTiles fired!");
+		downloadFilename = document.getElementById( "downloadFilename");
+	saveAs(
+			new Blob([tilesJSON], {type : "application/json"}),
+			(downloadFilename.value || downloadFilename.placeholder) + ".json"
+	      );
+	console.log ("exportTiles fired!");
 
-    return false;
+	return false;
 }
 
 //TEST SUPPORT
@@ -338,60 +435,60 @@ function exportTiles() {
 //END TEST SUPPORT
 
 class ObjectCounter {
-    arrays;
-    arrayElements;
-    functions;
-    objects;
-    other;
-    all;
+	arrays;
+	arrayElements;
+	functions;
+	objects;
+	other;
+	all;
 
-    constructor () {
-         this.arrays = 0;
-         this.arrayElements = 0;
-         this.functions = 0;
-         this.objects = 0;
-         this.other = 0;
-         this.all = 0;
-    }
+	constructor () {
+		this.arrays = 0;
+		this.arrayElements = 0;
+		this.functions = 0;
+		this.objects = 0;
+		this.other = 0;
+		this.all = 0;
+	}
 }
 
 
 function importTiles(e) {
-    var file = e.target.files[0];
-    if (!file) {
-	console.log( "importTiles bad file!")
-	return;
-    }
-    var reader = new FileReader();
-    reader.onload = function(e) {
-	var contents = e.target.result;
-	girihCanvasHandler.girih = new IKRS.Girih // not sure if other parameters are lost by doing this, but want to clear girihCanvasHandler.girih.tiles.
-	girihCanvasHandler.girih.setTilesJSON( contents);
-	redrawGirih();
-    };
-    reader.readAsText(file);
+	var file = e.target.files[0];
+	if (!file) {
+		console.log( "importTiles bad file!")
+			return;
+	}
+	var reader = new FileReader();
+	reader.onload = function(e) {
+		var contents = e.target.result;
+		girihCanvasHandler.girih = new IKRS.Girih // not sure if other parameters are lost by doing this, but want to clear girihCanvasHandler.girih.tiles.
+			girihCanvasHandler.girih.setTilesJSON( contents);
+		redrawGirih();
+	};
+	reader.readAsText(file);
 }
 
 /* now the exercise is to walk the saved object to find the base polygons tiles.
    Create the new base polygon tile (and internal polygons) and add to a new object array
    see if the created object has similar structure as the original
-function something () {
-    findStructure("", existingGirihObject, 0);
-    break structure of existingGirihObject into a savable object
-    convert saveable object to JSON file
-    convert JSON file to loadedGirihObject
-    converted loadedGirihObject to filledOutGirihObject
-    findStructure("", filledOutGirihObject, 0);
+   function something () {
+   findStructure("", existingGirihObject, 0);
+   break structure of existingGirihObject into a savable object
+   convert saveable object to JSON file
+   convert JSON file to loadedGirihObject
+   converted loadedGirihObject to filledOutGirihObject
+   findStructure("", filledOutGirihObject, 0);
 
-function findStructure ( obj, limit) {
-    for each object in given object
-        findStructure( obj1, limit)
-    for each array in given object
-        sumarize # of elements and structure of first element
-        what is in each element, what is in the overall elements ... min max total
+   function findStructure ( obj, limit) {
+   for each object in given object
+   findStructure( obj1, limit)
+   for each array in given object
+   sumarize # of elements and structure of first element
+   what is in each element, what is in the overall elements ... min max total
 
-}
-*/
+   }
+ */
 
 
 
@@ -399,40 +496,40 @@ function findStructure ( obj, limit) {
 // this walks down an object tree and lists the locations of all functions
 // these functions must be replaced when the JSON is loaded....
 function findFunctions( basename, obj, count) {
-    var entryCount = count.all
-    count.all = count.all + 1;
-    if (typeof obj === "object") {
-        if (Array.isArray( obj)) {
-            //console.log( "is an array")
-            count.arrays = count.arrays + 1;
-            for (var i=0; i< obj.length; i++) {
-                //console.log( "findFunctions (" + basename + "[" + i + "]")
-                count = findFunctions ( basename + "[" + i + "]", obj[ i], count)
-                count.arrayElements = count.arrayElements + 1;
-            }
-        } else {
-            //console.log( "is an object")
-            for (var key in obj) {
-                //console.log( "findFunctions (" + basename + "." + key)
-                count = findFunctions( basename + "." + key, obj[ key], count)
-                count.objects = count.objects + 1;
-            }
-        }
-    } else if (typeof obj === "function") {
-        count.functions = count.functions + 1;
-        //console.log( basename +": function")
-    } else {
-        count.other = count.other + 1;
-        //console.log( "is something else: " + typeof obj);
-    }
-    if (entryCount === 0) {
-        console.log( "  processed "+ count.all + " items, arrays:" + count.arrays +
-                " array elements:" + count.arrayElements + " objects:" + count.objects +
-                " functions:" + count.functions + " other:" + count.other)
-    }
-    return count
+	var entryCount = count.all
+		count.all = count.all + 1;
+	if (typeof obj === "object") {
+		if (Array.isArray( obj)) {
+			//console.log( "is an array")
+			count.arrays = count.arrays + 1;
+			for (var i=0; i< obj.length; i++) {
+				//console.log( "findFunctions (" + basename + "[" + i + "]")
+				count = findFunctions ( basename + "[" + i + "]", obj[ i], count)
+					count.arrayElements = count.arrayElements + 1;
+			}
+		} else {
+			//console.log( "is an object")
+			for (var key in obj) {
+				//console.log( "findFunctions (" + basename + "." + key)
+				count = findFunctions( basename + "." + key, obj[ key], count)
+					count.objects = count.objects + 1;
+			}
+		}
+	} else if (typeof obj === "function") {
+		count.functions = count.functions + 1;
+		//console.log( basename +": function")
+	} else {
+		count.other = count.other + 1;
+		//console.log( "is something else: " + typeof obj);
+	}
+	if (entryCount === 0) {
+		console.log( "  processed "+ count.all + " items, arrays:" + count.arrays +
+				" array elements:" + count.arrayElements + " objects:" + count.objects +
+				" functions:" + count.functions + " other:" + count.other)
+	}
+	return count
 };
 
 window.onload = function(){
-    document.getElementById("importButton").addEventListener('change', importTiles, false);
+	document.getElementById("importButton").addEventListener('change', importTiles, false);
 };
