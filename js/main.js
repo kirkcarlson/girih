@@ -361,8 +361,83 @@ console.log( "canvasCenter="+ girihCanvasHandler.canvasCenter.toString() +" draw
     }
     */
     redrawGirih();
-}
+};
 
+function moreStrapGap () {
+    girihCanvasHandler.drawProperties.strappingGap += 0.25;
+    this.document.getElementById("strapGap").value =
+           girihCanvasHandler.drawProperties.strappingGap;
+    redrawGirih();
+    return false;
+};
+
+function lessStrapGap () {
+    girihCanvasHandler.drawProperties.strappingGap -= 0.25;
+    if (girihCanvasHandler.drawProperties.strappingGap <0)
+        girihCanvasHandler.drawProperties.strappingGap = 0;
+    this.document.getElementById("strapGap").value =
+            girihCanvasHandler.drawProperties.strappingGap;
+    redrawGirih();
+    return false;
+};
+
+
+function moreStrapWidth () {
+    girihCanvasHandler.drawProperties.strappingWidth += 0.25;
+    this.document.getElementById("strapWidth").value =
+            girihCanvasHandler.drawProperties.strappingWidth;
+    redrawGirih();
+};
+
+
+function lessStrapWidth () {
+    girihCanvasHandler.drawProperties.strappingWidth -= 0.25;
+    if (girihCanvasHandler.drawProperties.strappingWidth <0)
+        girihCanvasHandler.drawProperties.strappingWidth = 0;
+    this.document.getElementById("strapWidth").value =
+            girihCanvasHandler.drawProperties.strappingWidth;
+    redrawGirih();
+};
+
+
+function moreStrapStrokeWidth () {
+    girihCanvasHandler.drawProperties.strappingStrokeWidth += 0.25;
+    this.document.getElementById("strapStrokeWidth").value =
+            girihCanvasHandler.drawProperties.strappingStrokeWidth;
+    redrawGirih();
+};
+
+
+function lessStrapStrokeWidth () {
+    girihCanvasHandler.drawProperties.strappingStrokeWidth -= 0.25;
+    if (girihCanvasHandler.drawProperties.strappingStrokeWidth <0)
+        girihCanvasHandler.drawProperties.strappingStrokeWidth = 0;
+    this.document.getElementById("strapStrokeWidth").value =
+            girihCanvasHandler.drawProperties.strappingStrokeWidth;
+    redrawGirih();
+};
+
+
+function morePixelFactor () {
+    girihCanvasHandler.drawProperties.strappingPixelFactor += 0.25;
+    this.document.getElementById("pixelFactor").value =
+            girihCanvasHandler.drawProperties.strappingPixelFactor;
+    redrawGirih();
+};
+
+
+function lessPixelFactor () {
+    girihCanvasHandler.drawProperties.strappingPixelFactor -= 0.25;
+    if (girihCanvasHandler.drawProperties.strappingPixelFactor <0.25)
+        girihCanvasHandler.drawProperties.strappingStrokeWidth = 0.25;
+    this.document.getElementById("strapPixelFactor").value =
+            girihCanvasHandler.drawProperties.strappingPixelFactor;
+    redrawGirih();
+};
+
+
+console.log( "mSG: " + typeof moreStrapGap);
+console.log( "mSG: " + moreStrapGap.toString());
 function redrawGirih() {
 
     // Fetch the form settings and apply them to the handler's draw options
@@ -373,11 +448,11 @@ function redrawGirih() {
     // custom/default texture_type affects only the image file used
 
     girihCanvasHandler.getDrawProperties().drawPolygonColor      = document.forms["girih_form"].elements["draw_polygon_color"].checked;
-    girihCanvasHandler.getDrawProperties().polygonColorType  = document.forms["girih_form"].elements["polygon_color_type"].value;
+    girihCanvasHandler.getDrawProperties().polygonColorType      = document.forms["girih_form"].elements["polygon_color_type"].value;
 
     girihCanvasHandler.getDrawProperties().drawInnerPolygons     = document.forms["girih_form"].elements["draw_inner_polygons"].checked;
-    girihCanvasHandler.getDrawProperties().outerRandomColorFill      = document.forms["girih_form"].elements["outer_random_color_fill"].checked;
-    girihCanvasHandler.getDrawProperties().innerRandomColorFill      = document.forms["girih_form"].elements["inner_random_color_fill"].checked;
+    girihCanvasHandler.getDrawProperties().outerRandomColorFill  = document.forms["girih_form"].elements["outer_random_color_fill"].checked;
+    girihCanvasHandler.getDrawProperties().innerRandomColorFill  = document.forms["girih_form"].elements["inner_random_color_fill"].checked;
 
     girihCanvasHandler.getDrawProperties().drawStrapping         = document.forms["girih_form"].elements["draw_strapping"].checked;
     girihCanvasHandler.getDrawProperties().drawStrappingType     = document.forms["girih_form"].elements["draw_strapping_type"].value;
@@ -386,9 +461,26 @@ function redrawGirih() {
     girihCanvasHandler.getProperties().allowPenroseTile          = document.forms["girih_form"].elements["allow_penrose_tile"].checked;
     //girihCanvasHandler.getProperties().drawPenroseCenterPolygon  = document.forms["girih_form"].elements["draw_penrose_center_polygon"].checked;
 
+    this.document.getElementById("strapGap").value =
+            girihCanvasHandler.drawProperties.strappingGap;
+    this.document.getElementById("strapWidth").value =
+            girihCanvasHandler.drawProperties.strappingWidth;
+    this.document.getElementById("strapStrokeWidth").value =
+            girihCanvasHandler.drawProperties.strappingStrokeWidth;
+    this.document.getElementById("pixelFactor").value =
+            girihCanvasHandler.drawProperties.strappingPixelFactor;
+
+    girihCanvasHandler.getDrawProperties().strappingGap          = parseFloat(document.forms["girih_form"].elements["strapGap"].value);
+    girihCanvasHandler.getDrawProperties().strappingWidth        = parseFloat(document.forms["girih_form"].elements["strapWidth"].value);
+    girihCanvasHandler.getDrawProperties().strappingStrokeWidth  = parseFloat(document.forms["girih_form"].elements["strapStrokeWidth"].value);
+    girihCanvasHandler.getDrawProperties().strappingPixelFactor  = parseFloat(document.forms["girih_form"].elements["pixelFactor"].value);
 
     // Then trigger redraw
     girihCanvasHandler.redraw();
+console.log( "strapGap: " + girihCanvasHandler.getDrawProperties().strappingGap);
+console.log( "strapWidth: " + girihCanvasHandler.getDrawProperties().strappingWidth);
+console.log( "strapStrokeWidth: " + girihCanvasHandler.getDrawProperties().strappingStrokeWidth);
+console.log( "strapPixelFactor: " + girihCanvasHandler.getDrawProperties().strappingPixelFactor);
 }
 
 /*
@@ -533,3 +625,4 @@ function findFunctions( basename, obj, count) {
 window.onload = function(){
 	document.getElementById("importButton").addEventListener('change', importTiles, false);
 };
+console.log( "mSG: " + typeof moreStrapGap);

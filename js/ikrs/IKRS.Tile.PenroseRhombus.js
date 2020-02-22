@@ -185,6 +185,7 @@ IKRS.GirihCanvasHandler.prototype.drawFancyPenroseRhombusStrapping = function(ti
     var capGap = this.capGap();
     var strapWidth = this.drawProperties.strappingWidth;
     const shortSegmentLength = 0.163 * tile.size;
+    const mediumSegmentLength = 0.2625 * tile.size;
     const longSegmentLength = 0.587 * tile.size;
     //color( lineColor)
     //width( lineWidth)
@@ -201,7 +202,7 @@ IKRS.GirihCanvasHandler.prototype.drawFancyPenroseRhombusStrapping = function(ti
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
         this.gline( shortSegmentLength, strapWidth, 7* piTenths, 4* piTenths, false, false, chainColor)
         this.moveToaD( 2* piTenths, 0)
-        this.gline( shortSegmentLength - capGap, strapWidth, 6* piTenths, 4* piTenths, false, true, chainColor)
+        this.gline( shortSegmentLength - capGap, strapWidth, 4* piTenths, 4* piTenths, false, true, chainColor)
         this.moveToaD( 0, capGap)
         this.moveToaD( 6* piTenths, 0)
         //endGroup()
@@ -210,9 +211,11 @@ IKRS.GirihCanvasHandler.prototype.drawFancyPenroseRhombusStrapping = function(ti
         var chainNumber = tile.connectors[ lineNumber].CWchainID
         var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
-        this.gline( longSegmentLength, strapWidth, 7* piTenths, 6* piTenths, false, false, chainColor)
+        this.gline( mediumSegmentLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true, chainColor)
+        this.moveToaD( 0, 2* capGap); // capGap on each side of crossed segment
+        this.gline( longSegmentLength - mediumSegmentLength - capGap, strapWidth, 6* piTenths, 7* piTenths, true, false, chainColor)
         this.moveToaD( -4* piTenths, 0)
-        this.gline( longSegmentLength - capGap, strapWidth, 6* piTenths, 4* piTenths, false, true, chainColor)
+        this.gline( longSegmentLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true, chainColor)
         this.moveToaD( 0, capGap)
         this.moveToaD( 6* piTenths, 0)
         lineNumber = lineNumber + 1

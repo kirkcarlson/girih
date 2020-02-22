@@ -58,8 +58,9 @@ IKRS.GirihCanvasHandler = function( imageObject ) {
 				       strappingFillColor:         "#ffff00",
 				       boundingBoxColor:           "#c8c8ff",
 				       strappingWidth:             3, //in pixels
-				       strappingStrokeWidth:       0, // in pixels
-				       strappingGap:               0.5 // in pixels
+				       strappingStrokeWidth:       0.5, // in pixels
+				       strappingGap:               1, // in pixels
+				       strappingPixelFactor:       7 // ratio of line width pixels to CSS pixels
 				     };
     this.properties                = { allowPenroseTile:           true,
 				       drawPenroseCenterPolygon:   true
@@ -829,7 +830,8 @@ IKRS.GirihCanvasHandler.prototype.moveToaD = function ( ang, len) {
  *************************************************************************/
 IKRS.GirihCanvasHandler.prototype.capGap = function () {
     return this.drawProperties.strappingWidth/2 +
-           this.drawProperties.strappingStrokeWidth +
+           this.drawProperties.strappingStrokeWidth /
+                   this.drawProperties.strappingPixelFactor +
            this.drawProperties.strappingGap;
 }
 
@@ -885,6 +887,7 @@ IKRS.GirihCanvasHandler.prototype.gline = function( distance, spacing, startAngl
 //svgAttribute ( 'class="gstroke"')
     this.context.beginPath();
     if (startCap) {
+        this.lineToaD( 0,0); // should not be necessary
         this.lineToaD( startAngle, startDiag/2);
     } else {
         this.moveToaD( startAngle, startDiag/2);

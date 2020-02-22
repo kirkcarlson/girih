@@ -68,7 +68,8 @@ original order in case alphbetical does not work
 </head>
 
 <body>
-    <script src="js/main.js"language="Javascript" type="text/javascript"></script>
+    <script src="js/main.js" language="Javascript" type="text/javascript"></script>
+<script>console.log("body mSG:" + typeof moreStrapGap);</script>
 <div id="container">
   <!-- changing canvas size affects polygon proportions... -->
   <canvas id="girih_canvas"  width="1024" height="768" class="tooltip" title="Hover over existing tiles to see possible adjacent tiles.
@@ -119,8 +120,9 @@ Press [e] to save an image file."></canvas>
         &nbsp;&nbsp;&nbsp;<input type="checkbox" name="inner_random_color_fill" onclick="redrawGirih();" />Random Color Inner Facets<br/>
       </label>
       <label>
-        <input type="checkbox" name="draw_strapping" onclick="redrawGirih();" checked="checked" /> Draw Strapping</br>
+        <input type="checkbox" name="draw_strapping" onclick="redrawGirih();" checked="checked" /> Draw Strapping
       </label>
+      <br/>
       <label>
         &nbsp;&nbsp;&nbsp;<input type="radio" name="draw_strapping_type" id="draw_strapping_type_basic"   onclick="redrawGirih();" value="basic" />Basic Strapping<br/>
       </label>
@@ -128,8 +130,41 @@ Press [e] to save an image file."></canvas>
         &nbsp;&nbsp;&nbsp;<input type="radio" name="draw_strapping_type" id="draw_strapping_type_fancy"   onclick="redrawGirih();" value="fancy" checked="checked" />Fancy Strapping<br/>
       </label>
       <label>
-        &nbsp;&nbsp;&nbsp;<input type="radio" name="draw_strapping_type" id="draw_strapping_type_colored" onclick="redrawGirih();" value="colored" />Color Chains Randomly<br/>
+        &nbsp;&nbsp;&nbsp;<input type="radio" name="draw_strapping_type" id="draw_strapping_type_colored" onclick="redrawGirih();" value="colored" />Random Color Chains<br/>
       </label>
+        <div class="buttonGroup">
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strapping Gap
+        <div class="floatRight">
+<script>console.log("body mSG:" + typeof moreStrapGap);</script>
+          <button id="moreStrapGapButton" onclick="moreStrapGap();return false;">+</button>
+          <input type="text" id="strapGap">
+          <button id="lessStrapGapButton" onclick="lessStrapGap();return false;">&ndash;</button>
+        </div>
+        </div>
+        <div class="buttonGroup">
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strapping Width
+        <div class="floatRight">
+          <button id="moreStrapWidthButton" onclick="moreStrapWidth();return false;">+</button>
+          <input type="text" id="strapWidth">
+          <button id="lessStrapWidthButton" onclick="lessStrapWidth();return false;">&ndash;</button>
+        </div>
+        </div>
+        <div class="buttonGroup">
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Line Width
+        <div class="floatRight">
+          <button id="moreStrapStrokeWidthButton" onclick="moreStrapStrokeWidth();return false;">+</button>
+          <input type="text" id="strapStrokeWidth">
+          <button id="lessStrapStrokeWidthButton" onclick="lessStrapStrokeWidth();return false;">&ndash;</button>
+        </div>
+        </div>
+        <div class="buttonGroup">
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Pixel Factor
+          <div class="floatRight">
+            <button id="morePixelFactorButton" onclick="morePixelFactor();return false;">+</button>
+            <input type="text" id="pixelFactor">
+            <button id="lessPixelFactorButton" onclick="lessPixelFactor();return false;">&ndash;</button>
+          </div>
+        </div><!--end ButtonGroup -->
       <br/>
       <label>
         <input type="checkbox" name="allow_penrose_tile" onclick="redrawGirih()" checked="checked" /> Allow Penrose Tile</br>
@@ -143,10 +178,10 @@ Press [e] to save an image file."></canvas>
     <div id="panAndZoom">
       <span class="navLabel">Navigation Controls</br></span>
       <div id="directionKeys">
-        <button id="upKey" onclick="moveUp()";">&uarr;</button>
-        <button id="downKey" onclick="moveDown()";">&darr;</button>
-        <button id="rightKey" onclick="moveRight()";">&rarr;</button>
-        <button id="leftKey" onclick="moveLeft()";">&larr;</button>
+        <button id="upKey" onclick="moveUp();">&uarr;</button>
+        <button id="downKey" onclick="moveDown();">&darr;</button>
+        <button id="rightKey" onclick="moveRight();">&rarr;</button>
+        <button id="leftKey" onclick="moveLeft();">&larr;</button>
       </div>
       <div id="zoomKeys">
         <button id="zoomInKey" onclick="increaseZoom();">Zoom +</button>

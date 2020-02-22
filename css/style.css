@@ -120,6 +120,50 @@ button {
     margin: 3pt;
     text-align:center;
 }
+#moreStrapGapButton, #moreStrapWidthButton, #moreStrapStrokeWidthButton, #morePixelFactorButton {
+    margin-right:0;
+    margin-top:0;
+    margin-bottom:0;
+}
+#lessStrapGapButton, #lessStrapWidthButton, #lessStrapStrokeWidthButton, #lessPixelFactorButton {
+    margin-left:0;
+    margin-top:0;
+    margin-bottom:0;
+}
+#lessStrapGapButton, #lessStrapWidthButton,
+#lessStrapStrokeWidthButton, #lessPixelFactorButton,
+#moreStrapGapButton, #moreStrapWidthButton,
+#moreStrapStrokeWidthButton, #morePixelFactorButton,
+#strapGap, #strapWidth, #strapStrokeWidth, #pixelFactor {
+    font-size:.8em;
+}
+.buttonGroup {
+    display:block;
+    float:left;
+    position:relative;
+    width:100%;
+}
+.buttonGroup::after {
+    content: "";
+    clear: both;
+    display:table;
+}
+.floatRight {
+    display:inline;
+    right:0;
+    position:relative;
+    float:right;
+}
+.floatRight::after {
+    content: "";
+    clear: both;
+    display:table;
+}
+#strapGap, #strapWidth, #strapStrokeWidth, #pixelFactor {
+    width: 30px;
+    margin-right:0;
+    margin-left:0;
+}
 .fileInput{
     font-family:Arial, sans-serif;
     font-size:1.2em;

@@ -37,9 +37,9 @@ IKRS.Girih.prototype._minimizeTiles = function ( tiles) {
 	// get the essense of the tile position
 	var tileType = tiles [i].tileType;
 	var size =     tiles [i].size;
-	var x =        this.round(tiles [i].position.x, 3);
-	var y =        this.round(tiles [i].position.y, 3);
-	var angle =    this.round(tiles [i].angle, 3);
+	var x =        IKRS.Girih.round(tiles [i].position.x, 3);
+	var y =        IKRS.Girih.round(tiles [i].position.y, 3);
+	var angle =    IKRS.Girih.round(tiles [i].angle, 3);
 
 	obj.push ({ "tileType": tileType,
 		    "size": size,
@@ -124,7 +124,7 @@ IKRS.Girih.prototype.buildConnectors = function( tiles) {
     }
 
 
-    var DEBUG = true;
+    var DEBUG = false;
     // print out the connections
     if ( DEBUG) {
 	for (var i=0; i<tiles.length; i++) {
@@ -194,7 +194,7 @@ IKRS.Girih.prototype.walkChain = function( tiles, tileIndex, connectorIndex, sta
     // while connector on traversed link is shared and not looping
     connector.setChainID( CW, chainNumber);
     startLink = new IKRS.Link ( tileIndex, connectorIndex); // (tail)
-console.log( "set first ChainID connector:" + tileIndex + "," + connector.connectorIndex + " direction:" + (CW?"CW":"CCW") + " chain:"+chainNumber)
+//console.log( "set first ChainID connector:" + tileIndex + "," + connector.connectorIndex + " direction:" + (CW?"CW":"CCW") + " chain:"+chainNumber)
     connector = tile.connectors[ connector.getInternalLink( CW, tile.tileType)]; // (head)
     var looping = false
     while (connector.isShared() && !looping) { //
@@ -228,9 +228,9 @@ console.log( "set loop begin ChainID connector:" + tileIndex + "," + connector.c
     if (!connector.isShared() ) { // last link of chain..
 	var link = new IKRS.Link( tileIndex, connector.headLink( CW, tile.tileType));
 	chain.addLink( link);
-console.log ("addLink chain:"+ chainNumber + " link:" + link.toString())
+//console.log ("addLink chain:"+ chainNumber + " link:" + link.toString())
 	connector.setChainID( !CW, chainNumber);
-console.log( "set last ChainID connector:" + tileIndex + "," + connector.connectorIndex + " direction:" + (!CW?"CW":"CCW") + " chain:"+chainNumber)
+//console.log( "set last ChainID connector:" + tileIndex + "," + connector.connectorIndex + " direction:" + (!CW?"CW":"CCW") + " chain:"+chainNumber)
     } else if (looping) {
 	//var link = new IKRS.Link( tileIndex, connector.headLink( CW, tile.tileType));
 	//chain.addLink( link);
