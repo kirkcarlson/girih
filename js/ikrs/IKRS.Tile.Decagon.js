@@ -8,10 +8,10 @@
 
 
 IKRS.Tile.Decagon = function( size, position, angle, fillColor ) {
-    
+
     IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_DECAGON );
-    
-    // Init the actual decahedron shape with the passed size   
+
+    // Init the actual decahedron shape with the passed size
     var pointA = new IKRS.Point2(0,0);
     var pointB = pointA;
     this._addVertex( pointB );
@@ -27,18 +27,25 @@ IKRS.Tile.Decagon = function( size, position, angle, fillColor ) {
 
     // Move to center
     var bounds = IKRS.BoundingBox2.computeFromPoints( this.polygon.vertices );
-    var move   = new IKRS.Point2( size/2.0, 
+    var move   = new IKRS.Point2( size/2.0,
 				  -bounds.getHeight()/2.0
 				);
     for( var i = 0; i < this.polygon.vertices.length; i++ ) {
-	
+
 	this.polygon.vertices[i].add( move );
-		
+
     }
 
     this.faces = [];
     for (var i=0; i<10; i++) {
-	this.faces.push( new IKRS.Face( -4* piTenths, 2* piTenths, 1, 6* piTenths, 1/(2* Math.sin(piTenths))));
+        this.faces.push( new IKRS.Face(
+                /*centralAngle:*/       -4* piTenths,
+                /*angleToNextVertice:*/ 2* piTenths,
+                /*lengthCoefficient:*/  1,
+                /*angleToCenter:*/      6* piTenths,
+                /*radialCoefficient:*/  1/(2* Math.sin(piTenths)),
+                /*startAtEdgeBegin:*/   true
+        ));
     }
 
     if (fillColor !== undefined) {
@@ -61,7 +68,7 @@ IKRS.Tile.Decagon = function( size, position, angle, fillColor ) {
 
     this._buildInnerPolygons( size );
     this._buildOuterPolygons();       // Important: call AFTER inner polygons were created!
-  
+
 };
 
 
@@ -99,7 +106,7 @@ IKRS.GirihCanvasHandler.prototype.drawFancyDecagonStrapping = function(tile) {
     var lineSpacing = this.drawProperties.strappingWidth;
 
     this.lineToXY( tile.position.x, tile.position.y); // center of decagon
-    this.lineToAD( tile.angle + tile.faces[0].offsetAngle, tile.faces[0].radialCoefficient * tile.size); //corner of decagon
+    this.lineToAD( tile.angle + tile.faces[0].centralAngle, tile.faces[0].radialCoefficient * tile.size); //corner of decagon
     this.lineToaD( 6*piTenths, tile.size/2); //center of decagon side, ready for side
     this.lineToaD( 3* piTenths, 0); // ready for strapping
 
@@ -155,7 +162,7 @@ if (chainColor === undefined) {
 
 
 IKRS.Tile.Decagon.prototype._buildInnerPolygons = function( edgeLength ) {
-    
+
     var centralStar = new IKRS.Polygon();
     for( var i = 0; i < 10; i++ ) {
 	var innerTile = new IKRS.Polygon(); // [];
@@ -164,7 +171,7 @@ IKRS.Tile.Decagon.prototype._buildInnerPolygons = function( edgeLength ) {
 	var bottomPoint = topPoint.clone().multiplyScalar( 0.615 );
 	var leftPoint   = this.getVertexAt( i ).clone().multiplyScalar( 0.69 );
 	var rightPoint  = this.getVertexAt( i+1 ).clone().multiplyScalar( 0.69 );
-	
+
 	innerTile.addVertex( topPoint );
 	innerTile.addVertex( rightPoint );
 	innerTile.addVertex( bottomPoint );
@@ -175,7 +182,7 @@ IKRS.Tile.Decagon.prototype._buildInnerPolygons = function( edgeLength ) {
 	centralStar.addVertex( leftPoint.clone() );
 	centralStar.addVertex( bottomPoint.clone() );
     }
-    
+
     this.innerTilePolygons.push( centralStar );
 };
 
@@ -187,7 +194,7 @@ IKRS.Tile.Decagon.prototype._buildOuterPolygons = function( edgeLength ) {
 
 	//if( i > 0 )
 	//    continue;
-	
+
 	//window.alert( this.getInnerTilePolygonAt );
 
 	var outerTile = new IKRS.Polygon();

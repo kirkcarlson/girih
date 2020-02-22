@@ -1054,7 +1054,7 @@ IKRS.GirihCanvasHandler.prototype._drawPolygonFromPoints = function( points,
 IKRS.GirihCanvasHandler.prototype.drawPolygonFromFaces = function( tile, strokeColor) {
     this.context.beginPath();
     this.moveToXY( tile.position.x, tile.position.y)
-    this.moveToAD( tile.angle + tile.faces[0].offsetAngle, tile.faces[0].radialCoefficient * tile.size)
+    this.moveToAD( tile.angle + tile.faces[0].centralAngle, tile.faces[0].radialCoefficient * tile.size)
     this.moveToaD( Math.PI - tile.faces[0].angleToCenter, 0)
     for (var i = 0; i<  tile.faces.length; i++) {
         var face = tile.faces[ i % tile.faces.length]

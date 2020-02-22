@@ -15,7 +15,7 @@
 IKRS.TileAlign = function( tileType,
 			   edgeLength,
 			   position,
-			   angle 
+			   angle
 			 ) {
 
     IKRS.Object.call( this );
@@ -37,12 +37,12 @@ IKRS.TileAlign.prototype.createTile = function() {
     case IKRS.Girih.TILE_TYPE_IRREGULAR_HEXAGON:
 	return new IKRS.Tile.IrregularHexagon( this.edgeLength, this.position.clone(), this.angle );
     case IKRS.Girih.TILE_TYPE_RHOMBUS:
-	return new IKRS.Tile.Rhombus( this.edgeLength, this.position.clone(), this.angle );	
+	return new IKRS.Tile.Rhombus( this.edgeLength, this.position.clone(), this.angle );
     case IKRS.Girih.TILE_TYPE_BOW_TIE:
-	return new IKRS.Tile.BowTie( this.edgeLength, this.position.clone(), this.angle );	
+	return new IKRS.Tile.BowTie( this.edgeLength, this.position.clone(), this.angle );
 
     case IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS:
-	return new IKRS.Tile.PenroseRhombus( this.edgeLength, this.position.clone(), this.angle );	
+	return new IKRS.Tile.PenroseRhombus( this.edgeLength, this.position.clone(), this.angle );
 
     default:
 	throw "Cannot create tiles from unknown tile types (" + this.tileType + ").";

@@ -8,11 +8,11 @@
 
 
 IKRS.Tile.IrregularHexagon = function( size, position, angle, fillColor ) {
-    
+
     IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_IRREGULAR_HEXAGON );
 
     //window.alert( "[IrregularHexagon.init()] size=" + size + ", position=" + position.toString() + ", angle=" + angle );
-    
+
     // Init the actual decahedron shape with the passed size
     var pointA        = new IKRS.Point2(0,0);
     var pointB        = pointA;
@@ -27,7 +27,7 @@ IKRS.Tile.IrregularHexagon = function( size, position, angle, fillColor ) {
 		   72.0
 		   // 144.0
 		 ];
-    
+
     var theta = 0.0;
     for( var i = 0; i < angles.length; i++ ) {
 
@@ -37,22 +37,22 @@ IKRS.Tile.IrregularHexagon = function( size, position, angle, fillColor ) {
 	pointB = pointB.clone();
 	pointB.x -= size;
 	pointB.rotate( pointA, theta * (Math.PI/180.0) );
-	this._addVertex( pointB );	
+	this._addVertex( pointB );
 
 	if( i == 2 )
 	    oppositePoint = pointB;
 
     }
 
-    // Move to center    
+    // Move to center
     var bounds = IKRS.BoundingBox2.computeFromPoints( this.polygon.vertices );
-    var move   = new IKRS.Point2( (oppositePoint.x - startPoint.x)/2.0, 
+    var move   = new IKRS.Point2( (oppositePoint.x - startPoint.x)/2.0,
 				  (oppositePoint.y - startPoint.y)/2.0
 				);
     for( var i = 0; i < this.polygon.vertices.length; i++ ) {
-	
+
 	this.polygon.vertices[i].sub( move );
-		
+
     }
 
     this.faces = [];
@@ -61,9 +61,30 @@ IKRS.Tile.IrregularHexagon = function( size, position, angle, fillColor ) {
     var radialLong =  Math.cos(2* piTenths) + 1/2 ;//half the long width of the hexagon
     var radialAngle = Math.atan( 2* halfNarrowWidth)
     for (var i=0; i<2; i++) {
-        this.faces.push( new IKRS.Face( -2* piTenths - radialAngle, 2* piTenths, 1, Math.PI - radialAngle, radialShort));
-        this.faces.push( new IKRS.Face( -2* piTenths - radialAngle, 6* piTenths, 1, 8* piTenths,           radialLong))
-        this.faces.push( new IKRS.Face( -2* piTenths - radialAngle, 2* piTenths, 1, Math.PI - radialAngle, radialShort));
+        this.faces.push( new IKRS.Face(
+                /*centralAngle:*/       -2* piTenths - radialAngle,
+                /*angleToNextVertice:*/ 2* piTenths,
+                /*lengthCoefficient:*/  1,
+                /*angleToCenter:*/      Math.PI - radialAngle,
+                /*radialCoefficient:*/  radialShort,
+                /*startAtEdgeBegin:*/   true
+        ));
+        this.faces.push( new IKRS.Face(
+                /*centralAngle:*/       -2* piTenths - radialAngle,
+                /*angleToNextVertice:*/ 6* piTenths,
+                /*lengthCoefficient:*/  1,
+                /*angleToCenter:*/      8* piTenths,
+                /*radialCoefficient:*/  radialLong,
+                /*startAtEdgeBegin:*/   true
+        ));
+        this.faces.push( new IKRS.Face(
+                /*centralAngle:*/       -2* piTenths - radialAngle,
+                /*angleToNextVertice:*/ 2* piTenths,
+                /*lengthCoefficient:*/  1,
+                /*angleToCenter:*/      Math.PI - radialAngle,
+                /*radialCoefficient:*/  radialShort,
+                /*startAtEdgeBegin:*/   true
+        ));
     }
 
     if (fillColor !== undefined) {
@@ -130,7 +151,7 @@ IKRS.GirihCanvasHandler.prototype.drawFancyGirihHexagonStrapping = function(tile
 
     var lineNumber = 0
     this.moveToXY( tile.position.x, tile.position.y); // Center of hexagon
-    this.lineToAD( tile.angle + tile.faces[0].offsetAngle, tile.faces[0].radialCoefficient * tile.size); //at polygon vertice
+    this.lineToAD( tile.angle + tile.faces[0].centralAngle, tile.faces[0].radialCoefficient * tile.size); //at polygon vertice
     this.lineToaD( Math.PI - tile.faces[0].angleToCenter + tile.faces[0].angleToNextVertice, tile.size/2); //at midpoint
     this.moveToaD( 3* piTenths, 0); // ready to go
 
@@ -162,7 +183,7 @@ IKRS.GirihCanvasHandler.prototype.drawFancyGirihHexagonStrapping = function(tile
 
 IKRS.Tile.IrregularHexagon.prototype._buildInnerPolygons = function() {
 
-    
+
     // Connect all edges half-the-way
     var innerTile = new IKRS.Polygon(); // []
     innerTile.addVertex( this.polygon.vertices[0].scaleTowards( this.polygon.vertices[1], 0.5 ) );
@@ -171,7 +192,7 @@ IKRS.Tile.IrregularHexagon.prototype._buildInnerPolygons = function() {
     // Compute the next inner polygon vertex by the intersection of two circles
     var circleA = new IKRS.Circle( innerTile.vertices[1], innerTile.vertices[0].distanceTo(innerTile.vertices[1]) );
     var circleB = new IKRS.Circle( this.polygon.vertices[2].clone().scaleTowards( this.polygon.vertices[3], 0.5 ), circleA.radius );
-    
+
     // There is definitely an intersection
     var intersection = circleA.computeIntersectionPoints( circleB );
     // One of the two points is inside the tile, the other is outside.
@@ -186,12 +207,12 @@ IKRS.Tile.IrregularHexagon.prototype._buildInnerPolygons = function() {
     } else {
 	console.log( "intersection is null!" );
     }
-    
+
     innerTile.addVertex( circleB.center );
-    
+
     //innerTile.push( this.vertices[3].scaleTowards( this.vertices[0], 0.5 ) );
-    
-    
+
+
     var i = 3;
     // Move circles
     circleA.center = circleB.center; // innerTile[4];
@@ -214,10 +235,10 @@ IKRS.Tile.IrregularHexagon.prototype._buildInnerPolygons = function() {
     innerTile.addVertex( this.polygon.vertices[4].clone().scaleTowards( this.polygon.vertices[5], 0.5 ) );
 
 
-    
-    // Move circles  
-    circleA.center = innerTile.vertices[ innerTile.vertices.length-1 ];  
-    circleB.center = this.polygon.vertices[5].clone().scaleTowards( this.polygon.vertices[0], 0.5 );  
+
+    // Move circles
+    circleA.center = innerTile.vertices[ innerTile.vertices.length-1 ];
+    circleB.center = this.polygon.vertices[5].clone().scaleTowards( this.polygon.vertices[0], 0.5 );
     //window.alert( "circleA=" + circleA + ", circleB=" + circleB );
     intersection   = circleA.computeIntersectionPoints( circleB );
     // There are two points again (one inside, one outside the tile)
@@ -232,13 +253,11 @@ IKRS.Tile.IrregularHexagon.prototype._buildInnerPolygons = function() {
 	console.log( "intersection is null!" );
     }
     innerTile.addVertex( circleB.center );
-  
 
 
-    
-    // Move circles  
-    circleA.center = innerTile.vertices[ innerTile.vertices.length-1 ];  
-    circleB.center = innerTile.vertices[ 0 ]; 
+    // Move circles
+    circleA.center = innerTile.vertices[ innerTile.vertices.length-1 ];
+    circleB.center = innerTile.vertices[ 0 ];
     //window.alert( "circleA=" + circleA + ", circleB=" + circleB );
     intersection   = circleA.computeIntersectionPoints( circleB );
     // There are two points again (one inside, one outside the tile)
@@ -250,11 +269,11 @@ IKRS.Tile.IrregularHexagon.prototype._buildInnerPolygons = function() {
 	console.log( "intersection is null!" );
     }
     innerTile.addVertex( circleB.center );
-    
+
 
     //window.alert( innerTile.length );
 
-    this.innerTilePolygons.push( innerTile );	
+    this.innerTilePolygons.push( innerTile );
 };
 
 
@@ -273,7 +292,7 @@ IKRS.Tile.IrregularHexagon.prototype._buildOuterPolygons = function() {
 	outerTileX.addVertex( this.innerTilePolygons[0].getVertexAt(indexB).clone() );
 	outerTileX.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+1).clone() );
 	this.outerTilePolygons.push( outerTileX );
-	
+
 	// The first 'kite'
 	var outerTileY = new IKRS.Polygon();
 	outerTileY.addVertex( this.getVertexAt(indexA+2).clone() );

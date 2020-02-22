@@ -18,19 +18,19 @@
  * @param angle    number  The rotation angle.
  * @param tileType integer One of IKRS.Girih.TILE_TYPE_*.
  **/
-IKRS.Tile = function( size, 
-		      position, 
-		      angle, 
+IKRS.Tile = function( size,
+		      position,
+		      angle,
 		      tileType
 		    ) {
-    
+
     IKRS.Object.call( this );
 
     if( typeof angle == "undefined" )
 	angle = 0.0;
     if( typeof tileType == "unknown" )
 	tileType = IKRS.Girih.TILE_TYPE_UNKNOWN;
-    
+
     this.size                 = size;
     this.position             = position;
     this.angle                = angle;
@@ -40,7 +40,7 @@ IKRS.Tile = function( size,
     // An array of polygons.
     // The inner tile polygons are those that do not share edges with the outer
     // tile bounds (vertices are OK).
-    this.innerTilePolygons    = []; 
+    this.innerTilePolygons    = [];
 
     // A second array of polygons.
     // The outer tile polygons are those that make up the whole tile area
@@ -62,7 +62,7 @@ IKRS.Tile = function( size,
  * This function applies MOD to the index.
  **/
 IKRS.Tile.prototype.getInnerTilePolygonAt = function( index ) {
-    if( index < 0 ) 
+    if( index < 0 )
 	return this.innerTilePolygons[ this.innerTilePolygons.length - (Math.abs(index)%this.innerTilePolygons.length) ];
     else
 	return this.innerTilePolygons[ index % this.innerTilePolygons.length ];
@@ -72,7 +72,7 @@ IKRS.Tile.prototype.getInnerTilePolygonAt = function( index ) {
  * This function applies MOD to the index.
  **/
 IKRS.Tile.prototype.getOuterTilePolygonAt = function( index ) {
-    if( index < 0 ) 
+    if( index < 0 )
 	return this.outerTilePolygons[ this.outerTilePolygons.length - (Math.abs(index)%this.outerTilePolygons.length) ];
     else
 	return this.outerTilePolygons[ index % this.outerTilePolygons.length ];
@@ -83,14 +83,14 @@ IKRS.Tile.prototype.getTranslatedVertex = function( index ) {
     // Rotate around the absolut center!
     // (the position is applied later)
     //var vertex = this.polygon.getVertexAt( index ); // this.getVertexAt( index );
-    //return vertex.clone().rotate( IKRS.Point2.ZERO_POINT, this.angle ).add( this.position );    
+    //return vertex.clone().rotate( IKRS.Point2.ZERO_POINT, this.angle ).add( this.position );
     return this._translateVertex( this.polygon.getVertexAt(index));
 };
 
 /**
  * This is a special get* function that modulates the index and also
  * allows negative values.
- * 
+ *
  * For k >= 0:
  *  - getVertexAt( vertices.length )     == getVertexAt( 0 )
  *  - getVertexAt( vertices.length + k ) == getVertexAt( k )
@@ -100,7 +100,7 @@ IKRS.Tile.prototype.getTranslatedVertex = function( index ) {
  **/
 IKRS.Tile.prototype.getVertexAt = function( index ) {
     /*
-    if( index < 0 ) 
+    if( index < 0 )
 	return this.vertices[ this.vertices.length - (Math.abs(index)%this.vertices.length) ];
     else
 	return this.vertices[ index % this.vertices.length ];
@@ -114,14 +114,14 @@ IKRS.Tile.prototype.getVertexAt = function( index ) {
  * @param point The point to be checked.
  * @retrn true|false
  **/
-IKRS.Tile.prototype.containsPoint = function( point ) {    
+IKRS.Tile.prototype.containsPoint = function( point ) {
     // Thanks to
     // http://stackoverflow.com/questions/2212604/javascript-check-mouse-clicked-inside-the-circle-or-polygon/2212851#2212851
     var i, j = 0;
     var c = false;
     for (i = 0, j = this.polygon.vertices.length-1; i < this.polygon.vertices.length; j = i++) {
-	vertI = this.getTranslatedVertex( i ); 
-	vertJ = this.getTranslatedVertex( j ); 
+	vertI = this.getTranslatedVertex( i );
+	vertJ = this.getTranslatedVertex( j );
     	if ( ((vertI.y>point.y) != (vertJ.y>point.y)) &&
     	     (point.x < (vertJ.x-vertI.x) * (point.y-vertI.y) / (vertJ.y-vertI.y) + vertI.x) )
     	    c = !c;
@@ -155,11 +155,11 @@ IKRS.Tile.prototype.locateEdgeAtPoint = function( point,
     var resultDistance = tolerance*2;   // definitely outside the tolerance :)
     var resultIndex    = -1;
     for( var i = 0; i < this.polygon.vertices.length; i++ ) {
-	
-	var vertI = this.getTranslatedVertex( i ); 
-	var vertJ = this.getTranslatedVertex( i+1 ); // (i+1 < this.vertices.length ? i+1 : 0) ); 
 
-	// Create a point in the middle of the edge	
+	var vertI = this.getTranslatedVertex( i );
+	var vertJ = this.getTranslatedVertex( i+1 ); // (i+1 < this.vertices.length ? i+1 : 0) );
+
+	// Create a point in the middle of the edge
 	middle.x = vertI.x + (vertJ.x - vertI.x)/2.0;
 	middle.y = vertI.y + (vertJ.y - vertI.y)/2.0;
 	tmpDistance = middle.distanceTo(point);
@@ -181,7 +181,7 @@ IKRS.Tile.prototype.locateEdgeAtPoint = function( point,
  * the minimal distance (its index).
  *
  * Only forward edges (i -> i+1) are detected. If you wish backward
- * edges to be detected too, swap the point parameters pointA and 
+ * edges to be detected too, swap the point parameters pointA and
  * pointB.
  *
  * @param pointA    The first point of the desired edge.
@@ -189,14 +189,14 @@ IKRS.Tile.prototype.locateEdgeAtPoint = function( point,
  * @param tolerance The tolerance of the detection (radius).
  * @return The index of the edge's first vertex (if detected) or
  *         -1 if not edge inside the tolerance was found.
- * 
+ *
  * @pre tolerance >= 0
- **/  
+ **/
 IKRS.Tile.prototype.locateAdjacentEdge = function( pointA,
 						   pointB,
 						   tolerance
 						 ) {
-    
+
     if( this.polygon.vertices.length == 0 )
 	return -1;
 
@@ -208,20 +208,20 @@ IKRS.Tile.prototype.locateAdjacentEdge = function( pointA,
 	var vertCur = this.getTranslatedVertex( i );   // this.getVertexAt( i );
 	var vertSuc = this.getTranslatedVertex( i+1 ); // this.getVertexAt( i+1 );
 
-	// Current edge matches?	
+	// Current edge matches?
 	var avgDistanceFwd = (vertCur.distanceTo(pointA) + vertSuc.distanceTo(pointB))/2.0;
 	//var avgDistanceBwd = (vertSuc.distanceTo(pointA) + vertCur.distanceTo(pointB))/2.0;
 
 	// Measure only in one direction. Otherwise the return value would be ambigous.
 	if( avgDistanceFwd < tolerance &&
-	    (result == -1 || (result != -1 && avgDistanceFwd < resultDistance)) 
-	  ) {	    
+	    (result == -1 || (result != -1 && avgDistanceFwd < resultDistance))
+	  ) {
 	    // Check ALL edges to find the minimum
 	    result = i;
 	    resultDistance = avgDistanceFwd;
 	}
     }
-    
+
 
     return result;
 
@@ -232,7 +232,7 @@ IKRS.Tile.prototype.toSVG = function( options,
 				      buffer,
 				      boundingBox
 				    ) {
-    
+
     var returnBuffer = false;
     if( typeof buffer == "undefined" || !buffer ) {
 	buffer = [];
@@ -263,8 +263,8 @@ IKRS.Tile.prototype.toSVG = function( options,
 			    buffer );
     }
     */
-    
-    
+
+
     if( returnBuffer )
 	return buffer;
     else
@@ -279,7 +279,7 @@ IKRS.Tile.prototype._polygonToSVG = function( polygon,
 					      ) {
     if( typeof options != "undefined" && typeof options.indent != "undefined" )
 	buffer.push( options.indent );
-    
+
     buffer.push( "<polygon points=\"" );
     var vert;
     for( var i = 0; i < polygon.vertices.length; i++ ) {

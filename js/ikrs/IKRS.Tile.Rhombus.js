@@ -8,9 +8,9 @@
 
 
 IKRS.Tile.Rhombus = function( size, position, angle, fillColor) {
-    
+
     IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_RHOMBUS  );
-    
+
     // Init the actual decahedron shape with the passed size
     var pointA = new IKRS.Point2(0,0);
     var pointB = pointA;
@@ -21,7 +21,7 @@ IKRS.Tile.Rhombus = function( size, position, angle, fillColor) {
 		   108.0
 		   // 72.0
 		 ];
-    
+
     var theta = 0.0;
     for( var i = 0; i < angles.length; i++ ) {
 
@@ -31,28 +31,42 @@ IKRS.Tile.Rhombus = function( size, position, angle, fillColor) {
 	pointB = pointB.clone();
 	pointB.x += size;
 	pointB.rotate( pointA, theta * (Math.PI/180.0) );
-	this._addVertex( pointB );	
+	this._addVertex( pointB );
 
     }
 
-    
-    // Move to center    
+
+    // Move to center
     var bounds = IKRS.BoundingBox2.computeFromPoints( this.polygon.vertices );
-    var move   = new IKRS.Point2( bounds.getWidth()/2.0 - (bounds.getWidth()-size), 
+    var move   = new IKRS.Point2( bounds.getWidth()/2.0 - (bounds.getWidth()-size),
 				  bounds.getHeight()/2.0
 				);
     for( var i = 0; i < this.polygon.vertices.length; i++ ) {
-	
+
 	this.polygon.vertices[i].add( move );
-		
+
     }
 
     this.faces = [];
     var shortRadial = Math.sin( 2* piTenths);
     var longRadial = Math.cos( 2* piTenths);
     for (var i=0; i<2; i++) {
-        this.faces.push( new IKRS.Face( 3* piTenths, 4* piTenths, 1, 7* piTenths, shortRadial));
-        this.faces.push( new IKRS.Face( 3* piTenths, 6* piTenths, 1, 8* piTenths, longRadial));
+        this.faces.push( new IKRS.Face(
+                /*centralAngle:*/       3* piTenths,
+                /*angleToNextVertice:*/ 4* piTenths,
+                /*lengthCoefficient:*/  1,
+                /*angleToCenter:*/      7* piTenths,
+                /*radialCoefficient:*/  shortRadial,
+                /*startAtEdgeBegin:*/   true
+        ));
+        this.faces.push( new IKRS.Face(
+                /*centralAngle:*/       3* piTenths,
+                /*angleToNextVertice:*/ 6* piTenths,
+                /*lengthCoefficient:*/  1,
+                /*angleToCenter:*/      8* piTenths,
+                /*radialCoefficient:*/  longRadial,
+                /*startAtEdgeBegin:*/   true
+        ));
     }
 
     if (fillColor !== undefined) {
@@ -71,7 +85,7 @@ IKRS.Tile.Rhombus = function( size, position, angle, fillColor) {
 		       yOffset: 0.0
 		     }
     };
-    
+
     this._buildInnerPolygons();
     this._buildOuterPolygons();  // Call only AFTER the inner polygons were built!
 };
@@ -86,17 +100,17 @@ IKRS.Tile.Rhombus.prototype._buildInnerPolygons = function() {
     // Compute the next inner polygon vertex by the intersection of two circles
     var circleA = new IKRS.Circle( innerTile.vertices[1], innerTile.vertices[0].distanceTo(innerTile.vertices[1])*0.73 );
     var circleB = new IKRS.Circle( this.polygon.vertices[2].scaleTowards( this.polygon.vertices[3], 0.5 ), circleA.radius );
-    
+
     // There is definitely an intersection
     var intersection = circleA.computeIntersectionPoints( circleB );
     // One of the two points is inside the tile, the other is outside.
     // Locate the inside point.
     if( this.containsPoint(intersection.pointA) ) innerTile.addVertex(intersection.pointA);
     else                                          innerTile.addVertex(intersection.pointB);
-    
+
     innerTile.addVertex( circleB.center );
     innerTile.addVertex( this.polygon.vertices[3].scaleTowards( this.polygon.vertices[0], 0.5 ) );
-    
+
     // Move circles
     circleA.center = innerTile.vertices[4];
     circleB.center = innerTile.vertices[0];
@@ -124,7 +138,7 @@ IKRS.Tile.Rhombus.prototype._buildOuterPolygons = function() {
 	outerTileX.addVertex( this.innerTilePolygons[0].getVertexAt(indexB).clone() );
 	outerTileX.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+1).clone() );
 	this.outerTilePolygons.push( outerTileX );
-	
+
 	// The first 'kite'
 	var outerTileY = new IKRS.Polygon();
 	outerTileY.addVertex( this.getVertexAt(indexA+2).clone() );
@@ -158,7 +172,7 @@ IKRS.GirihCanvasHandler.prototype.drawFancyRhombusStrapping = function(tile) {
     //width( lineWidth)
     this.context.beginPath()
     this.moveToXY( tile.position.x, tile.position.y); // Center of rhombus
-    this.moveToAD( tile.angle + tile.faces[0].offsetAngle, tile.faces[0].radialCoefficient * tile.size); //corner of rhombus
+    this.moveToAD( tile.angle + tile.faces[0].centralAngle, tile.faces[0].radialCoefficient * tile.size); //corner of rhombus
     this.moveToaD( Math.PI - tile.faces[0].angleToCenter + tile.faces[0].angleToNextVertice, tile.size/2); //ready to start
     this.moveToaD( 3* piTenths, 0); // ready to go
 

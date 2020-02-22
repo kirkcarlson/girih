@@ -8,9 +8,9 @@
 IKRS.Tile.Octagon = function( size, position, angle ) {
 
     console.log( 'Creating octagon ...' );
-    
+
     IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_OCTAGON );
-    
+
     // Init the actual octagon shape with the passed size
     /*
     var pointA = new IKRS.Point2(0,0);
@@ -41,18 +41,18 @@ IKRS.Tile.Octagon = function( size, position, angle ) {
 	this._addVertex( pointB );
 	pointB.rotate( center, i*centerAngle);
     }
-    
+
     // Move to center?
     /*
     var bounds = IKRS.BoundingBox2.computeFromPoints( this.polygon.vertices );
-    var move   = new IKRS.Point2( size/2.0, 
+    var move   = new IKRS.Point2( size/2.0,
 				  -bounds.getHeight()/2.0
 				);
-    for( var i = 0; i < this.polygon.vertices.length; i++ ) {	
+    for( var i = 0; i < this.polygon.vertices.length; i++ ) {
 	this.polygon.vertices[i].add( move );
     }
     */
-    
+
     this.imageProperties = {
 	source: { x:      169/500.0,
 		  y:      140/460.0,
@@ -66,7 +66,7 @@ IKRS.Tile.Octagon = function( size, position, angle ) {
 
     this._buildInnerPolygons( size );
     this._buildOuterPolygons();       // Important: call AFTER inner polygons were created!
-  
+
 };
 
 IKRS.Tile.Octagon.POLYGON_SIDE_COUNT = 8;
@@ -80,7 +80,7 @@ IKRS.Tile.Octagon.prototype._buildInnerPolygons = function( edgeLength ) {
 	var bottomPoint = topPoint.clone().multiplyScalar( 0.615 );
 	var leftPoint   = this.getVertexAt( i ).clone().multiplyScalar( 0.69 );
 	var rightPoint  = this.getVertexAt( i+1 ).clone().multiplyScalar( 0.69 );
-	
+
 	innerTile.addVertex( topPoint );
 	innerTile.addVertex( rightPoint );
 	innerTile.addVertex( bottomPoint );
@@ -92,9 +92,9 @@ IKRS.Tile.Octagon.prototype._buildInnerPolygons = function( edgeLength ) {
 	centralStar.addVertex( leftPoint.clone() );
 	centralStar.addVertex( bottomPoint.clone() );
     }
-    
+
     this.innerTilePolygons.push( centralStar );
-    
+
 };
 
 

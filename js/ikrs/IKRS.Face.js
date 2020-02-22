@@ -4,19 +4,21 @@
  * @version 1.0.0
  **/
 
-IKRS.Face = function ( offsetAngle, angleToNextVertice, lengthCoefficient, angleToCenter, radialCoefficient) {
+IKRS.Face = function ( centralAngle, angleToNextVertice, lengthCoefficient,
+        angleToCenter, radialCoefficient, startAtEdgeBegin) {
 
     IKRS.Object.call( this );
 
-    this.offsetAngle = offsetAngle;
+    this.centralAngle = centralAngle;
     this.angleToNextVertice = angleToNextVertice;
     this.lengthCoefficient = lengthCoefficient;
     this.angleToCenter = angleToCenter;
     this.radialCoefficient = radialCoefficient;
+    this.startAtEdgeBegin = startAtEdgeBegin; // boolean, false ==> start at edge end
 };
 
 IKRS.Face.prototype.getVertice = function(tile) {
-    var angle = tile.angle + this.offsetAngle
+    var angle = tile.angle + this.centralAngle
 //oh damn.... the offset angle must have to change for every vertex!, we've only be working with face[0]
     var x = tile.position.x + this.radialCoefficient * Math.cos( angle)
     var y = tile.position.y - this.radialCoefficient * Math.sin( angle)
@@ -25,7 +27,7 @@ IKRS.Face.prototype.getVertice = function(tile) {
 
 IKRS.Face.prototype.getMidpoint = function(tile) {
     // find a vertex on the face
-    var angle = tile.angle + this.offsetAngle
+    var angle = tile.angle + this.centralAngle
     var x = tile.position.x + this.radialCoefficient * Math.cos( angle)
     var y = tile.position.y - this.radialCoefficient * Math.sin( angle)
 
@@ -38,7 +40,7 @@ IKRS.Face.prototype.getMidpoint = function(tile) {
 
 
 IKRS.Face.prototype.toString = function() {
-    return "offsetAngle:"+ offsetAngle +" nextVertex:"+ this.angleToNextVertice +" length:"+ this.lengthCoefficient +" angleTocenter:"+ this.angleToCenter +" radial:" + this.radialCoefficient
+    return "centralAngle:"+ centralAngle +" nextVertex:"+ this.angleToNextVertice +" length:"+ this.lengthCoefficient +" angleTocenter:"+ this.angleToCenter +" radial:" + this.radialCoefficient
 }
 
 IKRS.Face.prototype.constructor = IKRS.Face;
