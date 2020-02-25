@@ -274,6 +274,7 @@ the following are harder to do, because there is no static mapping of index to p
  add h,6 to select hexagon 72, 54
  add r,4 to select rhombus 82, 52
  add b,3 to select bowtie 66, 51
+ add n,2 to select bowtie 78, 50
 
 can repeats of the above cycle through variations of the shape?
   again.. this is hard without a static mapping of indices to polygon type.
@@ -297,6 +298,24 @@ can repeats of the above cycle through variations of the shape?
 	this.girihCanvasHandler.redraw();
     } else if( e.keyCode == 69 ) { //e
 	this.girihCanvasHandler._exportSVG();
+    } else if( e.keyCode == 48 ) { // 0
+	this.girihCanvasHandler.adjacentTileOptionPointer = IKRS.Girih.INDEX_DECAGON;
+	this.girihCanvasHandler.redraw();
+    } else if( e.keyCode == 80 || e.keyCode == 53 ) { // p,5
+	this.girihCanvasHandler.adjacentTileOptionPointer = IKRS.Girih.INDEX_PENTAGON;
+	this.girihCanvasHandler.redraw();
+    } else if( e.keyCode == 72 || e.keyCode == 54 ) { // h,6
+	this.girihCanvasHandler.adjacentTileOptionPointer = IKRS.Girih.INDEX_GIRIH_HEXAGON;
+	this.girihCanvasHandler.redraw();
+    } else if( e.keyCode == 82 || e.keyCode == 52 ) { // r,4
+	this.girihCanvasHandler.adjacentTileOptionPointer = IKRS.Girih.INDEX_RHOMBUS;
+	this.girihCanvasHandler.redraw();
+    } else if( e.keyCode == 66 || e.keyCode == 51 ) { // b,3
+	this.girihCanvasHandler.adjacentTileOptionPointer = IKRS.Girih.INDEX_BOW_TIE;
+	this.girihCanvasHandler.redraw();
+    } else if( e.keyCode == 78 || e.keyCode == 50 ) { // b,2
+	this.girihCanvasHandler.adjacentTileOptionPointer = IKRS.Girih.INDEX_PENROSE_RHOMBUS;
+	this.girihCanvasHandler.redraw();
     }
 };
 

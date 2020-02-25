@@ -54,6 +54,7 @@ function onLoad() {
 
 }
 
+/*
 function _displayTileAlign( centerTile,
 			    referenceTile
 			  ) {
@@ -67,6 +68,7 @@ function _displayTileAlign( centerTile,
 	   "                                " + _angle2constant(totalAngle) + " );\n"
 	 );
 }
+*/
 
 function _angle2constant( angle ) {
 
@@ -115,7 +117,7 @@ console.log("_makeTest_Decagon_BowTie");
     girihCanvasHandler.addTile( deca );
     girihCanvasHandler.addTile( tie );
     
-    _displayTileAlign( deca, tie );
+//    _displayTileAlign( deca, tie );
 }
 
 function _makeTest_Pentagon( tileSize ) {
