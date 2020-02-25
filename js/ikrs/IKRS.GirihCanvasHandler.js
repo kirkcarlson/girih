@@ -332,57 +332,6 @@ IKRS.GirihCanvasHandler.prototype._clearHovered = function() {
     }
 };
 
-IKRS.GirihCanvasHandler.prototype.old_resolveCurrentAdjacentTilePreset = function( tileType,
-										points,
-										position,
-										angle,
-										originalBounds,
-										colors,
-										imgProperties,
-										imageObject,
-										highlightedEdgeIndex,
-										drawOutlines
-									      ) {
-
-    if( !points || highlightedEdgeIndex == -1 ) {
-	return;
-    }
-
-    // Adjacent tile presets available for this tile/edge/option?
-    if( !IKRS.Girih.TILE_ALIGN[tileType] ) {
-	return;
-    }
-
-    if( !IKRS.Girih.TILE_ALIGN[tileType][highlightedEdgeIndex] ) {
-	return;
-    }
-
-    var presets = IKRS.Girih.TILE_ALIGN[tileType][highlightedEdgeIndex];
-
-    // Has any adjacent tiles at all?
-    // (should, but this prevents the script from raising unwanted exceptions)
-    if( !presets || presets.length == 0 ) {
-	return null;
-    }
-
-
-    var optionIndex = this.adjacentTileOptionPointer % presets.length;
-    if( optionIndex < 0 ) {
-	optionIndex = presets.length + optionIndex;
-    }
-
-    var tileAlign      = presets[optionIndex];
-
-
-    var tile = tileAlign.createTile();
-
-    // Make position relative to the hovered tile
-    tile.position.add( position );
-    tile.position.rotate( position, angle );
-    tile.angle += angle;
-
-    return tile;
-};
 
 IKRS.GirihCanvasHandler.prototype._resolveCurrentAdjacentTilePreset = function( currentTile,
 										highlightedEdgeIndex,
@@ -396,56 +345,36 @@ highlightedEdgeIndex,
 	return;
     }
 
-
-    //var presets = IKRS.Girih.TILE_ALIGN[tileType][highlightedEdgeIndex];
-
-/*
-    this.tileType   = tileType;
-    this.edgeLength = edgeLength;
-    this.position   = position;
-    this.angle      = angle;
-*/
-
-    // want to use the possibles, which are the same for all tiles and edges
     var optionIndex = (this.adjacentTileOptionPointer + possiblePositions.length) % possiblePositions.length;
     var optionIndex = (this.adjacentTileOptionPointer + possiblePositions.length) % possiblePositions.length;
     var proposedPosition    = possiblePositions[ optionIndex];
-//PossiblePosition = function ( tileType, startVertex, matesWithLeftVertex) {
-
 
     //find the position of the hovered tile vertex
     var face = IKRS.Girih.TILE_TYPES [currentTile.tileType][highlightedEdgeIndex];
-console.log("edge:"+ highlightedEdgeIndex +" face:"+ face.toString() +" size:"+ currentTile.size +" position:"+ currentTile.position.toString());
-
     var vertexAngle = face.centralAngle + currentTile.angle;
-
     var vertexPosition = new IKRS.Point2 (
-            currentTile.position.x + face.radialCoefficient * currentTile.size * Math.cos( vertexAngle),
-            currentTile.position.y + face.radialCoefficient * currentTile.size * Math.sin( vertexAngle));
+	    currentTile.position.x + face.radialCoefficient * currentTile.size * Math.cos( vertexAngle),
+	    currentTile.position.y + face.radialCoefficient * currentTile.size * Math.sin( vertexAngle));
+
     //find the angle of the selected edge
-    //var edgeAngle = vertexAngle - face.angleToCenter + face.angleToNextVertex;
     var edgeAngle = vertexAngle - face.angleToCenter + face.angleToNextVertex - Math.PI;
 
     //advance along edge the length of the proposed tile edge
     var proposedFace = IKRS.Girih.TILE_TYPES [proposedPosition.tileType][proposedPosition.startVertex];
     var vertexPosition2 = new IKRS.Point2 (
-            vertexPosition.x + proposedFace.lengthCoefficient * currentTile.size * Math.cos( edgeAngle),
-            vertexPosition.y + proposedFace.lengthCoefficient * currentTile.size * Math.sin( edgeAngle));
+	    vertexPosition.x + proposedFace.lengthCoefficient * currentTile.size * Math.cos( edgeAngle),
+	    vertexPosition.y + proposedFace.lengthCoefficient * currentTile.size * Math.sin( edgeAngle));
 
     //find the proposed tile center from current location
-    //var proposedAngleToCenter = (edgeAngle + proposedFace.angleToNextVertex - proposedFace.angleToCenter);
-    //var proposedAngleToCenter = (edgeAngle - proposedFace.angleToCenter);
     var proposedAngleToCenter = (Math.PI + edgeAngle - proposedFace.angleToNextVertex + proposedFace.angleToCenter);
     var proposedCenter = new IKRS.Point2 (
-            vertexPosition2.x + proposedFace.radialCoefficient * currentTile.size * Math.cos( proposedAngleToCenter),
-            vertexPosition2.y + proposedFace.radialCoefficient * currentTile.size * Math.sin( proposedAngleToCenter));
+	    vertexPosition2.x + proposedFace.radialCoefficient * currentTile.size * Math.cos( proposedAngleToCenter),
+	    vertexPosition2.y + proposedFace.radialCoefficient * currentTile.size * Math.sin( proposedAngleToCenter));
+
     //find the new tile angle
-    //var proposedTileAngle = proposedAngleToCenter + proposedFace.centralAngle;
     var proposedTileAngle = proposedAngleToCenter - proposedFace.centralAngle + Math.PI;
-    //create the new tile (position, angle)
-console.log("new center:"+ proposedCenter.toString() + " hover vertex:" + vertexPosition.toString())
 
-
+    //create the new tile
     switch( proposedPosition.tileType ) {
     case IKRS.Girih.TILE_TYPE_DECAGON:
 	var proposedTile = new IKRS.Tile.Decagon(          currentTile.size, proposedCenter, proposedTileAngle, "#FFF" );
@@ -480,8 +409,6 @@ IKRS.GirihCanvasHandler.prototype._performAddCurrentAdjacentPresetTile = functio
 	return;
     }
 
-
-
     var tile         = this.girih.tiles[ hoveredTileIndex ];
     var tileBounds   = tile.computeBounds();
 
@@ -502,49 +429,6 @@ IKRS.GirihCanvasHandler.prototype._performAddCurrentAdjacentPresetTile = functio
 	DEBUG( "Penrose tile not allowed." );
 	return;
     }
-
-    // Finally: the adjacent tile position might not be acurate.
-    //          Make some fine tuning.
-/*
-    var currentEdgePointA = tile.getTranslatedVertex( tile._props.highlightedEdgeIndex );
-    var currentEdgePointB = tile.getTranslatedVertex( tile._props.highlightedEdgeIndex+1 );
-    var tolerance         = 5.0;
-    var adjacentEdgeIndex = adjacentTile.locateAdjacentEdge( currentEdgePointA,
-							     currentEdgePointB,
-							     tolerance
-							   );
-    var adjacentEdgePointA;
-    var adjacentEdgePointB;
-    var pointDifferences;
-    // Swap edge points?
-    if( adjacentEdgeIndex != -1 ) {
-
-	// An even edge.
-	adjacentEdgePointA = adjacentTile.getTranslatedVertex( adjacentEdgeIndex );
-	adjacentEdgePointB = adjacentTile.getTranslatedVertex( adjacentEdgeIndex+1 );
-
-    } else if( (adjacentEdgeIndex = adjacentTile.locateAdjacentEdge(currentEdgePointB,currentEdgePointA,tolerance)) != -1 ) {
-
-	// An odd edge: Swapped points (reverse edge)
-	adjacentEdgePointA = adjacentTile.getTranslatedVertex( adjacentEdgeIndex+1 );
-	adjacentEdgePointB = adjacentTile.getTranslatedVertex( adjacentEdgeIndex );
-    }
-
-    if( adjacentEdgeIndex != -1 ) {
-
-	pointDifferences = [ adjacentEdgePointA.clone().sub( currentEdgePointA ),
-			     adjacentEdgePointB.clone().sub( currentEdgePointB )
-			   ];
-	// Calculate average difference
-	var avgDifference = IKRS.Point2.ZERO_POINT.clone();
-	for( var i = 0; i < pointDifferences.length; i++ ) {
-	    avgDifference.add( pointDifferences[i] );
-	}
-	avgDifference.x /= pointDifferences.length;
-	avgDifference.y /= pointDifferences.length;
-	adjacentTile.position.sub( avgDifference );
-    }
-*/
 
     this.addTile( adjacentTile );
     this.redraw();
@@ -692,7 +576,7 @@ IKRS.GirihCanvasHandler.prototype._drawTile = function( tile ) {
 		Math.round( Math.random()*255 ) + "," +
 		Math.round( Math.random()*255 ) + "," +
 		"0.5)";
-        } else {
+	} else {
 	    var tileColor = "transparent";
 	}
 
@@ -713,7 +597,7 @@ IKRS.GirihCanvasHandler.prototype._drawTile = function( tile ) {
 IKRS.GirihCanvasHandler.prototype._drawStrapping = function( tile ) {
     if( this.drawProperties.drawStrapping) {
 	if( (this.drawProperties.drawStrappingType === "fancy" ||
-             this.drawProperties.drawStrappingType === "colored")) {
+	     this.drawProperties.drawStrappingType === "colored")) {
 	    switch(tile.tileType) {
 	    //The following functions are in their respective module
 	    case IKRS.Girih.TILE_TYPE_PENTAGON:
@@ -901,9 +785,9 @@ IKRS.GirihCanvasHandler.prototype.moveToaD = function ( ang, len) {
  *************************************************************************/
 IKRS.GirihCanvasHandler.prototype.capGap = function () {
     return this.drawProperties.strappingWidth/2 +
-           this.drawProperties.strappingStrokeWidth /
-                   this.drawProperties.strappingPixelFactor +
-           this.drawProperties.strappingGap;
+	   this.drawProperties.strappingStrokeWidth /
+		   this.drawProperties.strappingPixelFactor +
+	   this.drawProperties.strappingGap;
 }
 
 
@@ -932,9 +816,9 @@ IKRS.GirihCanvasHandler.prototype.gline = function( distance, spacing, startAngl
     var startDiag = Math.abs(spacing / Math.sin( startAngle))
     var endDiag = Math.abs(spacing / Math.sin( -endAngle))
     if (fill !== undefined) {
-        fillColor = fill;
+	fillColor = fill;
     } else {
-        fillColor = this.drawProperties.strappingFillColor;
+	fillColor = this.drawProperties.strappingFillColor;
     }
 
     // stroke the segment for the fill (and connect unstroked ends)
@@ -958,10 +842,10 @@ IKRS.GirihCanvasHandler.prototype.gline = function( distance, spacing, startAngl
 //svgAttribute ( 'class="gstroke"')
     this.context.beginPath();
     if (startCap) {
-        this.lineToaD( 0,0); // should not be necessary
-        this.lineToaD( startAngle, startDiag/2);
+	this.lineToaD( 0,0); // should not be necessary
+	this.lineToaD( startAngle, startDiag/2);
     } else {
-        this.moveToaD( startAngle, startDiag/2);
+	this.moveToaD( startAngle, startDiag/2);
     }
     this.lineToaD( -startAngle,  distance + startRightDist + endRightDist);
 //color( saveColor)
@@ -971,9 +855,9 @@ IKRS.GirihCanvasHandler.prototype.gline = function( distance, spacing, startAngl
 //svgAttribute ( 'class="gstroke"')
 
     if( endCap) {
-        this.lineToaD( -endAngle, endDiag);
+	this.lineToaD( -endAngle, endDiag);
     } else {
-        this.moveToaD( -endAngle, endDiag);
+	this.moveToaD( -endAngle, endDiag);
     }
 //color( saveColor)
 //svgAttribute ( 'class="gstroke"')
@@ -981,9 +865,9 @@ IKRS.GirihCanvasHandler.prototype.gline = function( distance, spacing, startAngl
 //color( saveColor)
 //svgAttribute ( 'class="gstroke"')
     if ( startCap) {
-        this.lineToaD( startAngle - 10* piTenths, startDiag/2);
+	this.lineToaD( startAngle - 10* piTenths, startDiag/2);
     } else {
-        this.moveToaD( startAngle - 10* piTenths, startDiag/2);
+	this.moveToaD( startAngle - 10* piTenths, startDiag/2);
     }
 //color( saveColor)
 //svgAttribute ( 'class="gstroke"')
@@ -1130,9 +1014,9 @@ IKRS.GirihCanvasHandler.prototype.drawPolygonFromFaces = function( tile, strokeC
     this.moveToAD( tile.angle + face.centralAngle, face.radialCoefficient * tile.size)
     this.moveToaD( Math.PI - face.angleToCenter, 0)
     for (var i = 0; i< faces.length; i++) {
-        //face = faces[ i % faces.length]
-        face = faces[ i]
-        this.lineToaD( face.angleToNextVertex, tile.size * face.lengthCoefficient)
+	//face = faces[ i % faces.length]
+	face = faces[ i]
+	this.lineToaD( face.angleToNextVertex, tile.size * face.lengthCoefficient)
     }
     this.context.strokeStyle = strokeColor,
     this.context.lineWidth = "1pt";
@@ -1400,9 +1284,9 @@ IKRS.GirihCanvasHandler.prototype._drawSimpleStrapping = function( tile ) {
 	if( tile.tileType == IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS && !this.getProperties().drawPenroseCenterPolygon && i == tile.getCenterPolygonIndex() ) {
 	    continue;
 	}
-        var polygon = tile.innerTilePolygons[ i ];
+	var polygon = tile.innerTilePolygons[ i ];
 
-        this._drawPolygonFromPoints( polygon.vertices,   // points,
+	this._drawPolygonFromPoints( polygon.vertices,   // points,
 				     tile.position,
 				     tile.angle,
 				     IKRS.BoundingBox2.computeFromPoints(polygon.vertices), //originalBounds,
@@ -1414,7 +1298,7 @@ IKRS.GirihCanvasHandler.prototype._drawSimpleStrapping = function( tile ) {
 				     null, // imageObject,
 				     -1,   // highlightedEdgeIndex,
 				     true  // drawOutlines
-			           );
+				   );
     }
 };
 
@@ -1430,10 +1314,10 @@ IKRS.GirihCanvasHandler.prototype._drawTiles = function() {
 
     // find all chains
     if( this.drawProperties.drawStrapping &&
-           (this.drawProperties.drawStrappingType === "fancy" ||
-            this.drawProperties.drawStrappingType === "colored")) {
+	   (this.drawProperties.drawStrappingType === "fancy" ||
+	    this.drawProperties.drawStrappingType === "colored")) {
 	if (this.lastTileCount !== this.girih.tiles.length ||
-            this.lastDrawStrappingType !== this.drawProperties.drawStrappingType) { // when tile added or deleted
+	    this.lastDrawStrappingType !== this.drawProperties.drawStrappingType) { // when tile added or deleted
 	    this.girih.buildConnectors( this.girih.tiles);
 	    this.girih.findConnections( this.girih.tiles);
 	    this.girih.findAllChains( this.girih.tiles);
@@ -1447,9 +1331,9 @@ IKRS.GirihCanvasHandler.prototype._drawTiles = function() {
 	var tile = this.girih.tiles[i];
 	this._drawStrapping( tile);
 
-        if( this.drawProperties.drawOutlines || tile._props.selected ) {
+	if( this.drawProperties.drawOutlines || tile._props.selected ) {
 	    this._drawCrosshairAt( tile.position, tile._props.selected );
-        }
+	}
     }
 
     // Finally draw the selected tile's hovering edge

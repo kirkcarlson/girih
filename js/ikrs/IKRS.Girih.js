@@ -1,7 +1,7 @@
 /**
  * @author Ikaros Kappler
  * @date 2013-11-27
- * @date 2020=02-23 Kirk Carlson added tileTypes array
+ * @date 2020-02-20 Kirk Carlson added tileTypes array and logic to find adjacent with angles
  
  **/
 
@@ -376,12 +376,12 @@ IKRS.Girih.TILE_TYPES [ IKRS.Girih.TILE_TYPE_DECAGON] = faces;
 //PENTAGON
 var faces = [];
 for (var i=0; i<5; i++) {
-    this.faces.push( new IKRS.Face(
-            /*centralAngle:*/       -3* piTenths + i* 4* piTenths,
-            /*angleToNextVertex:*/  4* piTenths,
-            /*lengthCoefficient:*/  1,
-            /*angleToCenter:*/      7* piTenths,
-            /*radialCoefficient:*/  1/(2* Math.sin( 2* piTenths))
+    faces.push( new IKRS.Face(
+        /*centralAngle:*/       -3* piTenths + i* 4* piTenths,
+        /*angleToNextVertex:*/  4* piTenths,
+        /*lengthCoefficient:*/  1,
+        /*angleToCenter:*/      7* piTenths,
+        /*radialCoefficient:*/  1/(2* Math.sin( 2* piTenths))
     ));
 }
 IKRS.Girih.TILE_TYPES [ IKRS.Girih.TILE_TYPE_PENTAGON] = faces;
@@ -395,26 +395,26 @@ var radialLong =  Math.cos(2* piTenths) + 1/2 ;//half the long width of the hexa
 var radialAngle = Math.atan( (1/2) / halfNarrowWidth)
 //var radialAngle = Math.atan(  halfNarrowWidth/(1/2))
 for (var i=0; i<2; i++) {
-    this.faces.push( new IKRS.Face(
-            /*centralAngle*/       -7 * piTenths + radialAngle + i* Math.PI,
-            /*angleToNextVertex:*/  2* piTenths,
-            /*lengthCoefficient:*/  1,
-            /*angleToCenter:*/      5* piTenths + radialAngle,
-            /*radialCoefficient:*/  radialShort
+    faces.push( new IKRS.Face(
+        /*centralAngle*/       -7 * piTenths + radialAngle + i* Math.PI,
+        /*angleToNextVertex:*/  2* piTenths,
+        /*lengthCoefficient:*/  1,
+        /*angleToCenter:*/      5* piTenths + radialAngle,
+        /*radialCoefficient:*/  radialShort
     ));
-    this.faces.push( new IKRS.Face(
-            /*centralAngle:*/       -2* piTenths + i* Math.PI,
-            /*angleToNextVertex:*/  6* piTenths,
-            /*lengthCoefficient:*/  1,
-            /*angleToCenter:*/      8* piTenths,
-            /*radialCoefficient:*/  radialLong
+    faces.push( new IKRS.Face(
+        /*centralAngle:*/       -2* piTenths + i* Math.PI,
+        /*angleToNextVertex:*/  6* piTenths,
+        /*lengthCoefficient:*/  1,
+        /*angleToCenter:*/      8* piTenths,
+        /*radialCoefficient:*/  radialLong
     ));
-    this.faces.push( new IKRS.Face(
-            /*centralAngle:*/       3 * piTenths - radialAngle + i* Math.PI,
-            /*angleToNextVertex:*/  2* piTenths,
-            /*lengthCoefficient:*/  1,
-            /*angleToCenter:*/      7 * piTenths - radialAngle,
-            /*radialCoefficient:*/  radialShort
+    faces.push( new IKRS.Face(
+        /*centralAngle:*/       3 * piTenths - radialAngle + i* Math.PI,
+        /*angleToNextVertex:*/  2* piTenths,
+        /*lengthCoefficient:*/  1,
+        /*angleToCenter:*/      7* piTenths - radialAngle,
+        /*radialCoefficient:*/  radialShort
     ));
 }
 IKRS.Girih.TILE_TYPES [ IKRS.Girih.TILE_TYPE_GIRIH_HEXAGON] = faces;
@@ -425,19 +425,19 @@ var faces = [];
 var radialShort = Math.sin( 2* piTenths);
 var radialLong = Math.cos( 2* piTenths);
 for (var i=0; i<2; i++) {
-    this.faces.push( new IKRS.Face(
-            /*centralAngle:*/       3* piTenths + i* Math.PI,
-            /*angleToNextVertex:*/  4* piTenths,
-            /*lengthCoefficient:*/  1,
-            /*angleToCenter:*/      7* piTenths,
-            /*radialCoefficient:*/  radialShort
+    faces.push( new IKRS.Face(
+        /*centralAngle:*/       3* piTenths + i* Math.PI,
+        /*angleToNextVertex:*/  4* piTenths,
+        /*lengthCoefficient:*/  1,
+        /*angleToCenter:*/      7* piTenths,
+        /*radialCoefficient:*/  radialShort
     ));
-    this.faces.push( new IKRS.Face(
-            /*centralAngle:*/       8* piTenths + i* Math.PI,
-            /*angleToNextVertex:*/  6* piTenths,
-            /*lengthCoefficient:*/  1,
-            /*angleToCenter:*/      8* piTenths,
-            /*radialCoefficient:*/  radialLong
+    faces.push( new IKRS.Face(
+        /*centralAngle:*/       8* piTenths + i* Math.PI,
+        /*angleToNextVertex:*/  6* piTenths,
+        /*lengthCoefficient:*/  1,
+        /*angleToCenter:*/      8* piTenths,
+        /*radialCoefficient:*/  radialLong
     ));
 }
 IKRS.Girih.TILE_TYPES [ IKRS.Girih.TILE_TYPE_RHOMBUS] = faces;
@@ -447,38 +447,29 @@ IKRS.Girih.TILE_TYPES [ IKRS.Girih.TILE_TYPE_RHOMBUS] = faces;
 var faces = [];
 var halfLongWidth = Math.sin(4* piTenths);
 var radialShort = 1/2 - Math.cos( 4* piTenths)
-var radialInsideAngle =  Math.atan(halfLongWidth/(1/2))
 var radialLong = Math.sqrt( 1/4 + halfLongWidth*halfLongWidth) // 1/4 is equivalent to side/2 * side/2)
-
 var angleB = Math.atan((1/2) / halfLongWidth)
-var angleA = 5* piTenths - angleB
-var angleAprime = -1* piTenths + angleB // 4*piTenths - angleA
 for (var i=0; i<2; i++) {
-    this.faces.push( new IKRS.Face(
-            /*centralAngle:*/       -4* piTenths + i* Math.PI,
-            /*angleToNextVertex:*/  -2* piTenths,
-            /*lengthCoefficient:*/  1,
-            /*angleToCenter:*/      4* piTenths,
-            /*radialCoefficient:*/  radialShort
+    faces.push( new IKRS.Face(
+        /*centralAngle:*/       -4* piTenths + i* Math.PI,
+        /*angleToNextVertex:*/  -2* piTenths,
+        /*lengthCoefficient:*/  1,
+        /*angleToCenter:*/      4* piTenths,
+        /*radialCoefficient:*/  radialShort
     ));
-    this.faces.push( new IKRS.Face(
-//            /*centralAngle:*/       -4* piTenths - radialInsideAngle + i* Math.PI,
-            /*centralAngle:*/       1 * piTenths - angleB + i* Math.PI,
-            /*angleToNextVertex:*/  6* piTenths,
-            /*lengthCoefficient:*/  1,
-//            /*angleToCenter:*/      radialInsideAngle + 6* piTenths,
-//            /*angleToCenter:*/      -4 * piTenths - angleB,
-            /*angleToCenter:*/      11 * piTenths - angleB, //pi - angleAprime
-            /*radialCoefficient:*/  radialLong
+    faces.push( new IKRS.Face(
+        /*centralAngle:*/       1 * piTenths - angleB + i* Math.PI,
+        /*angleToNextVertex:*/  6* piTenths,
+        /*lengthCoefficient:*/  1,
+        /*angleToCenter:*/      11 * piTenths - angleB, //pi - angleAprime
+        /*radialCoefficient:*/  radialLong
     ));
-    this.faces.push( new IKRS.Face(
-//            /*centralAngle:*/       -6* piTenths +3* radialInsideAngle+ i* Math.PI,
-            /*centralAngle:*/       1* piTenths + angleB + i* Math.PI,
-            /*angleToNextVertex:*/  6* piTenths,
-            /*lengthCoefficient:*/  1,
-//            /*angleToCenter:*/      Math.PI - radialInsideAngle,
-            /*angleToCenter:*/      5* piTenths + angleB,
-            /*radialCoefficient:*/  radialLong
+    faces.push( new IKRS.Face(
+        /*centralAngle:*/       1* piTenths + angleB + i* Math.PI,
+        /*angleToNextVertex:*/  6* piTenths,
+        /*lengthCoefficient:*/  1,
+        /*angleToCenter:*/      5* piTenths + angleB,
+        /*radialCoefficient:*/  radialLong
     ));
 }
 IKRS.Girih.TILE_TYPES [ IKRS.Girih.TILE_TYPE_BOW_TIE] = faces;
@@ -489,19 +480,19 @@ var faces = [];
 var radialShort = Math.sin( 1* piTenths);
 var radialLong = Math.cos( 1* piTenths);
 for (var i=0; i<2; i++) {
-    this.faces.push( new IKRS.Face(
-            /*centralAngle:*/       4* piTenths + i* Math.PI,
-            /*angleToNextVertex:*/  2* piTenths,
-            /*lengthCoefficient:*/  1,
-            /*angleToCenter:*/      6* piTenths,
-            /*radialCoefficient:*/  radialShort
+    faces.push( new IKRS.Face(
+        /*centralAngle:*/       4* piTenths + i* Math.PI,
+        /*angleToNextVertex:*/  2* piTenths,
+        /*lengthCoefficient:*/  1,
+        /*angleToCenter:*/      6* piTenths,
+        /*radialCoefficient:*/  radialShort
     ));
-    this.faces.push( new IKRS.Face(
-            /*centralAngle:*/       9* piTenths + i* Math.PI,
-            /*angleToNextVertex:*/  8* piTenths,
-            /*lengthCoefficient:*/  1,
-            /*angleToCenter:*/      9* piTenths,
-            /*radialCoefficient:*/  radialLong
+    faces.push( new IKRS.Face(
+        /*centralAngle:*/       9* piTenths + i* Math.PI,
+        /*angleToNextVertex:*/  8* piTenths,
+        /*lengthCoefficient:*/  1,
+        /*angleToCenter:*/      9* piTenths,
+        /*radialCoefficient:*/  radialLong
     ));
 }
 IKRS.Girih.TILE_TYPES [ IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS] = faces;

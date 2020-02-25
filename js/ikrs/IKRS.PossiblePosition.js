@@ -1,13 +1,16 @@
-/* This reimagines the coordiate system for the Girih to be based on vertices rather than centers
+/**
+ * @author Kirk Carlson
+ * @date 2020-02-20
+ **/
 
-all polygons are stroked and vertices numbered clockwise
-starting positions to the left are assumed to move to the right before begining
-the vertice at the start is just that
 
-It looks like we can assume that the right vertice is on less than the left vertice...
-This eliminates half of the entries
+/* This reimagines the coordiate system for the Girih to be based on angles
+rather than integer points for fixed sized polygons.
 
-this just seems so much simpler...
+All polygons are stroked and vertices numbered clockwise.
+Edges may be shared with adjacent polygons.
+Edge sharing may be right or left justified (doesn't matter to Girih and
+other polygon sets where all tiles have the same edge length).
 */
 
 IKRS.PossiblePosition = function ( tileType, startVertex, isLeftJustified) {
@@ -20,9 +23,16 @@ IKRS.PossiblePosition = function ( tileType, startVertex, isLeftJustified) {
 };
 
 
+// the following index definitions are into the possiblePositions array.
+IKRS.Girih.INDEX_DECAGON =          0;
+IKRS.Girih.INDEX_PENTAGON =         1;
+IKRS.Girih.INDEX_GIRIH_HEXAGON =    2;
+IKRS.Girih.INDEX_BOWTIE =           5;
+IKRS.Girih.INDEX_RHOMBUS =          8;
+IKRS.Girih.INDEX_PENROSE_RHOMBUS = 10;
 possiblePositions = []
-//                                              tileType,           vertex number, matesWithLeftVertex
-                                                                               // is this a face# or number of piTenths
+//                                                   tileType,                             vertex number,
+//                                                                                            matesWithLeftVertex
 possiblePositions.push ( new IKRS.PossiblePosition ( IKRS.Girih.TILE_TYPE_DECAGON,         0, true));
 possiblePositions.push ( new IKRS.PossiblePosition ( IKRS.Girih.TILE_TYPE_PENTAGON,        0, true));
 possiblePositions.push ( new IKRS.PossiblePosition ( IKRS.Girih.TILE_TYPE_GIRIH_HEXAGON,   2, true));
