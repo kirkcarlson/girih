@@ -42,17 +42,6 @@ IKRS.Tile.Pentagon = function( size, position, angle, fillColor ) {
 
     }
 
-    this.faces = [];
-    for (var i=0; i<5; i++) {
-        this.faces.push( new IKRS.Face(
-                /*centralAngle:*/       -3* piTenths,
-                /*angleToNextVertice:*/ 4* piTenths,
-                /*lengthCoefficient:*/  1,
-                /*angleToCenter:*/      7* piTenths,
-                /*radialCoefficient:*/  1/(2* Math.sin( 2* piTenths)),
-                /*startAtEdgeBegin:*/   true
-        ));
-    }
 
     if (fillColor !== undefined) {
         this.fillColor = fillColor;
@@ -172,11 +161,12 @@ IKRS.GirihCanvasHandler.prototype.drawFancyPentagonStrapping = function(tile) {
 
     var capGap = this.capGap();
     var strapWidth = this.drawProperties.strappingWidth;
+    var faces = IKRS.Girih.TILE_TYPES [tile.tileType];
 
     this.moveToXY( tile.position.x, tile.position.y); // center of pentagon
 this.context.beginPath(); //DEBUG
-    this.lineToAD( tile.angle + tile.faces[0].centralAngle, tile.faces[0].radialCoefficient * tile.size); //vertex 0
-    this.lineToaD( Math.PI - tile.faces[0].angleToCenter + tile.faces[0].angleToNextVertice, tile.size/2); //midpoint of side 0
+    this.lineToAD( tile.angle + faces[0].centralAngle, faces[0].radialCoefficient * tile.size); //vertex 0
+    this.lineToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex, tile.size/2); //midpoint of side 0
 this.context.strokeStyle = "#FFFFFF"; //DEBUG
 this.context.stroke(); //DEBUG
     for( var i = 0; i<5; i++) {

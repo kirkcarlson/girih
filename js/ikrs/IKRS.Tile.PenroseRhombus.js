@@ -55,28 +55,6 @@ IKRS.Tile.PenroseRhombus = function( size, position, angle, opt_addCenterPolygon
 
     }
 
-    this.faces = [];
-    var shortRadial = Math.sin( 1* piTenths);
-    var longRadial = Math.cos( 1* piTenths);
-    for (var i=0; i<2; i++) {
-        this.faces.push( new IKRS.Face(
-                /*centralAngle:*/       4* piTenths,
-                /*angleToNextVertice:*/ 2* piTenths,
-                /*lengthCoefficient:*/  1,
-                /*angleToCenter:*/      6* piTenths,
-                /*radialCoefficient:*/  shortRadial,
-                /*startAtEdgeBegin:*/   true
-        ));
-        this.faces.push( new IKRS.Face(
-                /*centralAngle:*/       4* piTenths,
-                /*angleToNextVertice:*/ 8* piTenths,
-                /*lengthCoefficient:*/  1,
-                /*angleToCenter:*/      9* piTenths,
-                /*radialCoefficient:*/  longRadial,
-                /*startAtEdgeBegin:*/   true
-        ));
-    }
-
     if (fillColor !== undefined) {
         this.fillColor = fillColor;
     } else {
@@ -189,7 +167,7 @@ IKRS.Tile.PenroseRhombus.prototype._buildOuterPolygons = function( centerPolygon
  **/
 IKRS.Tile.PenroseRhombus.prototype.getCenterPolygonIndex = function() {
     return 2;
-};
+}
 
 
 IKRS.GirihCanvasHandler.prototype.drawFancyPenroseRhombusStrapping = function(tile) {
@@ -198,14 +176,16 @@ IKRS.GirihCanvasHandler.prototype.drawFancyPenroseRhombusStrapping = function(ti
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
     var capGap = this.capGap();
     var strapWidth = this.drawProperties.strappingWidth;
+    var faces = IKRS.Girih.TILE_TYPES [tile.tileType];
     const shortSegmentLength = 0.163 * tile.size;
     const mediumSegmentLength = 0.2625 * tile.size;
     const longSegmentLength = 0.587 * tile.size;
+
     //color( lineColor)
     //width( lineWidth)
     this.moveToXY( tile.position.x, tile.position.y); // Center of rhombus
-    this.lineToAD( tile.angle + tile.faces[0].centralAngle, tile.faces[0].radialCoefficient * tile.size); //corner of rhombus
-    this.lineToaD( Math.PI - tile.faces[0].angleToCenter + tile.faces[0].angleToNextVertice, tile.size/2); //ready to start
+    this.lineToAD( tile.angle + faces[0].centralAngle, faces[0].radialCoefficient * tile.size); //corner of rhombus
+    this.lineToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex, tile.size/2); //ready to start
     this.moveToaD( 3* piTenths, 0); // ready to go
 
     var lineNumber = 0

@@ -47,28 +47,6 @@ IKRS.Tile.Rhombus = function( size, position, angle, fillColor) {
 
     }
 
-    this.faces = [];
-    var shortRadial = Math.sin( 2* piTenths);
-    var longRadial = Math.cos( 2* piTenths);
-    for (var i=0; i<2; i++) {
-        this.faces.push( new IKRS.Face(
-                /*centralAngle:*/       3* piTenths,
-                /*angleToNextVertice:*/ 4* piTenths,
-                /*lengthCoefficient:*/  1,
-                /*angleToCenter:*/      7* piTenths,
-                /*radialCoefficient:*/  shortRadial,
-                /*startAtEdgeBegin:*/   true
-        ));
-        this.faces.push( new IKRS.Face(
-                /*centralAngle:*/       3* piTenths,
-                /*angleToNextVertice:*/ 6* piTenths,
-                /*lengthCoefficient:*/  1,
-                /*angleToCenter:*/      8* piTenths,
-                /*radialCoefficient:*/  longRadial,
-                /*startAtEdgeBegin:*/   true
-        ));
-    }
-
     if (fillColor !== undefined) {
         this.fillColor = fillColor;
     } else {
@@ -167,13 +145,14 @@ IKRS.GirihCanvasHandler.prototype.drawFancyRhombusStrapping = function(tile) {
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
     var capGap = this.capGap();
     var strapWidth = this.drawProperties.strappingWidth;
+    var faces = IKRS.Girih.TILE_TYPES [tile.tileType];
 
     //color( lineColor)
     //width( lineWidth)
     this.context.beginPath()
     this.moveToXY( tile.position.x, tile.position.y); // Center of rhombus
-    this.moveToAD( tile.angle + tile.faces[0].centralAngle, tile.faces[0].radialCoefficient * tile.size); //corner of rhombus
-    this.moveToaD( Math.PI - tile.faces[0].angleToCenter + tile.faces[0].angleToNextVertice, tile.size/2); //ready to start
+    this.moveToAD( tile.angle + faces[0].centralAngle, faces[0].radialCoefficient * tile.size); //corner of rhombus
+    this.moveToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex, tile.size/2); //ready to start
     this.moveToaD( 3* piTenths, 0); // ready to go
 
     this.context.strokeStyle = "#FF0000";

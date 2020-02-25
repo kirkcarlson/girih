@@ -55,38 +55,6 @@ IKRS.Tile.IrregularHexagon = function( size, position, angle, fillColor ) {
 
     }
 
-    this.faces = [];
-    var halfNarrowWidth = Math.sin( 2* piTenths); // assuming size = 1
-    var radialShort = Math.sqrt( halfNarrowWidth*halfNarrowWidth + 1/4);
-    var radialLong =  Math.cos(2* piTenths) + 1/2 ;//half the long width of the hexagon
-    var radialAngle = Math.atan( 2* halfNarrowWidth)
-    for (var i=0; i<2; i++) {
-        this.faces.push( new IKRS.Face(
-                /*centralAngle:*/       -2* piTenths - radialAngle,
-                /*angleToNextVertice:*/ 2* piTenths,
-                /*lengthCoefficient:*/  1,
-                /*angleToCenter:*/      Math.PI - radialAngle,
-                /*radialCoefficient:*/  radialShort,
-                /*startAtEdgeBegin:*/   true
-        ));
-        this.faces.push( new IKRS.Face(
-                /*centralAngle:*/       -2* piTenths - radialAngle,
-                /*angleToNextVertice:*/ 6* piTenths,
-                /*lengthCoefficient:*/  1,
-                /*angleToCenter:*/      8* piTenths,
-                /*radialCoefficient:*/  radialLong,
-                /*startAtEdgeBegin:*/   true
-        ));
-        this.faces.push( new IKRS.Face(
-                /*centralAngle:*/       -2* piTenths - radialAngle,
-                /*angleToNextVertice:*/ 2* piTenths,
-                /*lengthCoefficient:*/  1,
-                /*angleToCenter:*/      Math.PI - radialAngle,
-                /*radialCoefficient:*/  radialShort,
-                /*startAtEdgeBegin:*/   true
-        ));
-    }
-
     if (fillColor !== undefined) {
         this.fillColor = fillColor;
     } else {
@@ -148,11 +116,12 @@ IKRS.GirihCanvasHandler.prototype.drawFancyGirihHexagonStrapping = function(tile
     var capGap = this.capGap();
     var strapWidth = this.drawProperties.strappingWidth;
     var strapLength = 0.587 * tile.size
+    var faces = IKRS.Girih.TILE_TYPES [tile.tileType];
 
     var lineNumber = 0
     this.moveToXY( tile.position.x, tile.position.y); // Center of hexagon
-    this.lineToAD( tile.angle + tile.faces[0].centralAngle, tile.faces[0].radialCoefficient * tile.size); //at polygon vertice
-    this.lineToaD( Math.PI - tile.faces[0].angleToCenter + tile.faces[0].angleToNextVertice, tile.size/2); //at midpoint
+    this.lineToAD( tile.angle + faces[0].centralAngle, faces[0].radialCoefficient * tile.size); //at polygon vertice
+    this.lineToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex, tile.size/2); //at midpoint
     this.moveToaD( 3* piTenths, 0); // ready to go
 
     for( var j = 0; j< 2; j++) {

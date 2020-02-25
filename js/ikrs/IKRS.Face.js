@@ -4,17 +4,16 @@
  * @version 1.0.0
  **/
 
-IKRS.Face = function ( centralAngle, angleToNextVertice, lengthCoefficient,
-        angleToCenter, radialCoefficient, startAtEdgeBegin) {
+IKRS.Face = function ( centralAngle, angleToNextVertex, lengthCoefficient,
+        angleToCenter, radialCoefficient) {
 
     IKRS.Object.call( this );
 
     this.centralAngle = centralAngle;
-    this.angleToNextVertice = angleToNextVertice;
+    this.angleToNextVertex = angleToNextVertex;
     this.lengthCoefficient = lengthCoefficient;
     this.angleToCenter = angleToCenter;
     this.radialCoefficient = radialCoefficient;
-    this.startAtEdgeBegin = startAtEdgeBegin; // boolean, false ==> start at edge end
 };
 
 IKRS.Face.prototype.getVertice = function(tile) {
@@ -40,7 +39,9 @@ IKRS.Face.prototype.getMidpoint = function(tile) {
 
 
 IKRS.Face.prototype.toString = function() {
-    return "centralAngle:"+ centralAngle +" nextVertex:"+ this.angleToNextVertice +" length:"+ this.lengthCoefficient +" angleTocenter:"+ this.angleToCenter +" radial:" + this.radialCoefficient
+    return "centralAngle:"+ this.centralAngle +" nextVertex:"+ this.angleToNextVertex +
+           " length:"+ this.lengthCoefficient +" angleToCenter:"+ this.angleToCenter +
+           " radial:"+ this.radialCoefficient;
 }
 
 IKRS.Face.prototype.constructor = IKRS.Face;

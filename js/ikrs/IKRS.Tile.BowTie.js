@@ -52,38 +52,6 @@ IKRS.Tile.BowTie = function( size, position, angle, fillColor) {
 
     }
 
-    this.faces = [];
-    var halfLongWidth = Math.sin(4* piTenths);
-    var radialShort = 1/2 - Math.cos( 4* piTenths)
-    var radialInsideAngle =  Math.atan(halfLongWidth/(1/2))
-    var radialLong = Math.sqrt( 1/4 * halfLongWidth*halfLongWidth) // 1/4 is equivalent to side/2 * side/2)
-    for (var i=0; i<2; i++) {
-        this.faces.push( new IKRS.Face(
-                /*centralAngle:*/       -4* piTenths,
-                /*angleToNextVertice:*/ -2* piTenths,
-                /*lengthCoefficient:*/  1,
-                /*angleToCenter:*/      4* piTenths,
-                /*radialCoefficient:*/  radialShort,
-                /*startAtEdgeBegin:*/   true
-        ));
-        this.faces.push( new IKRS.Face(
-                /*centralAngle:*/       -4* piTenths,
-                /*angleToNextVertice:*/ 6* piTenths,
-                /*lengthCoefficient:*/  1,
-                /*angleToCenter:*/      radialInsideAngle + 6* piTenths,
-                /*radialCoefficient:*/  radialLong,
-                /*startAtEdgeBegin:*/   true
-        ));
-        this.faces.push( new IKRS.Face(
-                /*centralAngle:*/       -4* piTenths,
-                /*angleToNextVertice:*/ 6* piTenths,
-                /*lengthCoefficient:*/  1,
-                /*angleToCenter:*/      Math.PI - radialInsideAngle,
-                /*radialCoefficient:*/  radialLong,
-                /*startAtEdgeBegin:*/   true
-        ));
-    }
-
     this.imageProperties = {
 	source: { x:      288/500.0, // 287,
 		  y:      7/460.0,
@@ -179,10 +147,11 @@ IKRS.GirihCanvasHandler.prototype.drawFancyBowTieStrapping = function(tile) {
     var lineNumber = 0
     var capGap = this.capGap();
     var strapWidth = this.drawProperties.strappingWidth;
+    var faces = IKRS.Girih.TILE_TYPES [tile.tileType];
 
     this.moveToXY( tile.position.x, tile.position.y)
-    this.lineToAD( tile.angle + tile.faces[0].centralAngle, tile.faces[0].radialCoefficient * tile.size); //waist of bowtie
-    this.lineToaD( Math.PI - tile.faces[0].angleToCenter + tile.faces[0].angleToNextVertice, tile.size/2); //ready to start
+    this.lineToAD( tile.angle + faces[0].centralAngle, faces[0].radialCoefficient * tile.size); //waist of bowtie
+    this.lineToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex, tile.size/2); //ready to start
 
     for (var i = 0; i<2; i++ ) {
         var chainNumber = tile.connectors[ lineNumber].CWchainID
@@ -217,8 +186,8 @@ IKRS.GirihCanvasHandler.prototype.drawFancyBowTieStrapping = function(tile) {
 
         //set up for the other end
         this.moveToXY( tile.position.x, tile.position.y)
-        this.lineToAD( tile.angle + tile.faces[0].centralAngle + Math.PI, tile.faces[0].radialCoefficient * tile.size); //waist of bowtie
-        this.lineToaD( Math.PI - tile.faces[0].angleToCenter + tile.faces[0].angleToNextVertice, tile.size/2); //ready to start
+        this.lineToAD( tile.angle + faces[0].centralAngle + Math.PI, faces[0].radialCoefficient * tile.size); //waist of bowtie
+        this.lineToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex, tile.size/2); //ready to start
     }
 }
 
