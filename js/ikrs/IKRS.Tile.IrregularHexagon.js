@@ -77,6 +77,40 @@ IKRS.Tile.IrregularHexagon = function( size, position, angle, fillColor ) {
 };
 
 
+IKRS.Tile.IrregularHexagon.getFaces = function() {
+    var faces = [];
+    var halfNarrowWidth = Math.sin( 2* piTenths); // assuming size = 1
+    var radialShort = Math.sqrt( halfNarrowWidth*halfNarrowWidth + 1/4);
+    var radialLong =  Math.cos(2* piTenths) + 1/2 ;//half the long width of the hexagon
+    var radialAngle = Math.atan( (1/2) / halfNarrowWidth)
+    //var radialAngle = Math.atan(  halfNarrowWidth/(1/2))
+    for (var i=0; i<2; i++) {
+        faces.push( new IKRS.Face(
+            /*centralAngle*/       -7 * piTenths + radialAngle + i* Math.PI,
+            /*angleToNextVertex:*/  2* piTenths,
+            /*lengthCoefficient:*/  1,
+            /*angleToCenter:*/      5* piTenths + radialAngle,
+            /*radialCoefficient:*/  radialShort
+        ));
+        faces.push( new IKRS.Face(
+            /*centralAngle:*/       -2* piTenths + i* Math.PI,
+            /*angleToNextVertex:*/  6* piTenths,
+            /*lengthCoefficient:*/  1,
+            /*angleToCenter:*/      8* piTenths,
+            /*radialCoefficient:*/  radialLong
+        ));
+        faces.push( new IKRS.Face(
+            /*centralAngle:*/       3 * piTenths - radialAngle + i* Math.PI,
+            /*angleToNextVertex:*/  2* piTenths,
+            /*lengthCoefficient:*/  1,
+            /*angleToCenter:*/      7* piTenths - radialAngle,
+            /*radialCoefficient:*/  radialShort
+        ));
+    }
+    return faces;
+}
+
+
 /*
 IKRS.GirihCanvasHandler.prototype.drawGHexagon = function (tile) {
 //inputs: size, position, angle, context
@@ -116,7 +150,7 @@ IKRS.GirihCanvasHandler.prototype.drawFancyGirihHexagonStrapping = function(tile
     var capGap = this.capGap();
     var strapWidth = this.drawProperties.strappingWidth;
     var strapLength = 0.587 * tile.size
-    var faces = IKRS.Girih.TILE_TYPES [tile.tileType];
+    var faces = IKRS.Girih.TILE_FACES [tile.tileType];
 
     var lineNumber = 0
     this.moveToXY( tile.position.x, tile.position.y); // Center of hexagon
@@ -147,6 +181,66 @@ IKRS.GirihCanvasHandler.prototype.drawFancyGirihHexagonStrapping = function(tile
             //endGroup()
         }
     }
+}
+
+
+IKRS.GirihCanvasHandler.prototype.getSVGforFancyGirihHexagonStrapping = function(tile) {
+//inputs: size, position, angle, context
+//returns SVG string
+    // each segment in this function is its own path/segment
+    // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
+
+    //color( lineColor)
+    //width( lineWidth)
+console.log("HexStart")
+    var capGap = this.capGap();
+    var strapWidth = this.drawProperties.strappingWidth;
+    var strapLength = 0.587 * tile.size
+    var faces = IKRS.Girih.TILE_FACES [tile.tileType];
+    var svgStrings = [];
+
+    var lineNumber = 0
+    this.posToXY( tile.position.x, tile.position.y); // Center of hexagon
+    this.posToAD( tile.angle + faces[0].centralAngle, faces[0].radialCoefficient * tile.size); //at polygon vertice
+    this.posToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex, tile.size/2); //at midpoint
+    this.posToaD( 3* piTenths, 0); // ready to go
+
+    for( var j = 0; j< 2; j++) {
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+        //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]));
+        svgStrings.push( this.indent + '<g class="link_'+ lineNumber +'">' + this.eol);
+        var capGap = this.capGap();
+        girihCanvasHandler.indentInc();
+        svgStrings.push( this.getGlineSVG( strapLength - capGap, strapWidth,
+			 7* piTenths, 4* piTenths, false, true, chainColor));
+        this.posToaD( 0, capGap);
+        this.posToaD( 6* piTenths, 0);
+        lineNumber = lineNumber + 1;
+        girihCanvasHandler.indentDec();
+        svgStrings.push( this.indent + '</g>' + this.eol);
+
+        for( var i = 0; i< 2; i++) {
+            var chainNumber = tile.connectors[ lineNumber].CWchainID;
+            var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+            //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
+            svgStrings.push( this.indent + '<g class="link_'+ lineNumber +'">' + this.eol);
+            girihCanvasHandler.indentInc();
+            svgStrings.push( this.getGlineSVG( strapLength, strapWidth, 7* piTenths,
+			     7* piTenths, false, false, chainColor));
+            this.posToaD( -4* piTenths, 0);
+            svgStrings.push( this.getGlineSVG( strapLength - capGap, strapWidth,
+			     7* piTenths, 4* piTenths, false, true, chainColor));
+            girihCanvasHandler.indentDec()
+            svgStrings.push( this.indent + '</g>' + this.eol);
+            this.posToaD( 0, capGap);
+            this.posToaD( 6* piTenths, 0);
+            lineNumber = lineNumber + 1;
+            //endGroup()
+        }
+    }
+console.log("HexEND")
+    return svgStrings.join("")
 }
 
 
@@ -298,4 +392,3 @@ IKRS.Tile.IrregularHexagon.prototype.getVertexAt             = IKRS.Tile.prototy
 IKRS.Tile.IrregularHexagon.prototype.toSVG                   = IKRS.Tile.prototype.toSVG;
 
 IKRS.Tile.IrregularHexagon.prototype.constructor             = IKRS.Tile.IrregularHexagon;
-

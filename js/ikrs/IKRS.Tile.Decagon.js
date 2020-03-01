@@ -60,6 +60,21 @@ IKRS.Tile.Decagon = function( size, position, angle, fillColor ) {
 };
 
 
+IKRS.Tile.Decagon.getFaces = function() {
+    var faces = [];
+    for (var i=0; i<10; i++) {
+        faces.push( new IKRS.Face(
+            /*centralAngle:*/       -4* piTenths + i* 2* piTenths,
+            /*angleToNextVertex:*/  2* piTenths,
+            /*lengthCoefficient:*/  1,
+            /*angleToCenter:*/      6* piTenths,
+            /*radialCoefficient:*/  1/(2* Math.sin(piTenths))
+        ));
+    }
+    return faces;
+}
+
+
 /*
 IKRS.GirihCanvasHandler.prototype.drawDecagon = function (tile) {
 //inputs: size, position, angle, context
@@ -92,7 +107,7 @@ IKRS.GirihCanvasHandler.prototype.drawFancyDecagonStrapping = function(tile) {
     var endBrokenStrap = strapLength - startBrokenStrap // end part of strap
     var capGap = this.capGap();
     var lineSpacing = this.drawProperties.strappingWidth;
-    var faces = IKRS.Girih.TILE_TYPES [tile.tileType];
+    var faces = IKRS.Girih.TILE_FACES [tile.tileType];
 
     this.lineToXY( tile.position.x, tile.position.y); // center of decagon
     this.lineToAD( tile.angle + faces[0].centralAngle, faces[0].radialCoefficient * tile.size); //corner of decagon

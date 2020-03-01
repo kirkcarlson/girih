@@ -55,7 +55,6 @@ IKRS.Tile = function( size,
     this.imageProperties      = null;
 
     this.tileType             = tileType;
-
 };
 
 /**
@@ -232,7 +231,7 @@ IKRS.Tile.prototype.toSVG = function( options,
 				      buffer,
 				      boundingBox
 				    ) {
-
+console.log("Tile.toSVG start")
     var returnBuffer = false;
     if( typeof buffer == "undefined" || !buffer ) {
 	buffer = [];
@@ -240,12 +239,40 @@ IKRS.Tile.prototype.toSVG = function( options,
     }
 
     // Export outer shape?
-    /*
-    this._polygonToSVG( this.polygon,
-			options,
-			polygonStyle,
-			buffer );
-    */
+    if( girihCanvasHandler.drawProperties.drawOutlines) {
+// idStr should be of the form: "tile_xx"
+// classStr should be of the form: "decagon"
+	idStr = "tile_";
+        switch (this.tileType) {
+	case IKRS.Girih.TILE_TYPE_DECAGON:
+	    classStr = "polygon decagon";
+	    break;
+	case IKRS.Girih.TILE_TYPE_GIRIH_HEXAGON:
+	    classStr = "polygon hexagon";
+	    break;
+	case IKRS.Girih.TILE_TYPE_PENTAGON:
+	    classStr = "polygon pentagon";
+	    break;
+	case IKRS.Girih.TILE_TYPE_RHOMBUS:
+	    classStr = "polygon rhombus";
+	    break;
+	case IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS:
+	    classStr = "polygon penrose_rhombus";
+	    break;
+	case IKRS.Girih.TILE_TYPE_BOW_TIE:
+	    classStr = "polygon bow_tie";
+	    break;
+	default:
+	    classStr = "polygon unknown";
+	    break;
+	}
+
+	buffer.push( girihCanvasHandler.getSVGPolygonFromFaces ( this, idStr, classStr, boundingBox));
+    }
+
+    buffer.push( girihCanvasHandler.indent + '<g class="inner">' +
+		 girihCanvasHandler.eol);
+    girihCanvasHandler.indentInc();
     for( var i = 0; i < this.innerTilePolygons.length; i++ ) {
 	this._polygonToSVG( this.innerTilePolygons[i],
 			    options,
@@ -253,56 +280,72 @@ IKRS.Tile.prototype.toSVG = function( options,
 			    buffer,
 			    boundingBox);
     }
+    girihCanvasHandler.indentDec();
+    buffer.push( girihCanvasHandler.indent + '</g>' + girihCanvasHandler.eol);
+console.log("Tile.toSVG mid1")
 
     // Export outer tile polygons?
-    /*
+    buffer.push( girihCanvasHandler.indent + '<g class="outer">' +
+	    girihCanvasHandler.eol);
+    girihCanvasHandler.indentInc();
     for( var i = 0; i < this.outerTilePolygons.length; i++ ) {
 	this._polygonToSVG( this.outerTilePolygons[i],
 			    options,
 			    polygonStyle,
-			    buffer );
+			    buffer,
+			    boundingBox);
     }
-    */
+    girihCanvasHandler.indentDec();
+    buffer.push( girihCanvasHandler.indent + '</g>' + girihCanvasHandler.eol);
+console.log("Tile.toSVG mid2")
 
+// do something for strapping... this is case specific for now but should be generalized for all tiles.
+    buffer.push( '    <g class="strapping">\n');
+    girihCanvasHandler.indentInc();
+    if( this.tileType === IKRS.Girih.TILE_TYPE_GIRIH_HEXAGON) {
+        buffer.push( girihCanvasHandler.getSVGforFancyGirihHexagonStrapping( this));
+console.log("fired");
+    }
+    girihCanvasHandler.indentDec();
+    buffer.push( girihCanvasHandler.indent + '</g>' + girihCanvasHandler.eol);
 
-    if( returnBuffer )
+console.log("Tile.toSVG end")
+    if( returnBuffer ) {
 	return buffer;
-    else
+    } else {
 	return buffer.join( "" );
+    }
 };
+
 
 IKRS.Tile.prototype._polygonToSVG = function( polygon,
 					      options,
 					      polygonStyle,
 					      buffer,
-					      boundingBox
+					      boundingBox,
+					      indent
 					      ) {
+    var vertex;
     if( typeof options != "undefined" && typeof options.indent != "undefined" )
 	buffer.push( options.indent );
-
-    buffer.push( "<polygon points=\"" );
-    var vert;
-    for( var i = 0; i < polygon.vertices.length; i++ ) {
-	vert = this._translateVertex( polygon.getVertexAt(i) ); // getTranslatedVertex(i);
-	if( i > 0 )
-	    buffer.push( " " );
-	buffer.push( IKRS.Girih.round(vert.x, IKRS.Girih.SVG_PRECISION ));
-	buffer.push( "," );
-	buffer.push( IKRS.Girih.round(vert.y, IKRS.Girih.SVG_PRECISION ));
-
-        boundingBox.evaluatePoint( vert.x, vert.y) // important to use translated vertices
-    }
-
-
-    buffer.push( "\"" );
+    buffer.push( girihCanvasHandler.indent + '<polygon' );
 
     if( typeof polygonStyle != "undefined" && polygonStyle != "") {
-	buffer.push( " style=\"" );
-	buffer.push( polygonStyle );
-	buffer.push( "\"" );
+	buffer.push( ' style="' + polygonStyle +'"' );
     }
 
-    buffer.push( " />\n" );
+    buffer.push( ' points="' );
+    for( var i = 0; i < polygon.vertices.length; i++ ) {
+	vertex = this._translateVertex( polygon.getVertexAt(i) ); // getTranslatedVertex(i);
+	if( i > 0 )
+	    buffer.push( " " );
+	buffer.push( girihCanvasHandler.round(vertex.x, girihCanvasHandler.SVG_PRECISION ));
+	buffer.push( "," );
+	buffer.push( girihCanvasHandler.round(vertex.y, girihCanvasHandler.SVG_PRECISION ));
+
+        boundingBox.evaluatePoint( vertex.x, vertex.y) // important to use translated vertices
+    }
+    buffer.push( '"/>'+ girihCanvasHandler.eol );
     return
 }
 

@@ -74,6 +74,40 @@ IKRS.Tile.BowTie = function( size, position, angle, fillColor) {
     this._buildOuterPolygons();       // Only call AFTER the inner polygons were created!
 };
 
+
+IKRS.Tile.BowTie.getFaces = function () {
+    var faces = [];
+    var halfLongWidth = Math.sin(4* piTenths);
+    var radialShort = 1/2 - Math.cos( 4* piTenths)
+    var radialLong = Math.sqrt( 1/4 + halfLongWidth*halfLongWidth) // 1/4 is equivalent to side/2 * side/2)
+    var angleB = Math.atan((1/2) / halfLongWidth)
+    for (var i=0; i<2; i++) {
+        faces.push( new IKRS.Face(
+            /*centralAngle:*/       -4* piTenths + i* Math.PI,
+            /*angleToNextVertex:*/  -2* piTenths,
+            /*lengthCoefficient:*/  1,
+            /*angleToCenter:*/      4* piTenths,
+            /*radialCoefficient:*/  radialShort
+        ));
+        faces.push( new IKRS.Face(
+            /*centralAngle:*/       1 * piTenths - angleB + i* Math.PI,
+            /*angleToNextVertex:*/  6* piTenths,
+            /*lengthCoefficient:*/  1,
+            /*angleToCenter:*/      11 * piTenths - angleB, //pi - angleAprime
+            /*radialCoefficient:*/  radialLong
+        ));
+        faces.push( new IKRS.Face(
+            /*centralAngle:*/       1* piTenths + angleB + i* Math.PI,
+            /*angleToNextVertex:*/  6* piTenths,
+            /*lengthCoefficient:*/  1,
+            /*angleToCenter:*/      5* piTenths + angleB,
+            /*radialCoefficient:*/  radialLong
+        ));
+    }
+    return faces;
+}
+
+
 IKRS.Tile.BowTie.prototype._buildInnerPolygons = function( edgeLength ) {
 
     var indices = [ 1, 4 ];
@@ -147,7 +181,7 @@ IKRS.GirihCanvasHandler.prototype.drawFancyBowTieStrapping = function(tile) {
     var lineNumber = 0
     var capGap = this.capGap();
     var strapWidth = this.drawProperties.strappingWidth;
-    var faces = IKRS.Girih.TILE_TYPES [tile.tileType];
+    var faces = IKRS.Girih.TILE_FACES [tile.tileType];
 
     this.moveToXY( tile.position.x, tile.position.y)
     this.lineToAD( tile.angle + faces[0].centralAngle, faces[0].radialCoefficient * tile.size); //waist of bowtie

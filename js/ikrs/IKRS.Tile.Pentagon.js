@@ -67,9 +67,23 @@ IKRS.Tile.Pentagon = function( size, position, angle, fillColor ) {
     this._buildOuterPolygons();       // Only call AFTER the inner polygons were built!
 };
 
+
+IKRS.Tile.Pentagon.getFaces = function() {
+    var faces = [];
+    for (var i=0; i<5; i++) {
+        faces.push( new IKRS.Face(
+             /*centralAngle:*/       -3* piTenths + i* 4* piTenths,
+             /*angleToNextVertex:*/  4* piTenths,
+             /*lengthCoefficient:*/  1,
+             /*angleToCenter:*/      7* piTenths,
+             /*radialCoefficient:*/  1/(2* Math.sin( 2* piTenths))
+        ));
+    }
+    return faces;
+}
+
+
 IKRS.Tile.Pentagon.prototype._buildInnerPolygons = function( edgeLength ) {
-
-
     // Connect all edges half-the-way
     var innerTile = new IKRS.Polygon(); // [];
     //innerTile.push( this.vertices[0].scaleTowards( this.vertices[1], 0.5 ) );
@@ -161,7 +175,7 @@ IKRS.GirihCanvasHandler.prototype.drawFancyPentagonStrapping = function(tile) {
 
     var capGap = this.capGap();
     var strapWidth = this.drawProperties.strappingWidth;
-    var faces = IKRS.Girih.TILE_TYPES [tile.tileType];
+    var faces = IKRS.Girih.TILE_FACES [tile.tileType];
 
     this.moveToXY( tile.position.x, tile.position.y); // center of pentagon
 this.context.beginPath(); //DEBUG

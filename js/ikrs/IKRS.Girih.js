@@ -38,9 +38,9 @@ IKRS.Girih.prototype._minimizeTiles = function ( tiles) {
 	// get the essense of the tile position
 	var tileType = tiles [i].tileType;
 	var size =     tiles [i].size;
-	var x =        IKRS.Girih.round(tiles [i].position.x, 3);
-	var y =        IKRS.Girih.round(tiles [i].position.y, 3);
-	var angle =    IKRS.Girih.round(tiles [i].angle, 3);
+	var x =        girihCanvasHandler.round(tiles [i].position.x, 3);
+	var y =        girihCanvasHandler.round(tiles [i].position.y, 3);
+	var angle =    girihCanvasHandler.round(tiles [i].angle, 3);
 
 	obj.push ({ "tileType": tileType,
 		    "size": size,
@@ -124,7 +124,6 @@ IKRS.Girih.prototype.buildConnectors = function( tiles) {
 	}
     }
 
-
     var DEBUG = false;
     // print out the connections
     if ( DEBUG) {
@@ -136,6 +135,7 @@ IKRS.Girih.prototype.buildConnectors = function( tiles) {
 	}
     }
 }
+
 
 IKRS.Girih.prototype.findConnections = function( tiles, chains) {
     console.log ('find the connections');
@@ -306,9 +306,9 @@ IKRS.Girih.prototype.findAllChains = function( tiles) {
 		// white is normal background color
 		// black is reserved for chain selection
 		chain.fillColor = "rgba(" +
-			(16+ Math.round( Math.random()*255-32 )) + "," +
-			(16+ Math.round( Math.random()*255-32 )) + "," +
-			(16+ Math.round( Math.random()*255-32 )) + "," +
+			(64+ Math.round( Math.random()*255-64-16 )) + "," +
+			(64+ Math.round( Math.random()*255-64-16 )) + "," +
+			(64+ Math.round( Math.random()*255-64-16 )) + "," +
 			"1)";
 	    }
 	} else {
@@ -339,8 +339,8 @@ IKRS.Girih.rad2deg = function( rad ) {
 
 // 18.0 * (Math.PI/180.0);
 IKRS.Girih.MINIMAL_ANGLE = IKRS.Girih.deg2rad(18.0); 
-
 IKRS.Girih.EPSILON       = 1.0e-6;
+IKRS.Girih.DEFAULT_EDGE_LENGTH          = 58;
 
 
 IKRS.Girih.TILE_TYPE_UNKNOWN            = -1;
@@ -354,236 +354,14 @@ IKRS.Girih.TILE_TYPE_BOW_TIE            = 4;
 IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS    = 5;
 //IKRS.Girih.TILE_TYPE_OCTAGON            = 6;
 
+IKRS.Girih.TILE_FACES                   = Array(6);
+IKRS.Girih.TILE_FACES [ IKRS.Girih.TILE_TYPE_DECAGON] =         IKRS.Tile.Decagon.getFaces();
+IKRS.Girih.TILE_FACES [ IKRS.Girih.TILE_TYPE_PENTAGON] =        IKRS.Tile.Pentagon.getFaces();
+IKRS.Girih.TILE_FACES [ IKRS.Girih.TILE_TYPE_GIRIH_HEXAGON] =   IKRS.Tile.IrregularHexagon.getFaces();
+IKRS.Girih.TILE_FACES [ IKRS.Girih.TILE_TYPE_RHOMBUS] =         IKRS.Tile.Rhombus.getFaces();
+IKRS.Girih.TILE_FACES [ IKRS.Girih.TILE_TYPE_BOW_TIE] =         IKRS.Tile.BowTie.getFaces();
+IKRS.Girih.TILE_FACES [ IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS] = IKRS.Tile.PenroseRhombus.getFaces();
 
-IKRS.Girih.TILE_TYPES                   = Array(6);
-IKRS.Girih.DEFAULT_EDGE_LENGTH         = 58;
-
-
-//DECAGON
-var faces = [];
-for (var i=0; i<10; i++) {
-    faces.push( new IKRS.Face(
-        /*centralAngle:*/       -4* piTenths + i* 2* piTenths,
-        /*angleToNextVertex:*/  2* piTenths,
-        /*lengthCoefficient:*/  1,
-        /*angleToCenter:*/      6* piTenths,
-        /*radialCoefficient:*/  1/(2* Math.sin(piTenths))
-    ));
-}
-IKRS.Girih.TILE_TYPES [ IKRS.Girih.TILE_TYPE_DECAGON] = faces;
-
-
-//PENTAGON
-var faces = [];
-for (var i=0; i<5; i++) {
-    faces.push( new IKRS.Face(
-        /*centralAngle:*/       -3* piTenths + i* 4* piTenths,
-        /*angleToNextVertex:*/  4* piTenths,
-        /*lengthCoefficient:*/  1,
-        /*angleToCenter:*/      7* piTenths,
-        /*radialCoefficient:*/  1/(2* Math.sin( 2* piTenths))
-    ));
-}
-IKRS.Girih.TILE_TYPES [ IKRS.Girih.TILE_TYPE_PENTAGON] = faces;
-
-
-//GIRIH_HEXAGON
-var faces = [];
-var halfNarrowWidth = Math.sin( 2* piTenths); // assuming size = 1
-var radialShort = Math.sqrt( halfNarrowWidth*halfNarrowWidth + 1/4);
-var radialLong =  Math.cos(2* piTenths) + 1/2 ;//half the long width of the hexagon
-var radialAngle = Math.atan( (1/2) / halfNarrowWidth)
-//var radialAngle = Math.atan(  halfNarrowWidth/(1/2))
-for (var i=0; i<2; i++) {
-    faces.push( new IKRS.Face(
-        /*centralAngle*/       -7 * piTenths + radialAngle + i* Math.PI,
-        /*angleToNextVertex:*/  2* piTenths,
-        /*lengthCoefficient:*/  1,
-        /*angleToCenter:*/      5* piTenths + radialAngle,
-        /*radialCoefficient:*/  radialShort
-    ));
-    faces.push( new IKRS.Face(
-        /*centralAngle:*/       -2* piTenths + i* Math.PI,
-        /*angleToNextVertex:*/  6* piTenths,
-        /*lengthCoefficient:*/  1,
-        /*angleToCenter:*/      8* piTenths,
-        /*radialCoefficient:*/  radialLong
-    ));
-    faces.push( new IKRS.Face(
-        /*centralAngle:*/       3 * piTenths - radialAngle + i* Math.PI,
-        /*angleToNextVertex:*/  2* piTenths,
-        /*lengthCoefficient:*/  1,
-        /*angleToCenter:*/      7* piTenths - radialAngle,
-        /*radialCoefficient:*/  radialShort
-    ));
-}
-IKRS.Girih.TILE_TYPES [ IKRS.Girih.TILE_TYPE_GIRIH_HEXAGON] = faces;
-
-
-//RHOMBUS
-var faces = [];
-var radialShort = Math.sin( 2* piTenths);
-var radialLong = Math.cos( 2* piTenths);
-for (var i=0; i<2; i++) {
-    faces.push( new IKRS.Face(
-        /*centralAngle:*/       3* piTenths + i* Math.PI,
-        /*angleToNextVertex:*/  4* piTenths,
-        /*lengthCoefficient:*/  1,
-        /*angleToCenter:*/      7* piTenths,
-        /*radialCoefficient:*/  radialShort
-    ));
-    faces.push( new IKRS.Face(
-        /*centralAngle:*/       8* piTenths + i* Math.PI,
-        /*angleToNextVertex:*/  6* piTenths,
-        /*lengthCoefficient:*/  1,
-        /*angleToCenter:*/      8* piTenths,
-        /*radialCoefficient:*/  radialLong
-    ));
-}
-IKRS.Girih.TILE_TYPES [ IKRS.Girih.TILE_TYPE_RHOMBUS] = faces;
-
-
-//BOW_TIE
-var faces = [];
-var halfLongWidth = Math.sin(4* piTenths);
-var radialShort = 1/2 - Math.cos( 4* piTenths)
-var radialLong = Math.sqrt( 1/4 + halfLongWidth*halfLongWidth) // 1/4 is equivalent to side/2 * side/2)
-var angleB = Math.atan((1/2) / halfLongWidth)
-for (var i=0; i<2; i++) {
-    faces.push( new IKRS.Face(
-        /*centralAngle:*/       -4* piTenths + i* Math.PI,
-        /*angleToNextVertex:*/  -2* piTenths,
-        /*lengthCoefficient:*/  1,
-        /*angleToCenter:*/      4* piTenths,
-        /*radialCoefficient:*/  radialShort
-    ));
-    faces.push( new IKRS.Face(
-        /*centralAngle:*/       1 * piTenths - angleB + i* Math.PI,
-        /*angleToNextVertex:*/  6* piTenths,
-        /*lengthCoefficient:*/  1,
-        /*angleToCenter:*/      11 * piTenths - angleB, //pi - angleAprime
-        /*radialCoefficient:*/  radialLong
-    ));
-    faces.push( new IKRS.Face(
-        /*centralAngle:*/       1* piTenths + angleB + i* Math.PI,
-        /*angleToNextVertex:*/  6* piTenths,
-        /*lengthCoefficient:*/  1,
-        /*angleToCenter:*/      5* piTenths + angleB,
-        /*radialCoefficient:*/  radialLong
-    ));
-}
-IKRS.Girih.TILE_TYPES [ IKRS.Girih.TILE_TYPE_BOW_TIE] = faces;
-
-
-//PENROSE_RHOMBUS
-var faces = [];
-var radialShort = Math.sin( 1* piTenths);
-var radialLong = Math.cos( 1* piTenths);
-for (var i=0; i<2; i++) {
-    faces.push( new IKRS.Face(
-        /*centralAngle:*/       4* piTenths + i* Math.PI,
-        /*angleToNextVertex:*/  2* piTenths,
-        /*lengthCoefficient:*/  1,
-        /*angleToCenter:*/      6* piTenths,
-        /*radialCoefficient:*/  radialShort
-    ));
-    faces.push( new IKRS.Face(
-        /*centralAngle:*/       9* piTenths + i* Math.PI,
-        /*angleToNextVertex:*/  8* piTenths,
-        /*lengthCoefficient:*/  1,
-        /*angleToCenter:*/      9* piTenths,
-        /*radialCoefficient:*/  radialLong
-    ));
-}
-IKRS.Girih.TILE_TYPES [ IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS] = faces;
-
-
-
-// round is used to limit the number of digits included in the SVG output
-IKRS.Girih.round = function( n, digits) {
-    // round n to the digits number of digits right of decimal point
-    // n is the number to be rounded
-    // digits is the number of digits
-    if (digits === undefined) {
-      digits = 0
-    }
-    var magnitude = Math.pow( 10, digits)
-    return Math.round( n * magnitude) / magnitude
-}
-
-IKRS.Girih.SVG_PRECISION = 3;
-const svgBackground = "";
-const fontStyle = "font:10pt normal Helvetica, Ariel, sans-serif;";
-
-IKRS.Girih.prototype.toSVG = function( options,
-				       polygonStyle,
-				       buffer
-				     ) {
-
-    var returnBuffer = false;
-    if( typeof buffer == "undefined" || !buffer ) {
-	buffer = [];
-	returnBuffer = true;
-    }
-
-    if (polygonStyle === undefined) {
-	polygonStyle = ""
-    }
-    if (fontStyle === undefined) {
-	fontStyle = "font:10pt normal Helvetica, Ariel, sans-serif;"
-    }
-    if (svgBackground != undefined && svgBackground !== "") {
-	var background = '<rect width="100%" height="100%" fill="' + svgBackground + '"/>';
-    } else {
-	var background = ""
-    }
-    var highWater = new IKRS.BoundingBox3()
-
-    var oldIndent = options.indent;
-    options.indent += "    ";
-    for( var i = 0; i < this.tiles.length; i++ ) {
-	var boundingBox = new IKRS.BoundingBox3()
-	this.tiles[i].toSVG( options, "", buffer, boundingBox );
-
-	highWater.evaluatePoint(boundingBox)
-    }
-
-    options.indent = oldIndent;
-
-
-var svgPreamble = `<svg id="girih-svg" xmlns="http://www.w3.org/2000/svg" version="1.1"
-    height="` + IKRS.Girih.round( highWater.getHeight(), IKRS.Girih.SVG_PRECISION) + `"
-    width="` + IKRS.Girih.round( highWater.getWidth(), IKRS.Girih.SVG_PRECISION) + `">
-<style>
-path {
-    fill:none;
-    vector-effect:non-scaling-stroke;
-}
-polygon {
-    ` + polygonStyle + `
-}
-text {
-    fill:black;
-    ` + fontStyle + `
-}
-</style>
-
-<g transform="matrix(1 0 0 1 ` +
-    IKRS.Girih.round( -highWater.getXMin(), IKRS.Girih.SVG_PRECISION) + ` ` +
-    IKRS.Girih.round( -highWater.getYMin(), IKRS.Girih.SVG_PRECISION) + `)">
-`
-svgTrailer = `
-</g>
-<script>
-/* for any runtime JavaScript to control or animate the girih */
-/* This must be at the end of the file to execute after the girih DOM is built*/
-</script>
-</svg>`
-
-    // put the pieces together
-    buffer.unshift( svgPreamble)
-    buffer.push( svgTrailer)
-    return buffer
-}
+//const svgBackground = "";
 
 IKRS.Girih.prototype.constructor = IKRS.Girih;

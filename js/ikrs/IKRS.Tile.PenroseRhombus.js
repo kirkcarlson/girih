@@ -77,8 +77,32 @@ IKRS.Tile.PenroseRhombus = function( size, position, angle, opt_addCenterPolygon
     this._buildOuterPolygons( opt_addCenterPolygon );
 };
 
-IKRS.Tile.PenroseRhombus.prototype._buildInnerPolygons = function( addCenterPolygon ) {
 
+IKRS.Tile.PenroseRhombus.getFaces = function() {
+    var faces = [];
+    var radialShort = Math.sin( 1* piTenths);
+    var radialLong = Math.cos( 1* piTenths);
+    for (var i=0; i<2; i++) {
+        faces.push( new IKRS.Face(
+            /*centralAngle:*/       4* piTenths + i* Math.PI,
+            /*angleToNextVertex:*/  2* piTenths,
+            /*lengthCoefficient:*/  1,
+            /*angleToCenter:*/      6* piTenths,
+            /*radialCoefficient:*/  radialShort
+        ));
+        faces.push( new IKRS.Face(
+            /*centralAngle:*/       9* piTenths + i* Math.PI,
+            /*angleToNextVertex:*/  8* piTenths,
+            /*lengthCoefficient:*/  1,
+            /*angleToCenter:*/      9* piTenths,
+            /*radialCoefficient:*/  radialLong
+        ));
+    }
+    return faces;
+}
+
+
+IKRS.Tile.PenroseRhombus.prototype._buildInnerPolygons = function( addCenterPolygon ) {
     var indices              = [ 0, 2 ];
     var innerPointIndexLeft  = -1;
     var innerPointIndexRight = -1;
@@ -91,7 +115,6 @@ IKRS.Tile.PenroseRhombus.prototype._buildInnerPolygons = function( addCenterPoly
 	var right  = this.getVertexAt( index+1 ).clone().scaleTowards( this.getVertexAt(index+2), 0.5 );
 	var innerA = this.getVertexAt( index+1 ).clone().multiplyScalar( 0.28 );
 	var innerB = this.getVertexAt( index+1 ).clone().multiplyScalar( 0.55 );
-
 
 	innerTile.addVertex( left );
 	innerTile.addVertex( innerA );
@@ -114,6 +137,7 @@ IKRS.Tile.PenroseRhombus.prototype._buildInnerPolygons = function( addCenterPoly
 
 };
 
+
 IKRS.Tile.PenroseRhombus.prototype._buildOuterPolygons = function( centerPolygonExists ) {
 
     // Add left and right 'spikes'.
@@ -133,7 +157,6 @@ IKRS.Tile.PenroseRhombus.prototype._buildOuterPolygons = function( centerPolygon
 	outerTile.addVertex( innerB.clone() );
 
 	this.outerTilePolygons.push( outerTile );
-
     }
 
     // If the center polygon exists then the last outer polygon is split into two.
@@ -156,7 +179,6 @@ IKRS.Tile.PenroseRhombus.prototype._buildOuterPolygons = function( centerPolygon
 
     } else {
 	// One polygon
-
     }
 
 };
@@ -176,7 +198,7 @@ IKRS.GirihCanvasHandler.prototype.drawFancyPenroseRhombusStrapping = function(ti
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
     var capGap = this.capGap();
     var strapWidth = this.drawProperties.strappingWidth;
-    var faces = IKRS.Girih.TILE_TYPES [tile.tileType];
+    var faces = IKRS.Girih.TILE_FACES [tile.tileType];
     const shortSegmentLength = 0.163 * tile.size;
     const mediumSegmentLength = 0.2625 * tile.size;
     const longSegmentLength = 0.587 * tile.size;

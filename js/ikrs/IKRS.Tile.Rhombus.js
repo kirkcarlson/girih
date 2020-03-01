@@ -68,6 +68,31 @@ IKRS.Tile.Rhombus = function( size, position, angle, fillColor) {
     this._buildOuterPolygons();  // Call only AFTER the inner polygons were built!
 };
 
+
+IKRS.Tile.Rhombus.getFaces = function () {
+    var faces = [];
+    var radialShort = Math.sin( 2* piTenths);
+    var radialLong = Math.cos( 2* piTenths);
+    for (var i=0; i<2; i++) {
+        faces.push( new IKRS.Face(
+            /*centralAngle:*/       3* piTenths + i* Math.PI,
+            /*angleToNextVertex:*/  4* piTenths,
+            /*lengthCoefficient:*/  1,
+            /*angleToCenter:*/      7* piTenths,
+            /*radialCoefficient:*/  radialShort
+        ));
+        faces.push( new IKRS.Face(
+            /*centralAngle:*/       8* piTenths + i* Math.PI,
+            /*angleToNextVertex:*/  6* piTenths,
+            /*lengthCoefficient:*/  1,
+            /*angleToCenter:*/      8* piTenths,
+            /*radialCoefficient:*/  radialLong
+        ));
+    }
+    return faces;
+}
+
+
 IKRS.Tile.Rhombus.prototype._buildInnerPolygons = function() {
 
        // Connect all edges half-the-way
@@ -145,7 +170,7 @@ IKRS.GirihCanvasHandler.prototype.drawFancyRhombusStrapping = function(tile) {
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
     var capGap = this.capGap();
     var strapWidth = this.drawProperties.strappingWidth;
-    var faces = IKRS.Girih.TILE_TYPES [tile.tileType];
+    var faces = IKRS.Girih.TILE_FACES [tile.tileType];
 
     //color( lineColor)
     //width( lineWidth)
