@@ -1678,45 +1678,53 @@ IKRS.GirihCanvasHandler.prototype.getSVGForeword = function( highWater) {
 path {
     vector-effect:non-scaling-stroke;
 }
-polygon {
+polygon { /* includes inner and outer facets */
     stroke:black;
     stroke-width: 1px;
-    fill:white;
+    fill:transparent;
 }
 .decagon{
-{
+}
 .pentagon{
-{
+}
 .hexagon{
-{
+    fill: lightblue;
+}
 .rhombus{
-{
+}
 .penrose_rhombus{
-{
+}
 .bow_tie{
-{
+}
 text {
     fill:black;
-    ` + fontStyle + `
+    font:10pt normal Helvetica, Ariel, sans-serif;
 }
 .gfill {
-    fill-opacity: 1;
     fill: yellow;
+    fill-opacity: 1;
+    stroke:transparent;
     stroke-opacity: 0;
     stroke-width: 0;
 }
 .gstroke {
-    fill: white;
-    fill-opacity: 0;
     stroke: black;
+    fill: transparent;
+    fill-opacity: 0; 
     stroke-linejoin: miter;
     stroke-opacity: 1;
     stroke-width: 1px;
 }
+.inner polygon {
+    fill: lightyellow;
+}
+.outer polygon {
+    fill: aliceblue;
+}
 svg, .background {
     width:100%;
     height:100%;
-    fill:LightBlue;
+    fill:lightblue;
 }
 </style>
 
