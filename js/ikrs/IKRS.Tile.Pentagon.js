@@ -149,24 +149,6 @@ IKRS.Tile.Pentagon.prototype._buildOuterPolygons = function() {
 // it is in this file because it is specific to Pentagons
 // it is part of the GirihCanvasHandler because it is manipulating the canvas image
 
-IKRS.GirihCanvasHandler.prototype.drawPentagon = function (tile) {
-//inputs: size, position, angle, context
-    this.context.beginPath();
-console.log("tile position:" + IKRS.Girih.round(tile.position.x) +","+
-                               IKRS.Girih.round(tile.position.y) +" angle:"+
-                               IKRS.Girih.round( IKRS.Girih.rad2deg(tile.angle)) +" size:" + tile.size)
-        //assume tile angle 0 is east, and first tile segment is sloping to right top
-    var radial = tile.size/(2 * Math.sin( 2 * piTenths));
-    this.moveToXY( tile.position.x, tile.position.y); // center of pentagon
-    this.lineToAD( tile.angle -3* piTenths, radial); //corner of pentagon
-    this.moveToAD( tile.angle, 0); //corner of pentagon, ready for side
-    for (var i=0; i<5; i++) {
-        this.lineToaD( 4* piTenths, tile.size);
-    }
-    this.context.strokeStyle = "#0000FF";
-    this.context.stroke();
-    this.context.closePath();
-}
 
 IKRS.GirihCanvasHandler.prototype.drawFancyPentagonStrapping = function(tile) {
 //inputs: size, position, angle, context
@@ -195,6 +177,41 @@ this.context.stroke(); //DEBUG
 	this.moveToaD( 0, capGap);
 	this.lineToaD( 3* piTenths, 0);
     }
+}
+
+
+IKRS.GirihCanvasHandler.prototype.getSVGforFancyPentagonStrapping = function(tile) {
+//inputs: size, position, angle, context
+    // each segment in this function is its own path/segment
+    // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
+
+    var capGap = this.capGap();
+    var strapWidth = this.drawProperties.strappingWidth;
+    var faces = IKRS.Girih.TILE_FACES [tile.tileType];
+    var svgStrings = [];
+
+    this.posToXY( tile.position.x, tile.position.y); // center of pentagon
+    this.posToAD( tile.angle + faces[0].centralAngle, faces[0].radialCoefficient * tile.size); //vertex 0
+    this.posToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex, tile.size/2); //midpoint of side 0
+    for( var i = 0; i<5; i++) {
+	lineNumber = i
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+        svgStrings.push( this.indent + '<g class="link_'+ lineNumber +'">' + this.eol);
+        this.indentInc();
+
+	this.posToaD( 3* piTenths, 0);
+	svgStrings.push( this.getGlineSVG( 0.425 * tile.size, strapWidth,
+                         7* piTenths, 6* piTenths, false, false, chainColor));
+	this.posToaD( -2* piTenths, 0);
+	svgStrings.push( this.getGlineSVG( 0.425 * tile.size - capGap, strapWidth,
+                         6* piTenths, 4* piTenths, false, true, chainColor));
+	this.posToaD( 0, capGap);
+	this.posToaD( 3* piTenths, 0);
+        this.indentDec()
+        svgStrings.push( this.indent + '</g>' + this.eol);
+    }
+    return svgStrings.join("");
 }
 
 

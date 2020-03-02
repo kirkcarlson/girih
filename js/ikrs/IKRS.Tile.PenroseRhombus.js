@@ -240,6 +240,64 @@ IKRS.GirihCanvasHandler.prototype.drawFancyPenroseRhombusStrapping = function(ti
 }
 
 
+IKRS.GirihCanvasHandler.prototype.getSVGforFancyPenroseRhombusStrapping = function(tile) {
+//inputs: size, position, angle, context
+    // each segment in this function is its own path/segment
+    // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
+    var capGap = this.capGap();
+    var strapWidth = this.drawProperties.strappingWidth;
+    var faces = IKRS.Girih.TILE_FACES [tile.tileType];
+    const shortSegmentLength = 0.163 * tile.size;
+    const mediumSegmentLength = 0.2625 * tile.size;
+    const longSegmentLength = 0.587 * tile.size;
+    var svgStrings = [];
+
+    //color( lineColor)
+    //width( lineWidth)
+    this.posToXY( tile.position.x, tile.position.y); // Center of rhombus
+    this.posToAD( tile.angle + faces[0].centralAngle, faces[0].radialCoefficient * tile.size); //corner of rhombus
+    this.posToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex, tile.size/2); //ready to start
+    this.posToaD( 3* piTenths, 0); // ready to go
+
+    var lineNumber = 0
+
+    for (var i = 0; i<2; i++ ) {
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+        //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
+        svgStrings.push( this.indent + '<g class="link_'+ lineNumber +'">' + this.eol);
+        this.indentInc();
+        svgStrings.push( this.getGlineSVG( shortSegmentLength, strapWidth, 7* piTenths, 4* piTenths, false, false, chainColor))
+        this.posToaD( 2* piTenths, 0)
+        svgStrings.push( this.getGlineSVG( shortSegmentLength - capGap, strapWidth, 4* piTenths, 4* piTenths, false, true, chainColor))
+        this.posToaD( 0, capGap)
+        this.posToaD( 6* piTenths, 0)
+        //endGroup()
+        this.indentDec();
+        svgStrings.push( this.indent + '</g>' + this.eol);
+
+        lineNumber = lineNumber + 1
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+        //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
+        svgStrings.push( this.indent + '<g class="link_'+ lineNumber +'">' + this.eol);
+        this.indentInc();
+        svgStrings.push( this.getGlineSVG( mediumSegmentLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true, chainColor))
+        this.posToaD( 0, 2* capGap); // capGap on each side of crossed segment
+        svgStrings.push( this.getGlineSVG( longSegmentLength - mediumSegmentLength - capGap, strapWidth, 6* piTenths, 7* piTenths, true, false, chainColor))
+        this.moveToaD( -4* piTenths, 0)
+        svgStrings.push( this.getGlineSVG( longSegmentLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true, chainColor))
+        this.posToaD( 0, capGap)
+        this.posToaD( 6* piTenths, 0)
+        lineNumber = lineNumber + 1
+        //endGroup()
+        this.indentDec();
+        svgStrings.push( this.indent + '</g>' + this.eol);
+    }
+    return svgStrings.join("");
+}
+
+
 // This is totally shitty. Why object inheritance when I still
 // have to inherit object methods manually??!
 IKRS.Tile.PenroseRhombus.prototype.evaluatePoint           = IKRS.Tile.prototype.evaluatePoint; //kirk

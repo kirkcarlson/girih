@@ -111,35 +111,6 @@ IKRS.Tile.IrregularHexagon.getFaces = function() {
 }
 
 
-/*
-IKRS.GirihCanvasHandler.prototype.drawGHexagon = function (tile) {
-//inputs: size, position, angle, context
-    this.context.beginPath();
-console.log("hexagon tile position:" + IKRS.Girih.round(tile.position.x) +","+
-                                       IKRS.Girih.round(tile.position.y) +" angle:"+
-                                       IKRS.Girih.round( IKRS.Girih.rad2deg(tile.angle)) +" size:" + tile.size)
-        //assume tile angle 0 is east, and first tile segment is sloping to right top
-    var height = tile.size * Math.sin( 2* piTenths);
-    var radial = Math.sqrt( height*height + tile.size*tile.size/4);
-    var radialAngle = Math.atan( height/ (tile.size/2))
-console.log("height:" + IKRS.Girih.round(height,2) +" radial:" + IKRS.Girih.round(radial,2) +" radialAngle:"+ IKRS.Girih.round(radialAngle,2) +":"+ IKRS.Girih.round(radialAngle*180/Math.PI,2))
-    this.moveToXY( tile.position.x, tile.position.y); // Center of hexagon
-    this.lineToAD( tile.angle - radialAngle - 2* piTenths, radial); //corner of hexagon
-    this.lineToaD( radialAngle, 0); //ready to start
-
-    this.lineToaD( 2* piTenths, tile.size);
-    this.lineToaD( 6* piTenths, tile.size);
-    this.lineToaD( 2* piTenths, tile.size);
-    this.lineToaD( 2* piTenths, tile.size);
-    this.lineToaD( 6* piTenths, tile.size);
-    this.lineToaD( 2* piTenths, tile.size);
-
-    this.context.strokeStyle = "#0000FF";
-    this.context.stroke();
-    this.context.closePath();
-}
-*/
-
 IKRS.GirihCanvasHandler.prototype.drawFancyGirihHexagonStrapping = function(tile) {
 //inputs: size, position, angle, context
     // each segment in this function is its own path/segment
@@ -160,7 +131,7 @@ IKRS.GirihCanvasHandler.prototype.drawFancyGirihHexagonStrapping = function(tile
 
     for( var j = 0; j< 2; j++) {
         var chainNumber = tile.connectors[ lineNumber].CWchainID
-        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+        var chainColor = this.girih.chains[chainNumber].fillColor;
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
         this.gline( strapLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true, chainColor)
         this.moveToaD( 0, capGap);
@@ -170,7 +141,7 @@ IKRS.GirihCanvasHandler.prototype.drawFancyGirihHexagonStrapping = function(tile
 
         for( var i = 0; i< 2; i++) {
             var chainNumber = tile.connectors[ lineNumber].CWchainID
-            var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+            var chainColor = this.girih.chains[chainNumber].fillColor;
             //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
             this.gline( strapLength, strapWidth, 7* piTenths, 7* piTenths, false, false, chainColor)
             this.moveToaD( -4* piTenths, 0);
@@ -207,31 +178,30 @@ console.log("HexStart")
 
     for( var j = 0; j< 2; j++) {
         var chainNumber = tile.connectors[ lineNumber].CWchainID
-        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+        var chainColor = this.girih.chains[chainNumber].fillColor;
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]));
         svgStrings.push( this.indent + '<g class="link_'+ lineNumber +'">' + this.eol);
-        var capGap = this.capGap();
-        girihCanvasHandler.indentInc();
+        this.indentInc();
         svgStrings.push( this.getGlineSVG( strapLength - capGap, strapWidth,
 			 7* piTenths, 4* piTenths, false, true, chainColor));
         this.posToaD( 0, capGap);
         this.posToaD( 6* piTenths, 0);
         lineNumber = lineNumber + 1;
-        girihCanvasHandler.indentDec();
+        this.indentDec();
         svgStrings.push( this.indent + '</g>' + this.eol);
 
         for( var i = 0; i< 2; i++) {
             var chainNumber = tile.connectors[ lineNumber].CWchainID;
-            var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+            var chainColor = this.girih.chains[chainNumber].fillColor;
             //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
             svgStrings.push( this.indent + '<g class="link_'+ lineNumber +'">' + this.eol);
-            girihCanvasHandler.indentInc();
+            this.indentInc();
             svgStrings.push( this.getGlineSVG( strapLength, strapWidth, 7* piTenths,
 			     7* piTenths, false, false, chainColor));
             this.posToaD( -4* piTenths, 0);
             svgStrings.push( this.getGlineSVG( strapLength - capGap, strapWidth,
 			     7* piTenths, 4* piTenths, false, true, chainColor));
-            girihCanvasHandler.indentDec()
+            this.indentDec()
             svgStrings.push( this.indent + '</g>' + this.eol);
             this.posToaD( 0, capGap);
             this.posToaD( 6* piTenths, 0);

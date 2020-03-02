@@ -226,6 +226,81 @@ IKRS.GirihCanvasHandler.prototype.drawFancyBowTieStrapping = function(tile) {
 }
 
 
+IKRS.GirihCanvasHandler.prototype.getSVGforFancyBowTieStrapping = function(tile) {
+    // each segment in this function is its own path/segment
+    // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
+
+    //color( lineColor)
+    //width( lineWidth)
+
+    var shortBentLength = 0.35845 * tile.size
+    var longDirectLength = 0.58 * tile.size
+    var lineNumber = 0
+    var capGap = this.capGap();
+    var strapWidth = this.drawProperties.strappingWidth;
+    var faces = IKRS.Girih.TILE_FACES [tile.tileType];
+    var svgStrings = [];
+
+    this.posToXY( tile.position.x, tile.position.y)
+    this.posToAD( tile.angle + faces[0].centralAngle, faces[0].radialCoefficient * tile.size); //waist of bowtie
+    this.posToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex, tile.size/2); //ready to start
+
+    for (var i = 0; i<2; i++ ) {
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+
+        //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
+        svgStrings.push( this.indent + '<g class="link_'+ lineNumber +'">' + this.eol);
+	this.indentInc();
+        this.posToaD( 3* piTenths, 0) // mid to end
+        svgStrings.push( this.getGlineSVG( longDirectLength - capGap, strapWidth,
+			 7* piTenths, 4* piTenths, false, true, chainColor))
+        this.posToaD( 0, capGap)
+        //endGroup()
+	this.indentDec();
+	svgStrings.push( this.indent + '</g>' + this.eol);
+        lineNumber = lineNumber + 1
+
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+        //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
+        svgStrings.push( this.indent + '<g class="link_'+ lineNumber +'">' + this.eol);
+        this.indentInc();
+        this.posToaD( 6* piTenths, 0) // edge to start
+        svgStrings.push( this.getGlineSVG( longDirectLength - capGap, strapWidth,
+			 7* piTenths, 4* piTenths, false, true, chainColor))
+        this.posToaD( 0, capGap)
+        //endGroup()
+	this.indentDec();
+	svgStrings.push( this.indent + '</g>' + this.eol);
+        lineNumber = lineNumber + 1
+
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+        //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
+        svgStrings.push( this.indent + '<g class="link_'+ lineNumber +'">' + this.eol);
+        this.indentInc();
+        this.posToaD ( 6* piTenths, 0) //back toward start
+        svgStrings.push( this.getGlineSVG( shortBentLength, strapWidth, 7* piTenths,
+			 4* piTenths, false, false, chainColor))
+        this.posToaD ( 2* piTenths, 0) //mid
+        svgStrings.push( this.getGlineSVG( shortBentLength - capGap, strapWidth,
+			 4* piTenths, 4* piTenths, false, true, chainColor))
+        this.posToaD( 0, capGap)
+        //endGroup()
+	this.indentDec();
+	svgStrings.push( this.indent + '</g>' + this.eol);
+        lineNumber = lineNumber + 1
+
+        //set up for the other end
+        this.posToXY( tile.position.x, tile.position.y)
+        this.posToAD( tile.angle + faces[0].centralAngle + Math.PI, faces[0].radialCoefficient * tile.size); //waist of bowtie
+        this.posToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex, tile.size/2); //ready to start
+    }
+    return svgStrings.join("")
+}
+
+
 // This is totally shitty. Why object inheritance when I still
 // have to inherit object methods manually??!
 IKRS.Tile.BowTie.prototype.computeBounds           = IKRS.Tile.prototype.computeBounds;

@@ -300,11 +300,29 @@ console.log("Tile.toSVG mid1")
 console.log("Tile.toSVG mid2")
 
 // do something for strapping... this is case specific for now but should be generalized for all tiles.
-    buffer.push( '    <g class="strapping">\n');
+    buffer.push( girihCanvasHandler.indent +'<g class="strapping">'+ girihCanvasHandler.eol);
     girihCanvasHandler.indentInc();
-    if( this.tileType === IKRS.Girih.TILE_TYPE_GIRIH_HEXAGON) {
+    switch (this.tileType) {
+    case IKRS.Girih.TILE_TYPE_BOW_TIE:
+        buffer.push( girihCanvasHandler.getSVGforFancyBowTieStrapping( this));
+	break;
+    case IKRS.Girih.TILE_TYPE_DECAGON:
+        buffer.push( girihCanvasHandler.getSVGforFancyDecagonStrapping( this));
+	break;
+    case IKRS.Girih.TILE_TYPE_GIRIH_HEXAGON:
         buffer.push( girihCanvasHandler.getSVGforFancyGirihHexagonStrapping( this));
-console.log("fired");
+	break;
+    case IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS:
+        buffer.push( girihCanvasHandler.getSVGforFancyPenroseRhombusStrapping( this));
+	break;
+    case IKRS.Girih.TILE_TYPE_PENTAGON:
+        buffer.push( girihCanvasHandler.getSVGforFancyPentagonStrapping( this));
+	break;
+    case IKRS.Girih.TILE_TYPE_RHOMBUS:
+        buffer.push( girihCanvasHandler.getSVGforFancyRhombusStrapping( this));
+	break;
+    default:
+	break;
     }
     girihCanvasHandler.indentDec();
     buffer.push( girihCanvasHandler.indent + '</g>' + girihCanvasHandler.eol);

@@ -75,27 +75,6 @@ IKRS.Tile.Decagon.getFaces = function() {
 }
 
 
-/*
-IKRS.GirihCanvasHandler.prototype.drawDecagon = function (tile) {
-//inputs: size, position, angle, context
-    this.context.beginPath();
-console.log("decagon tile position:" + IKRS.Girih.round(tile.position.x) +","+
-                                       IKRS.Girih.round(tile.position.y) +" angle:"+
-                                       IKRS.Girih.round( IKRS.Girih.rad2deg(tile.angle)) +" size:" + tile.size)
-        //assume tile angle 0 is east, and first tile segment is sloping to right top
-    var radial = tile.size/(1 * Math.sin( 1 * piTenths));
-    this.moveToXY( tile.position.x, tile.position.y); // center of pentagon
-    this.lineToAD( tile.angle -4* piTenths, radial); //corner of pentagon
-    this.moveToAD( tile.angle, 0); //corner of pentagon, ready for side
-    for (var i=0; i<10; i++) {
-        this.lineToaD( 2* piTenths, tile.size);
-    }
-    this.context.strokeStyle = "#0000FF";
-    this.context.stroke();
-    this.context.closePath();
-}
-*/
-
 IKRS.GirihCanvasHandler.prototype.drawFancyDecagonStrapping = function(tile) {
 //inputs: size, position, angle, context
     // each segment in this function is its own path/segment
@@ -210,6 +189,85 @@ IKRS.Tile.Decagon.prototype._buildOuterPolygons = function( edgeLength ) {
 	this.outerTilePolygons.push( outerTile );
     }
 };
+
+
+IKRS.GirihCanvasHandler.prototype.getSVGforFancyDecagonStrapping = function(tile) {
+//inputs: size, position, angle, context
+    // each segment in this function is its own path/segment
+    // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
+
+    var lineNumber = 0
+    var strapLength = 0.95 * tile.size // overall length of each strap
+    var startBrokenStrap = 0.589 * tile.size
+    var endBrokenStrap = strapLength - startBrokenStrap // end part of strap
+    var capGap = this.capGap();
+    var lineSpacing = this.drawProperties.strappingWidth;
+    var faces = IKRS.Girih.TILE_FACES [tile.tileType];
+    var svgStrings = [];
+
+    this.posToXY( tile.position.x, tile.position.y); // center of decagon
+    this.posToAD( tile.angle + faces[0].centralAngle, faces[0].radialCoefficient * tile.size); //corner of decagon
+    this.posToaD( 6*piTenths, tile.size/2); //center of decagon side, ready for side
+    this.posToaD( 3* piTenths, 0); // ready for strapping
+
+    // do the even numbered straps
+    for( var i = 0; i<5; i++) {
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+if (chainNumber === undefined) {
+    console.log("bad chain number for tile")
+}
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+if (chainColor === undefined) {
+    console.log( "chain fill color not defined")
+}
+	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber} , ["strap"]))
+        svgStrings.push( this.indent + '<g class="link_'+ lineNumber +'">' + this.eol);
+        this.indentInc();
+	svgStrings.push( this.getGlineSVG( startBrokenStrap - capGap, lineSpacing, 7* piTenths, 4* piTenths, false, true, chainColor))
+	this.posToaD( 0, capGap * 2); // gap on each side of strap
+	svgStrings.push( this.getGlineSVG( endBrokenStrap - capGap, lineSpacing, 6* piTenths, 6* piTenths, true, false, chainColor))
+	this.posToaD( -2* piTenths, 0);
+	svgStrings.push( this.getGlineSVG( strapLength - capGap, lineSpacing, 6* piTenths, 4* piTenths, false, true, chainColor))
+	this.posToaD( 0, capGap);
+	this.posToaD( 6* piTenths, 0);
+	lineNumber = lineNumber + 2
+	//endGroup()
+        this.indentDec();
+        svgStrings.push( this.indent + '</g>' + this.eol);
+    }
+
+    // do the odd numbered straps
+    lineNumber = 1
+    this.posToaD( -3* piTenths, tile.size / 2);
+    this.posToaD( 2* piTenths, tile.size / 2);
+    this.posToaD( 3* piTenths, 0);
+
+    for( var i = 0; i<5; i++) {
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+if (chainNumber === undefined) {
+    console.log("bad chain number for tile");
+}
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+if (chainColor === undefined) {
+    console.log( "chain fill color not defined");
+}
+	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber} , ["strap"]))
+        svgStrings.push( this.indent + '<g class="link_'+ lineNumber +'">' + this.eol);
+        this.indentInc();
+	svgStrings.push( this.getGlineSVG( startBrokenStrap - capGap, lineSpacing, 7* piTenths, 4* piTenths, false, true, chainColor))
+	this.posToaD( 0, capGap * 2); // why is this *2?
+	svgStrings.push( this.getGlineSVG( endBrokenStrap - capGap, lineSpacing, 6* piTenths, 6* piTenths, true, false, chainColor))
+	this.posToaD( -2* piTenths, 0);
+	svgStrings.push( this.getGlineSVG( strapLength - capGap, lineSpacing, 6* piTenths, 4* piTenths, false, true, chainColor))
+	this.posToaD( 0, capGap);
+	this.posToaD( 6* piTenths, 0);
+	//endGroup()
+        this.indentDec();
+        svgStrings.push( this.indent + '</g>' + this.eol);
+	lineNumber = lineNumber + 2
+    }
+    return svgStrings.join("")
+}
 
 
 // This is totally shitty. Why object inheritance when I still
