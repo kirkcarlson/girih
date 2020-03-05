@@ -213,7 +213,6 @@ console.log ("addLink chain:"+ chainNumber + " link:" + link.toString())
 	// verify that connector is not on another chain (tail)
 	if (connector.isOnChain( CW)) {
 // this is ok in a loop if the connector chainID CW === chainNumber
-// this is ok in a loop if the connector chainID CW === chainNumber
 	    if (connector.getChainID(CW) === chainNumber) {
 		looping = true;
 		chain.markLoop();
@@ -240,6 +239,10 @@ console.log( "set loop begin ChainID connector:" + tileIndex + "," + connector.c
 	// mark the connector in the first tile
 //	connector = tile.connectors[ connector.sharedConnectorLink.connectorIndex]; // (tail)
 //	connector.setChainID( CW, chainNumber);
+    }
+    chain.setSVGClass( "Chain_"+ chainNumber +" chainLength_" + chain.links.length);
+    if (looping) {
+	chain.addSVGClass( "loopedChain");
     }
     girihCanvasHandler.girih.addChain( chain);
 }
@@ -298,7 +301,7 @@ IKRS.Girih.prototype.findAllChains = function( tiles) {
     // select the color for each chain (gray for single link chains, black and white reserved)
     for (var i=0; i<girihCanvasHandler.girih.chains.length; i++) {
 	var chain = girihCanvasHandler.girih.chains[i];
-	if( girihCanvasHandler.drawProperties.drawStrappingType === "colored") {
+	if( girihCanvasHandler.drawProperties.drawStrappingType === "random") {
 	    if (chain.links.length === 1) {
 		chain.fillColor = "#e0e0e0"; // light gray
 	    } else {
@@ -321,7 +324,8 @@ IKRS.Girih.prototype.findAllChains = function( tiles) {
 	for (var i=0; i<girihCanvasHandler.girih.chains.length; i++) {
 	    var chain = girihCanvasHandler.girih.chains[i];
 	    if (chain.links.length > 1) {
-		console.log (chain.toString());
+		//console.log (chain.toString());
+		console.log ("Chain "+ i + " links:"+ chain.links.length);
 	    }
 	}
     }

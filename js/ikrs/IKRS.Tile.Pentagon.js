@@ -197,7 +197,11 @@ IKRS.GirihCanvasHandler.prototype.getSVGforFancyPentagonStrapping = function(til
 	lineNumber = i
         var chainNumber = tile.connectors[ lineNumber].CWchainID
         var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
-        svgStrings.push( this.indent + '<g class="link_'+ lineNumber +'">' + this.eol);
+        svgStrings.push( this.indent + '<g class="Link_'+ lineNumber +
+		' Chain_'+ chainNumber +
+		' Chain_Length_' + girihCanvasHandler.girih.chains[chainNumber].links.length +
+		(girihCanvasHandler.girih.chains[chainNumber].isLoop ? ' Loop' : '') +
+		'">' + this.eol);
         this.indentInc();
 
 	this.posToaD( 3* piTenths, 0);

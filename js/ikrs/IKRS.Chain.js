@@ -300,7 +300,7 @@ IKRS.Chain = function( id, classStr) {
 };
 
 IKRS.Chain.prototype.addSVGClass = function( className) {
-    this.classStr = this.classStr + className
+    this.classStr = this.classStr +' '+ className
 }
 
 IKRS.Chain.prototype.setSVGClass = function( className) {

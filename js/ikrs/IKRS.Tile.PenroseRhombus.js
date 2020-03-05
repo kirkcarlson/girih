@@ -265,7 +265,11 @@ IKRS.GirihCanvasHandler.prototype.getSVGforFancyPenroseRhombusStrapping = functi
         var chainNumber = tile.connectors[ lineNumber].CWchainID
         var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
-        svgStrings.push( this.indent + '<g class="link_'+ lineNumber +'">' + this.eol);
+        svgStrings.push( this.indent + '<g class="Link_'+ lineNumber +
+		' Chain_'+ chainNumber +
+		' Chain_Length_' + girihCanvasHandler.girih.chains[chainNumber].links.length +
+		(girihCanvasHandler.girih.chains[chainNumber].isLoop ? ' Loop' : '') +
+		'">' + this.eol);
         this.indentInc();
         svgStrings.push( this.getGlineSVG( shortSegmentLength, strapWidth, 7* piTenths, 4* piTenths, false, false, chainColor))
         this.posToaD( 2* piTenths, 0)
@@ -280,7 +284,11 @@ IKRS.GirihCanvasHandler.prototype.getSVGforFancyPenroseRhombusStrapping = functi
         var chainNumber = tile.connectors[ lineNumber].CWchainID
         var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
-        svgStrings.push( this.indent + '<g class="link_'+ lineNumber +'">' + this.eol);
+        svgStrings.push( this.indent + '<g class="Link_'+ lineNumber +
+		' Chain_'+ chainNumber +
+		' Chain_Length_' + girihCanvasHandler.girih.chains[chainNumber].links.length +
+		(girihCanvasHandler.girih.chains[chainNumber].isLoop ? ' Loop' : '') +
+		'">' + this.eol);
         this.indentInc();
         svgStrings.push( this.getGlineSVG( mediumSegmentLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true, chainColor))
         this.posToaD( 0, 2* capGap); // capGap on each side of crossed segment

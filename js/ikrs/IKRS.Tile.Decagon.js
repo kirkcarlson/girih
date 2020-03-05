@@ -88,10 +88,10 @@ IKRS.GirihCanvasHandler.prototype.drawFancyDecagonStrapping = function(tile) {
     var lineSpacing = this.drawProperties.strappingWidth;
     var faces = IKRS.Girih.TILE_FACES [tile.tileType];
 
-    this.lineToXY( tile.position.x, tile.position.y); // center of decagon
-    this.lineToAD( tile.angle + faces[0].centralAngle, faces[0].radialCoefficient * tile.size); //corner of decagon
-    this.lineToaD( 6*piTenths, tile.size/2); //center of decagon side, ready for side
-    this.lineToaD( 3* piTenths, 0); // ready for strapping
+    this.moveToXY( tile.position.x, tile.position.y); // center of decagon
+    this.moveToAD( tile.angle + faces[0].centralAngle, faces[0].radialCoefficient * tile.size); //corner of decagon
+    this.moveToaD( 6*piTenths, tile.size/2); //center of decagon side, ready for side
+    this.moveToaD( 3* piTenths, 0); // ready for strapping
 
     // do the even numbered straps
     for( var i = 0; i<5; i++) {
@@ -221,13 +221,34 @@ if (chainColor === undefined) {
     console.log( "chain fill color not defined")
 }
 	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber} , ["strap"]))
-        svgStrings.push( this.indent + '<g class="link_'+ lineNumber +'">' + this.eol);
+        svgStrings.push( this.indent + '<g class="Link_'+ lineNumber +
+		' Chain_'+ chainNumber +
+		' Chain_Length_' + girihCanvasHandler.girih.chains[chainNumber].links.length +
+		(girihCanvasHandler.girih.chains[chainNumber].isLoop ? ' Loop' : '') +
+		'">' + this.eol);
         this.indentInc();
-	svgStrings.push( this.getGlineSVG( startBrokenStrap - capGap, lineSpacing, 7* piTenths, 4* piTenths, false, true, chainColor))
+	svgStrings.push( this.getGlineSVG( startBrokenStrap - capGap,
+					   lineSpacing,
+					   7* piTenths,
+					   4* piTenths,
+					   false,
+					   true,
+					   chainColor))
 	this.posToaD( 0, capGap * 2); // gap on each side of strap
-	svgStrings.push( this.getGlineSVG( endBrokenStrap - capGap, lineSpacing, 6* piTenths, 6* piTenths, true, false, chainColor))
+	svgStrings.push( this.getGlineSVG( endBrokenStrap - capGap,
+					   lineSpacing,
+					   6* piTenths,
+					   6* piTenths,
+					   true,
+					   false,
+					   chainColor))
 	this.posToaD( -2* piTenths, 0);
-	svgStrings.push( this.getGlineSVG( strapLength - capGap, lineSpacing, 6* piTenths, 4* piTenths, false, true, chainColor))
+	svgStrings.push( this.getGlineSVG( strapLength - capGap,
+					   lineSpacing, 6* piTenths,
+					   4* piTenths,
+					   false,
+					   true,
+					   chainColor))
 	this.posToaD( 0, capGap);
 	this.posToaD( 6* piTenths, 0);
 	lineNumber = lineNumber + 2
@@ -252,13 +273,35 @@ if (chainColor === undefined) {
     console.log( "chain fill color not defined");
 }
 	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber} , ["strap"]))
-        svgStrings.push( this.indent + '<g class="link_'+ lineNumber +'">' + this.eol);
+        svgStrings.push( this.indent + '<g class="Link_'+ lineNumber +
+		' Chain_'+ chainNumber +
+		' Chain_Length_' + girihCanvasHandler.girih.chains[chainNumber].links.length +
+		(girihCanvasHandler.girih.chains[chainNumber].isLoop ? ' Loop' : '') +
+		'">' + this.eol);
         this.indentInc();
-	svgStrings.push( this.getGlineSVG( startBrokenStrap - capGap, lineSpacing, 7* piTenths, 4* piTenths, false, true, chainColor))
+	svgStrings.push( this.getGlineSVG( startBrokenStrap - capGap,
+					   lineSpacing,
+					   7* piTenths,
+					   4* piTenths,
+					   false,
+					   true,
+					   chainColor))
 	this.posToaD( 0, capGap * 2); // why is this *2?
-	svgStrings.push( this.getGlineSVG( endBrokenStrap - capGap, lineSpacing, 6* piTenths, 6* piTenths, true, false, chainColor))
+	svgStrings.push( this.getGlineSVG( endBrokenStrap - capGap,
+					   lineSpacing,
+					   6* piTenths,
+					   6* piTenths,
+					   true,
+					   false,
+					   chainColor))
 	this.posToaD( -2* piTenths, 0);
-	svgStrings.push( this.getGlineSVG( strapLength - capGap, lineSpacing, 6* piTenths, 4* piTenths, false, true, chainColor))
+	svgStrings.push( this.getGlineSVG( strapLength - capGap,
+					   lineSpacing,
+					   6* piTenths,
+					   4* piTenths,
+					   false,
+					   true,
+					   chainColor))
 	this.posToaD( 0, capGap);
 	this.posToaD( 6* piTenths, 0);
 	//endGroup()

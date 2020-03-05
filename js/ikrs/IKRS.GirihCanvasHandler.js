@@ -39,14 +39,15 @@ IKRS.GirihCanvasHandler = function( imageObject ) {
 				       drawTextures:               true,
 				       drawInnerPolygons:          true,
 				       drawStrapping:              true,
-				       drawStrappingType:          "simple",
+				       drawStrappingType:          "basic", // can be "basic", "fancy", "random"
+				       polygonColorType:           "default", // can be "random"
 				       innerRandomColorFill:       false, //true
 				       outerRandomColorFill:       false,
 				       backgroundColor:            "#ffffff",
 
 				       polygonStrokeColor:         "#00003f",
 				       polygonSelectedStrokeColor: "#e80088",
-				       polygonFillColor:           "#ffffff",
+				       polygonFillColor:           "transparent",
 				       hexagonFillColor:           "#bce897",
 				       decagonFillColor:           "#97dce8",
 				       pentagonFillColor:          "#e8e297",
@@ -431,22 +432,22 @@ IKRS.GirihCanvasHandler.prototype._resolveCurrentAdjacentTilePreset = function( 
     //create the new tile
     switch( proposedPosition.tileType ) {
     case IKRS.Girih.TILE_TYPE_DECAGON:
-	var proposedTile = new IKRS.Tile.Decagon(          currentTile.size, proposedCenter, proposedTileAngle, "#FFF" );
+	var proposedTile = new IKRS.Tile.Decagon(          currentTile.size, proposedCenter, proposedTileAngle);
 	break;
     case IKRS.Girih.TILE_TYPE_PENTAGON:
-	var proposedTile = new IKRS.Tile.Pentagon(         currentTile.size, proposedCenter, proposedTileAngle, "#FFF" );
+	var proposedTile = new IKRS.Tile.Pentagon(         currentTile.size, proposedCenter, proposedTileAngle);
 	break;
     case IKRS.Girih.TILE_TYPE_IRREGULAR_HEXAGON:
-	var proposedTile = new IKRS.Tile.IrregularHexagon( currentTile.size, proposedCenter, proposedTileAngle, "#FFF" );
+	var proposedTile = new IKRS.Tile.IrregularHexagon( currentTile.size, proposedCenter, proposedTileAngle);
 	break;
     case IKRS.Girih.TILE_TYPE_RHOMBUS:
-	var proposedTile = new IKRS.Tile.Rhombus(          currentTile.size, proposedCenter, proposedTileAngle, "#FFF" );
+	var proposedTile = new IKRS.Tile.Rhombus(          currentTile.size, proposedCenter, proposedTileAngle);
 	break;
     case IKRS.Girih.TILE_TYPE_BOW_TIE:
-	var proposedTile = new IKRS.Tile.BowTie(           currentTile.size, proposedCenter, proposedTileAngle, "#FFF" );
+	var proposedTile = new IKRS.Tile.BowTie(           currentTile.size, proposedCenter, proposedTileAngle);
 	break;
     case IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS:
-	var proposedTile = new IKRS.Tile.PenroseRhombus(   currentTile.size, proposedCenter, proposedTileAngle, "#FFF" );
+	var proposedTile = new IKRS.Tile.PenroseRhombus(   currentTile.size, proposedCenter, proposedTileAngle);
 	break;
     default:
 	throw "Cannot create tiles from unknown tile types (" + tileType + ").";
@@ -615,8 +616,8 @@ IKRS.GirihCanvasHandler.prototype._drawTile = function( tile ) {
     if( this.drawProperties.drawPolygonColor) {
         if (this.drawProperties.polygonColorType === "default") {
 	    var tileColor = tile.fillColor;
-            if (typeof tileColor === "string" && tileColor[0] === '#') {
-	        tileColor = tile.fillColor +"80"; // add alpha channel
+            if (typeof tileColor === "string" && tileColor[0] === '#' && tileColor.length == 7) {
+	        tileColor = tileColor +"80"; // add alpha channel
 	    }
         } else if (this.drawProperties.polygonColorType === "random") {
 	    var tileColor = "rgba(" +
@@ -645,7 +646,7 @@ IKRS.GirihCanvasHandler.prototype._drawTile = function( tile ) {
 IKRS.GirihCanvasHandler.prototype._drawStrapping = function( tile ) {
     if( this.drawProperties.drawStrapping) {
 	if( (this.drawProperties.drawStrappingType === "fancy" ||
-	     this.drawProperties.drawStrappingType === "colored")) {
+	     this.drawProperties.drawStrappingType === "random")) {
 	    switch(tile.tileType) {
 	    //The following functions are in their respective module
 	    case IKRS.Girih.TILE_TYPE_PENTAGON:
@@ -986,7 +987,7 @@ IKRS.GirihCanvasHandler.prototype.gline = function( distance, spacing, startAngl
     this.context.strokeStyle = this.drawProperties.strappingStrokeColor;
     this.context.fillStyle = "";
     this.context.lineWidth = this.drawProperties.strappingStrokeWidth;
-    this.context.closePath();
+    //this.context.closePath();
     this.context.stroke();
 
     // move to the end of the segment
@@ -1326,10 +1327,10 @@ IKRS.GirihCanvasHandler.prototype._drawOuterTilePolygons = function( tile ) {
 	var randomColor = null;
 	if( this.drawProperties.outerRandomColorFill ) {
 		randomColor = "rgba(" +
-		Math.round( Math.random()*255 ) + "," +
-		Math.round( Math.random()*255 ) + "," +
-		Math.round( Math.random()*255 ) + "," +
-		"0.5)";
+			Math.round( Math.random()*255 ) + "," +
+			Math.round( Math.random()*255 ) + "," +
+			Math.round( Math.random()*255 ) + "," +
+			"0.5)";
 	}
 	this._drawPolygonFromPoints( polygon.vertices,   // points,
 				     tile.position,
@@ -1409,7 +1410,7 @@ IKRS.GirihCanvasHandler.prototype._drawTiles = function() {
     // find all chains
     if( this.drawProperties.drawStrapping &&
 	   (this.drawProperties.drawStrappingType === "fancy" ||
-	    this.drawProperties.drawStrappingType === "colored")) {
+	    this.drawProperties.drawStrappingType === "random")) {
 	if (this.lastTileCount !== this.girih.tiles.length ||
 	    this.lastDrawStrappingType !== this.drawProperties.drawStrappingType) { // when tile added or deleted
 	    this.girih.buildConnectors( this.girih.tiles);
@@ -1504,12 +1505,26 @@ IKRS.GirihCanvasHandler.prototype.redraw = function() {
 
 //**** SVG DRAWING METHODS ****
 
-IKRS.GirihCanvasHandler.prototype.getSVGPolygonFromFaces = function( tile, idStr, classStr, boundingBox) {
+IKRS.GirihCanvasHandler.prototype.getSVGPolygonFromFaces = function( tile, idStr, classStr, styleStr, boundingBox) {
+// idStr is short string to uniquely identify polygon (may be "")
+// classStr is short string to identify class or classes used by polygon (may be "")
+// styleStr is string to apply style or other attributes to the polygon (may be "") (must include attribute name and enclose attribute in double quotes
 // returns an SVG string
     var faces = IKRS.Girih.TILE_FACES [tile.tileType];
     var face = faces[0];
  // <polygon points="0,100 50,25 50,75 100,0" />
-    var polygon = this.indent + '<polygon id="'+ idStr +'" class="'+ classStr +'" points="';
+    var polygon = this.indent + '<polygon';
+    if (idStr && idStr !== "") {
+	polygon += ' id="'+ idStr +'"';
+    }
+    if (classStr && classStr !== "") {
+	polygon += ' class="'+ classStr +'"';
+    }
+    if (styleStr && styleStr !== "") {
+	polygon += ' '+ styleStr;
+    }
+    polygon += ' points="';
+    //var polygon = this.indent + '<polygon id="'+ idStr +'" class="'+ classStr +' '+ styleStr +'" points="';
     // this uses the SVG primitives to move the current positon without using the return value
     this.posToXY( tile.position.x, tile.position.y);
 
@@ -1669,7 +1684,65 @@ IKRS.GirihCanvasHandler.prototype._exportSVG = function( options,
 };
 
 
+IKRS.GirihCanvasHandler.prototype._getSVGSimilarChainClasses = function() {
+    var members = [];
+    for (chainIndex = 0; chainIndex < this.girih.chains.length; chainIndex++) {
+        chain = this.girih.chains[ chainIndex];
+        //  set identity to zero padded length + 'L' if looping
+        var id = '00000' + chain.links.length;
+        id = id.slice(-5);
+        if (chain.isLoop) {
+            id = id +'L';
+        }
+        //  add new identities to list of chains
+        if ( members.indexOf( id) <0) {
+            members.push( id);
+        }
+    }
+    members.sort();
+
+    //generate CSS code for the chain identity lenghts
+    css = "";
+    for (id of members) {
+console.log ( ".Chain_Length_"+ id);
+	// make the id match the id generated by the SVG routines
+	id = id.replace(/^0+/,'');
+	if (id === '') {
+	    id = '0';
+	}
+       css += ".Chain_Length_"+ id + ` .gfill {
+    fill:rgb(` + Math.round( Math.random()*255 ) + `,` +
+		 Math.round( Math.random()*255 ) + `,` +
+		 Math.round( Math.random()*255 ) + `);
+}
+`;
+    }
+    console.log("CSS:"+ css);
+//return CSS code string
+    return css
+}
+
+IKRS.GirihCanvasHandler.prototype._getSVGMultipleChainClasses = function() {
+    var members = [];
+    css = '';
+    // build css for chains of more than one line to do random colors
+    for (chainIndex = 0; chainIndex < this.girih.chains.length; chainIndex++) {
+        chain = this.girih.chains[ chainIndex];
+        if (chain.links.length > 1) {
+	    css += `
+.Chain_`+ chainIndex + ` .gfill {
+    fill:rgb(` + Math.round( Math.random()*255 ) + `,` +
+		 Math.round( Math.random()*255 ) + `,` +
+		 Math.round( Math.random()*255 ) + `);
+}`;
+	}
+    }
+    return css
+}
+
+
 IKRS.GirihCanvasHandler.prototype.getSVGForeword = function( highWater) {
+
     var foreword = `` +
 `<svg id="girih-svg" xmlns="http://www.w3.org/2000/svg" version="1.1"
    height="` + this.round( highWater.getHeight(), this.SVG_PRECISION) + `"
@@ -1683,20 +1756,81 @@ polygon { /* includes inner and outer facets */
     stroke-width: 1px;
     fill:transparent;
 }
-.decagon{
+`;
+    if( this.drawProperties.drawPolygonColor) {
+        if (this.drawProperties.polygonColorType === "default") {
+            foreword += `` +
+`.decagon{
+  fill:`+ this.drawProperties.decagonFillColor + `;
+  opacity:50%;
 }
 .pentagon{
+  fill:`+ this.drawProperties.pentagonFillColor + `;
+  opacity:50%;
 }
 .hexagon{
-    fill: lightblue;
+  fill:`+ this.drawProperties.hexagonFillColor + `;
+  opacity:50%;
 }
 .rhombus{
+  fill:`+ this.drawProperties.rhombusFillColor + `;
+  opacity:50%;
 }
 .penrose_rhombus{
+  fill:`+ this.drawProperties.penroseRhombusFillColor + `;
+  opacity:50%;
 }
 .bow_tie{
+  fill:`+ this.drawProperties.bowTieFillColor + `;
+  opacity:50%;
 }
-text {
+`;
+        } else if (this.drawProperties.polygonColorType === "random") {
+            foreword += `` +
+`.decagon{
+  opacity:50%;
+}
+.pentagon{
+  opacity:50%;
+}
+.hexagon{
+  opacity:50%;
+}
+.rhombus{
+  opacity:50%;
+}
+.penrose_rhombus{
+  opacity:50%;
+}
+.bow_tie{
+  opacity:50%;
+}
+`;
+        } else { //default?
+            foreword += `` +
+`.decagon{
+  opacity:50%;
+}
+.pentagon{
+  opacity:50%;
+}
+.hexagon{
+  opacity:50%;
+}
+.rhombus{
+  opacity:50%;
+}
+.penrose_rhombus{
+  opacity:50%;
+}
+.bow_tie{
+  opacity:50%;
+}
+`
+        }
+    }
+    foreword += `` +
+`text {
     fill:black;
     font:10pt normal Helvetica, Ariel, sans-serif;
 }
@@ -1713,18 +1847,29 @@ text {
     fill-opacity: 0; 
     stroke-linejoin: miter;
     stroke-opacity: 1;
-    stroke-width: 1px;
+    stroke-width:` + this.drawProperties.strappingStrokeWidth + `px;
 }
 .inner polygon {
-    fill: lightyellow;
+    /*fill: lightyellow;*/
+    fill:transparent;
 }
 .outer polygon {
-    fill: aliceblue;
+    /*fill: aliceblue;*/
+    fill:transparent;
 }
+`
+
+    if (this.drawProperties.drawStrappingType === "fancy") {
+	foreword += this._getSVGSimilarChainClasses();
+    } else if (this.drawProperties.drawStrappingType === "random") {
+	foreword += this._getSVGMultipleChainClasses();
+    }
+
+    foreword += `
 svg, .background {
     width:100%;
     height:100%;
-    fill:lightblue;
+    /*fill:lightblue;*/
 }
 </style>
 
@@ -1747,7 +1892,6 @@ IKRS.GirihCanvasHandler.prototype.getSVGAfterword = function() {
 </svg>`;
     return afterword;
 }
-
 
 IKRS.GirihCanvasHandler.prototype.toSVG = function( options,
 				       polygonStyle,
@@ -1804,7 +1948,7 @@ console.log("gCH.toSVG: mid");
     // put the pieces together
     buffer.unshift( svgPreamble)
     buffer.push( svgTrailer)
-console.log("gCH.toSVG:" + buffer.join(""))
+//console.log("gCH.toSVG:" + buffer.join(""))
     return buffer
 }
 
@@ -1825,7 +1969,6 @@ IKRS.GirihCanvasHandler.prototype.indentInc = function() {
 IKRS.GirihCanvasHandler.prototype.indentDec = function() {
     this.indent = this.indent.slice( INDENT_INCREMENT.length);
 }
-
 
 // ### BEGIN DRAW METHOD TESTING ##############################################
 

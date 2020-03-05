@@ -250,7 +250,11 @@ IKRS.GirihCanvasHandler.prototype.getSVGforFancyBowTieStrapping = function(tile)
         var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
 
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
-        svgStrings.push( this.indent + '<g class="link_'+ lineNumber +'">' + this.eol);
+        svgStrings.push( this.indent + '<g class="Link_'+ lineNumber +
+		' Chain_'+ chainNumber +
+		' Chain_Length_' + girihCanvasHandler.girih.chains[chainNumber].links.length +
+		(girihCanvasHandler.girih.chains[chainNumber].isLoop ? ' Loop' : '') +
+		'">' + this.eol);
 	this.indentInc();
         this.posToaD( 3* piTenths, 0) // mid to end
         svgStrings.push( this.getGlineSVG( longDirectLength - capGap, strapWidth,
@@ -264,7 +268,11 @@ IKRS.GirihCanvasHandler.prototype.getSVGforFancyBowTieStrapping = function(tile)
         var chainNumber = tile.connectors[ lineNumber].CWchainID
         var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
-        svgStrings.push( this.indent + '<g class="link_'+ lineNumber +'">' + this.eol);
+        svgStrings.push( this.indent + '<g class="Link_'+ lineNumber +
+		' Chain_'+ chainNumber +
+		' Chain_Length_' + girihCanvasHandler.girih.chains[chainNumber].links.length +
+		(girihCanvasHandler.girih.chains[chainNumber].isLoop ? ' Loop' : '') +
+		'">' + this.eol);
         this.indentInc();
         this.posToaD( 6* piTenths, 0) // edge to start
         svgStrings.push( this.getGlineSVG( longDirectLength - capGap, strapWidth,
@@ -278,7 +286,11 @@ IKRS.GirihCanvasHandler.prototype.getSVGforFancyBowTieStrapping = function(tile)
         var chainNumber = tile.connectors[ lineNumber].CWchainID
         var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
-        svgStrings.push( this.indent + '<g class="link_'+ lineNumber +'">' + this.eol);
+        svgStrings.push( this.indent + '<g class="Link_'+ lineNumber +
+		' Chain_'+ chainNumber +
+		' Chain_Length_' + girihCanvasHandler.girih.chains[chainNumber].links.length +
+		(girihCanvasHandler.girih.chains[chainNumber].isLoop ? ' Loop' : '') +
+		'">' + this.eol);
         this.indentInc();
         this.posToaD ( 6* piTenths, 0) //back toward start
         svgStrings.push( this.getGlineSVG( shortBentLength, strapWidth, 7* piTenths,
