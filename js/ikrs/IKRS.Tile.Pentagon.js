@@ -76,7 +76,7 @@ IKRS.Tile.Pentagon.getFaces = function() {
     var faces = [];
     for (var i=0; i<5; i++) {
         faces.push( new IKRS.Face(
-             /*centralAngle:*/       0* piTenths + i* 4* piTenths,
+             /*centralAngle:*/       (0 + (i*4)) * piTenths,
              /*angleToNextVertex:*/  4* piTenths,
              /*lengthCoefficient:*/  1,
              /*angleToCenter:*/      7* piTenths,

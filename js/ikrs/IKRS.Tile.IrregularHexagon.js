@@ -91,21 +91,21 @@ IKRS.Tile.IrregularHexagon.getFaces = function() {
     //var radialAngle = Math.atan(  halfNarrowWidth/(1/2))
     for (var i=0; i<2; i++) {
         faces.push( new IKRS.Face( // left side of point
-            /*centralAngle*/        8* piTenths + radialAngle + i* Math.PI,
+            /*centralAngle*/        10* piTenths + radialAngle + i* Math.PI,
             /*angleToNextVertex:*/  2* piTenths,
             /*lengthCoefficient:*/  1,
             /*angleToCenter:*/      5* piTenths + radialAngle,
             /*radialCoefficient:*/  radialShort
         ));
         faces.push( new IKRS.Face( // right side of point
-            /*centralAngle:*/       13* piTenths + i* Math.PI,
+            /*centralAngle:*/       15* piTenths + i* Math.PI,
             /*angleToNextVertex:*/  6* piTenths,
             /*lengthCoefficient:*/  1,
             /*angleToCenter:*/      8* piTenths,
             /*radialCoefficient:*/  radialLong
         ));
         faces.push( new IKRS.Face( // flat side
-            /*centralAngle:*/       -2 * piTenths - radialAngle + i* Math.PI,
+            /*centralAngle:*/       0* piTenths - radialAngle + i* Math.PI,
             /*angleToNextVertex:*/  2* piTenths,
             /*lengthCoefficient:*/  1,
             /*angleToCenter:*/      7* piTenths - radialAngle,

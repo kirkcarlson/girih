@@ -347,7 +347,9 @@ can repeats of the above cycle through variations of the shape?
 	this.girihCanvasHandler.adjacentTileOptionPointer++;
 	this.girihCanvasHandler.redraw();
     } else if( e.keyCode == 37 || e.keyCode == 65) { //left, a
-	this.girihCanvasHandler.adjacentTileOptionPointer--;
+	this.girihCanvasHandler.adjacentTileOptionPointer =
+		(this.girihCanvasHandler.adjacentTileOptionPointer +
+                possiblePositions.length - 1) % possiblePositions.length;
 	this.girihCanvasHandler.redraw();
     } else if( e.keyCode == 13 || e.keyCode == 32 ) { //enter, space
 	this.girihCanvasHandler._performAddCurrentAdjacentPresetTile();
@@ -453,15 +455,15 @@ IKRS.GirihCanvasHandler.prototype._resolveCurrentAdjacentTilePreset = function( 
               currentTile.size * proposedFace.radialCoefficient) // at adjacent center
     proposedCenter = this.turtlePosition.clone();
 
-//end new code
 
     //find the new tile angle
     //var proposedTileAngle = proposedFace.centralAngle;
 console.log("turtleAngle: " + this.turtleAngle * 180/Math.PI)
 
-    var proposedTileAngle = (this.turtleAngle + Math.PI) % (2* Math.PI); //this works for face 0
-//    var proposedTileAngle = (this.turtleAngle - proposedFace.centralAngle + Math.PI) % (2* Math.PI);
+    var proposedTileAngle = (this.turtleAngle - proposedFace.centralAngle +
+                             Math.PI) % (2* Math.PI);
 console.log("proposedTileAngle: " + proposedTileAngle * 180/Math.PI)
+//end new code
 
 
     //create the new tile
