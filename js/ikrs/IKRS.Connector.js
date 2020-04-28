@@ -292,7 +292,7 @@ IKRS.Connector.prototype.setPoint= function( pointA) {
 };
 
 IKRS.Connector.prototype.toString= function() {
-    return "connectorIndex:"+ this.connectorIndex + " point:"+ IKRS.Girih.round(this.point.x, IKRS.Girih.SVG_PRECISION) + ", "+ IKRS.Girih.round(this.point.y, IKRS.Girih.SVG_PRECISION) + " CW chain:"+ this.CWchainID + " CCW chain:"+ this.CCWchainID
+    return "connectorIndex:"+ this.connectorIndex + " point:"+ IKRS.round(this.point.x, IKRS.Girih.SVG_PRECISION) + ", "+ IKRS.round(this.point.y, IKRS.Girih.SVG_PRECISION) + " CW chain:"+ this.CWchainID + " CCW chain:"+ this.CCWchainID
 }
 
 IKRS.Connector.prototype.constructor = IKRS.Connector;

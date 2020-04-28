@@ -11,6 +11,10 @@ IKRS.Tile.BowTie = function( size, position, angle, fillColor) {
 
     IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_BOW_TIE );
 
+    this.buildPolygon();
+
+console.log( "bowtie position: " + this.position)
+/*
     // Init the actual decahedron shape with the passed size
     var pointA          = new IKRS.Point2(0,0);
     var pointB          = pointA;
@@ -51,6 +55,7 @@ IKRS.Tile.BowTie = function( size, position, angle, fillColor) {
 	this.polygon.vertices[i].sub( move );
 
     }
+*/
 
     this.imageProperties = {
 	source: { x:      288/500.0, // 287,
@@ -83,21 +88,24 @@ IKRS.Tile.BowTie.getFaces = function () {
     var angleB = Math.atan((1/2) / halfLongWidth)
     for (var i=0; i<2; i++) {
         faces.push( new IKRS.Face(
-            /*centralAngle:*/       -4* piTenths + i* Math.PI,
+            /*centralAngle:*/       //-4* piTenths + i* Math.PI,
+            /*centralAngle:*/       0 + i* Math.PI,
             /*angleToNextVertex:*/  -2* piTenths,
             /*lengthCoefficient:*/  1,
             /*angleToCenter:*/      4* piTenths,
             /*radialCoefficient:*/  radialShort
         ));
         faces.push( new IKRS.Face(
-            /*centralAngle:*/       1 * piTenths - angleB + i* Math.PI,
+            /*centralAngle:*/       //1 * piTenths - angleB + i* Math.PI,
+            /*centralAngle:*/       5 * piTenths - angleB + i* Math.PI,
             /*angleToNextVertex:*/  6* piTenths,
             /*lengthCoefficient:*/  1,
             /*angleToCenter:*/      11 * piTenths - angleB, //pi - angleAprime
             /*radialCoefficient:*/  radialLong
         ));
         faces.push( new IKRS.Face(
-            /*centralAngle:*/       1* piTenths + angleB + i* Math.PI,
+            /*centralAngle:*/       //1* piTenths + angleB + i* Math.PI,
+            /*centralAngle:*/       5* piTenths + angleB + i* Math.PI,
             /*angleToNextVertex:*/  6* piTenths,
             /*lengthCoefficient:*/  1,
             /*angleToCenter:*/      5* piTenths + angleB,
@@ -109,6 +117,73 @@ IKRS.Tile.BowTie.getFaces = function () {
 
 
 IKRS.Tile.BowTie.prototype._buildInnerPolygons = function( edgeLength ) {
+    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var shortBentLength = 0.35845 * this.size
+    var longDirectLength = 0.58 * this.size
+
+console.log( "bowtie inner position: " + this.position)
+
+    girihCanvasHandler.posToXY( this.position.x, this.position.y); // center of bow tie
+    girihCanvasHandler.posToAD( this.angle + faces[0].centralAngle,
+                                faces[0].radialCoefficient * this.size); //at vertice 0
+    girihCanvasHandler.posToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex,
+                                0.5 * this.size); //midpoint of side 0
+    for( var j = 0; j<2; j++) {
+        var innerTile = new IKRS.Polygon(); // [];
+	innerTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //mid point 0,3
+
+	girihCanvasHandler.posToaD( 3* piTenths, longDirectLength);
+	innerTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //mid point 1,4
+
+	girihCanvasHandler.posToaD( 6* piTenths, longDirectLength);
+	innerTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //mid [point 2,5
+
+	girihCanvasHandler.posToaD( 6* piTenths, shortBentLength);
+	innerTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //mid point 2,5
+
+//	girihCanvasHandler.posToaD( 3* piTenths, shortBentLength);
+//	innerTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //mid point 0, 4
+
+	//set up for other end
+        girihCanvasHandler.posToXY( this.position.x, this.position.y); // center of bow tie
+        girihCanvasHandler.posToAD( this.angle + faces[3].centralAngle,
+                                    faces[3].radialCoefficient * this.size); //at vertice 0
+        girihCanvasHandler.posToaD( Math.PI - faces[3].angleToCenter + faces[3].angleToNextVertex,
+                                    0.5 * this.size); //midpoint of side 3
+        this.innerTilePolygons.push( innerTile );
+    }
+
+/*
+    this.moveToXY( tile.position.x, tile.position.y)
+    this.lineToAD( tile.angle + faces[0].centralAngle, faces[0].radialCoefficient * tile.size); //waist of bowtie
+    this.lineToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex, tile.size/2); //ready to start
+
+    for (var i = 0; i<2; i++ ) {
+        this.moveToaD( 3* piTenths, 0) // mid to end
+        this.gline( longDirectLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true, chainColor)
+        this.moveToaD( 0, capGap)
+
+        this.moveToaD( 6* piTenths, 0) // edge to start
+        this.gline( longDirectLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true, chainColor)
+        this.moveToaD( 0, capGap)
+
+        this.moveToaD ( 6* piTenths, 0) //back toward start
+        this.gline( shortBentLength, strapWidth, 7* piTenths, 4* piTenths, false, false, chainColor)
+        this.moveToaD ( 2* piTenths, 0) //mid
+        this.gline( shortBentLength - capGap, strapWidth, 4* piTenths, 4* piTenths, false, true, chainColor)
+        this.moveToaD( 0, capGap)
+
+        //set up for the other end
+        this.moveToXY( tile.position.x, tile.position.y)
+        this.lineToAD( tile.angle + faces[0].centralAngle + Math.PI, faces[0].radialCoefficient * tile.size); //waist of bowtie
+        this.lineToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex, tile.size/2); //ready to start
+    }
+*/
+}
+
+
+
+IKRS.Tile.BowTie.prototype._buildInnerPolygonsOld = function( edgeLength ) {
 
     var indices = [ 1, 4 ];
     for( var i = 0; i < indices.length; i++ ) {
@@ -142,15 +217,15 @@ IKRS.Tile.BowTie.prototype._buildOuterPolygons = function() {
 	// The first/third triangle
 	var outerTileA   = new IKRS.Polygon();
 	outerTileA.addVertex( this.innerTilePolygons[i].getVertexAt(0).clone() );
-	outerTileA.addVertex( this.getVertexAt(index+2).clone() );
+	outerTileA.addVertex( this.getVertexAt(index+1).clone() );
 	outerTileA.addVertex( this.innerTilePolygons[i].getVertexAt(1).clone()) ;
 	this.outerTilePolygons.push( outerTileA );
 
 	// The second/fourth triangle
 	var outerTileB = new IKRS.Polygon();
-	outerTileB.addVertex( this.innerTilePolygons[i].getVertexAt(0).clone() );
-	outerTileB.addVertex( this.getVertexAt(index+1).clone() );
-	outerTileB.addVertex( this.innerTilePolygons[i].getVertexAt(3).clone()) ;
+	outerTileB.addVertex( this.innerTilePolygons[i].getVertexAt(1).clone() );
+	outerTileB.addVertex( this.getVertexAt(index+2).clone() );
+	outerTileB.addVertex( this.innerTilePolygons[i].getVertexAt(2).clone()) ;
 	this.outerTilePolygons.push( outerTileB );
 
     }
@@ -158,13 +233,15 @@ IKRS.Tile.BowTie.prototype._buildOuterPolygons = function() {
     // Add the center polygon
     var centerTile = new IKRS.Polygon();
     centerTile.addVertex( this.getVertexAt(0).clone() );
+    centerTile.addVertex( this.innerTilePolygons[0].getVertexAt(4).clone() );
     centerTile.addVertex( this.innerTilePolygons[0].getVertexAt(3).clone() );
     centerTile.addVertex( this.innerTilePolygons[0].getVertexAt(2).clone() );
-    centerTile.addVertex( this.innerTilePolygons[0].getVertexAt(1).clone() );
+//    centerTile.addVertex( this.innerTilePolygons[0].getVertexAt(1).clone() );
     centerTile.addVertex( this.getVertexAt(3).clone() );
+    centerTile.addVertex( this.innerTilePolygons[1].getVertexAt(4).clone() );
     centerTile.addVertex( this.innerTilePolygons[1].getVertexAt(3).clone() );
     centerTile.addVertex( this.innerTilePolygons[1].getVertexAt(2).clone() );
-    centerTile.addVertex( this.innerTilePolygons[1].getVertexAt(1).clone() );
+//    centerTile.addVertex( this.innerTilePolygons[1].getVertexAt(1).clone() );
     this.outerTilePolygons.push( centerTile );
 };
 
@@ -319,6 +396,7 @@ IKRS.Tile.BowTie.prototype.computeBounds           = IKRS.Tile.prototype.compute
 IKRS.Tile.BowTie.prototype._addVertex              = IKRS.Tile.prototype._addVertex;
 IKRS.Tile.BowTie.prototype._translateVertex        = IKRS.Tile.prototype._translateVertex;
 IKRS.Tile.BowTie.prototype._polygonToSVG           = IKRS.Tile.prototype._polygonToSVG;
+IKRS.Tile.BowTie.prototype.buildPolygon            = IKRS.Tile.prototype.buildPolygon;
 IKRS.Tile.BowTie.prototype.getInnerTilePolygonAt   = IKRS.Tile.prototype.getInnerTilePolygonAt;
 IKRS.Tile.BowTie.prototype.getOuterTilePolygonAt   = IKRS.Tile.prototype.getOuterTilePolygonAt;
 IKRS.Tile.BowTie.prototype.getTranslatedVertex     = IKRS.Tile.prototype.getTranslatedVertex;

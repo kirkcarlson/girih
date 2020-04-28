@@ -157,9 +157,10 @@ IKRS.Point2.prototype.rotate = function( origin,
 }
 
 IKRS.Point2.prototype.toString = function() {
-    return "(" + this.x + ", " + this.y + ")";
+    return "(" + IKRS.round( this.x, girihCanvasHandler.SVG_PRECISION)  + ", " +
+                 IKRS.round( this.y, girihCanvasHandler.SVG_PRECISION)  + ")";
 }
 
-IKRS.Point2.prototype.constructor = IKRS.Point2;
-
 IKRS.Point2.ZERO_POINT            = new IKRS.Point2( 0, 0 );
+
+IKRS.Point2.prototype.constructor = IKRS.Point2;

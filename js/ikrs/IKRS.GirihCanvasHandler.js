@@ -28,8 +28,8 @@ IKRS.GirihCanvasHandler = function( imageObject ) {
     this.drawOffset                = this.canvasCenter.clone();
     this.zoomFactor                = 1.0;
 
-    this.position                  = new IKRS.Point2( 0,0); // temporary position of image cursor
-    this.angle                     = 0;                     // temporary angle of image cursor
+    this.turtlePosition            = new IKRS.Point2( 0,0); // position of image cursor
+    this.turtleAngle               = 0;                     // angle of image cursor
 
     this.girih                     = new IKRS.Girih(); // describes a set of tiles
 
@@ -184,8 +184,10 @@ IKRS.GirihCanvasHandler.prototype.mouseDownHandler = function( e ) {
 	}
     }
 
-    if( !adjacentTile) {
-	// Not adjacent tile found for this location
+    if( adjacentTile) {
+	this.girihCanvasHandler._performAddCurrentAdjacentPresetTile();
+    } else {
+	// No adjacent tile found for this location
 	//  -> select tile
 
 	// Clear all selection
@@ -195,8 +197,6 @@ IKRS.GirihCanvasHandler.prototype.mouseDownHandler = function( e ) {
 	this.girihCanvasHandler.girih.tiles[tileIndex]._props.selected = true;
 	// DEBUG( "[mouseDown] tileIndex=" + tileIndex + ", selected=" + his.girihCanvasHandler.tiles[tileIndex]._props.selected );
 	this.girihCanvasHandler.redraw();
-    } else {
-	this.girihCanvasHandler._performAddCurrentAdjacentPresetTile();
     }
 };
 
@@ -242,7 +242,16 @@ IKRS.GirihCanvasHandler.prototype.mouseMoveHandler = function( e ) {
 							    hoverTile.size/2.0 * this.girihCanvasHandler.zoomFactor
 							  );
 
-    DEBUG( "[mouseMoved] hoverTileIndex=" + hoverTileIndex + ", highlightedEdgeIndex=" + highlightedEdgeIndex + ", hoverTile.position=" + hoverTile.position.toString() + ", hoverTile.angle=" + _angle2constant(hoverTile.angle) );
+    if (hoverTileIndex == undefined) { console.log( "hooverTileIndex is undefined") };
+    if (highlightedEdgeIndex == undefined) { console.log( "highlightedEdgeIndex is undefined") };
+    if (hoverTile.position == undefined) { console.log( "hoverTile.position is undefined")};
+    if (hoverTile.connectors[highlightedEdgeIndex] == undefined) { console.log( "hoverTile.connectors{ highlightedEdge] is undefined")};
+    DEBUG( "[mouseMoved] hoverTileIndex=" + hoverTileIndex +
+           ", highlightedEdgeIndex=" + highlightedEdgeIndex +
+           ", hoverTile.position=" + hoverTile.position.toString() +
+           ", connector.position=" + hoverTile.connectors[ highlightedEdgeIndex].point.toString()
+//           ", hoverTile.angle=" + _angle2constant(hoverTile.angle)
+         );
 
     hoverTile._props.highlightedEdgeIndex = highlightedEdgeIndex;
     // Were there any changes at all?
@@ -401,9 +410,9 @@ IKRS.GirihCanvasHandler.prototype._resolveCurrentAdjacentTilePreset = function( 
     }
 
     var optionIndex = (this.adjacentTileOptionPointer + possiblePositions.length) % possiblePositions.length;
-    var optionIndex = (this.adjacentTileOptionPointer + possiblePositions.length) % possiblePositions.length;
     var proposedPosition    = possiblePositions[ optionIndex];
 
+/*
     //find the position of the hovered tile vertex
     var face = IKRS.Girih.TILE_FACES [currentTile.tileType][highlightedEdgeIndex];
     var vertexAngle = face.centralAngle + currentTile.angle;
@@ -428,6 +437,32 @@ IKRS.GirihCanvasHandler.prototype._resolveCurrentAdjacentTilePreset = function( 
 
     //find the new tile angle
     var proposedTileAngle = proposedAngleToCenter - proposedFace.centralAngle + Math.PI;
+*/
+//begin new code
+    //find the position of the hovered tile vertex
+    var face = IKRS.Girih.TILE_FACES [currentTile.tileType][highlightedEdgeIndex];
+
+    this.posToXY( currentTile.position.x, currentTile.position.y) // at currrent center
+    this.posToAD( currentTile.angle + face.centralAngle,
+		  currentTile.size * face.radialCoefficient) // at highlighted edge vertex
+    this.posToaD( Math.PI + face.angleToNextVertex - face.angleToCenter,
+		  currentTile.size * face.lengthCoefficient); // at next vertex
+
+    var proposedFace = IKRS.Girih.TILE_FACES [proposedPosition.tileType][proposedPosition.startVertex];
+    this.posToaD( Math.PI - proposedFace.angleToNextVertex + proposedFace.angleToCenter,
+              currentTile.size * proposedFace.radialCoefficient) // at adjacent center
+    proposedCenter = this.turtlePosition.clone();
+
+//end new code
+
+    //find the new tile angle
+    //var proposedTileAngle = proposedFace.centralAngle;
+console.log("turtleAngle: " + this.turtleAngle * 180/Math.PI)
+
+    var proposedTileAngle = (this.turtleAngle + Math.PI) % (2* Math.PI); //this works for face 0
+//    var proposedTileAngle = (this.turtleAngle - proposedFace.centralAngle + Math.PI) % (2* Math.PI);
+console.log("proposedTileAngle: " + proposedTileAngle * 180/Math.PI)
+
 
     //create the new tile
     switch( proposedPosition.tileType ) {
@@ -589,7 +624,6 @@ IKRS.GirihCanvasHandler.prototype._drawTile = function( tile ) {
     if( tile.tileType == IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS && !this.getProperties().allowPenroseTile ) {
 	return;
     }
-
     var tileBounds = tile.computeBounds();
     if( this.drawProperties.drawBoxes ) {
 	this._drawBoundingBox( tile.position,
@@ -681,23 +715,33 @@ IKRS.GirihCanvasHandler.prototype._drawStrapping = function( tile ) {
 //**** VECTOR MOVEMENT METHODS FOR CANVAS OR SVG ************************************
 
 IKRS.GirihCanvasHandler.prototype.posToXY = function ( x, y) {
-    this.position.x = x;
-    this.position.y = y;
+    this.turtlePosition.x = x;
+    this.turtlePosition.y = y;
 }
 
 
 IKRS.GirihCanvasHandler.prototype.posToAD = function ( angle, length) {
-    this.position.x = this.position.x + length * Math.cos(angle)
-    this.position.y = this.position.y + length * Math.sin(angle)
-    this.angle = angle;
+    this.turtlePosition.x = this.turtlePosition.x + length * Math.cos(angle)
+    this.turtlePosition.y = this.turtlePosition.y + length * Math.sin(angle)
+    this.turtleAngle = angle;
 };
 
 
 IKRS.GirihCanvasHandler.prototype.posToaD = function ( angle, length) {
-    this.position.x = this.position.x + length * Math.cos(this.angle + angle)
-    this.position.y = this.position.y + length * Math.sin(this.angle + angle)
-    this.angle = this.angle + angle;
+    this.turtlePosition.x = this.turtlePosition.x + length * Math.cos(this.turtleAngle + angle)
+    this.turtlePosition.y = this.turtlePosition.y + length * Math.sin(this.turtleAngle + angle)
+    this.turtleAngle = (this.turtleAngle + angle) % (2* Math.PI);
 };
+
+
+IKRS.GirihCanvasHandler.prototype.getTurtlePosition = function () {
+    return this.turtlePosition;
+}
+
+
+IKRS.GirihCanvasHandler.prototype.getTurtleAngle = function () {
+    return this.turtleAngle;
+}
 
 
 //**** VECTOR DRAWING METHODS FOR CANVAS  ************************************
@@ -717,8 +761,8 @@ IKRS.GirihCanvasHandler.prototype.posToaD = function ( angle, length) {
 *************************************************************************/
 IKRS.GirihCanvasHandler.prototype.moveToXY = function (newX, newY) {
     this.posToXY( newX, newY);
-    this.context.moveTo( (this.position.x + this.drawOffset.x) * this.zoomFactor,
-			 (this.position.y + this.drawOffset.y) * this.zoomFactor
+    this.context.moveTo( (this.turtlePosition.x + this.drawOffset.x) * this.zoomFactor,
+			 (this.turtlePosition.y + this.drawOffset.y) * this.zoomFactor
 		       );
 };
 
@@ -738,9 +782,8 @@ IKRS.GirihCanvasHandler.prototype.moveToXY = function (newX, newY) {
 *************************************************************************/
 IKRS.GirihCanvasHandler.prototype.lineToXY = function (newX, newY) {
     this.posToXY( newX, newY);
-/// this.context.moveTo( point.x * this.zoomFactor + this.drawOffset.x + position.x * this.zoomFactor,
-    this.context.lineTo(this.position.x * this.zoomFactor + this.drawOffset.x,
-			this.position.y * this.zoomFactor + this.drawOffset.y);
+    this.context.lineTo(this.turtlePosition.x * this.zoomFactor + this.drawOffset.x,
+			this.turtlePosition.y * this.zoomFactor + this.drawOffset.y);
 };
 
 
@@ -760,8 +803,8 @@ IKRS.GirihCanvasHandler.prototype.lineToXY = function (newX, newY) {
 *************************************************************************/
 IKRS.GirihCanvasHandler.prototype.lineToAD = function ( angle, length) {
     this.posToAD( angle, length);
-    this.context.lineTo(this.position.x * this.zoomFactor + this.drawOffset.x,
-			this.position.y * this.zoomFactor + this.drawOffset.y);
+    this.context.lineTo(this.turtlePosition.x * this.zoomFactor + this.drawOffset.x,
+			this.turtlePosition.y * this.zoomFactor + this.drawOffset.y);
 };
 
 
@@ -781,8 +824,8 @@ IKRS.GirihCanvasHandler.prototype.lineToAD = function ( angle, length) {
 *************************************************************************/
 IKRS.GirihCanvasHandler.prototype.lineToaD = function ( angle, length) {
     this.posToaD( angle, length);
-    this.context.lineTo(this.position.x * this.zoomFactor + this.drawOffset.x,
-			this.position.y * this.zoomFactor + this.drawOffset.y);
+    this.context.lineTo(this.turtlePosition.x * this.zoomFactor + this.drawOffset.x,
+			this.turtlePosition.y * this.zoomFactor + this.drawOffset.y);
 };
 
 
@@ -802,8 +845,8 @@ IKRS.GirihCanvasHandler.prototype.lineToaD = function ( angle, length) {
 *************************************************************************/
 IKRS.GirihCanvasHandler.prototype.moveToAD = function ( angle, length) {
     this.posToAD( angle, length);
-    this.context.moveTo(this.position.x * this.zoomFactor + this.drawOffset.x,
-			this.position.y * this.zoomFactor + this.drawOffset.y);
+    this.context.moveTo(this.turtlePosition.x * this.zoomFactor + this.drawOffset.x,
+			this.turtlePosition.y * this.zoomFactor + this.drawOffset.y);
 };
 
 
@@ -823,65 +866,52 @@ IKRS.GirihCanvasHandler.prototype.moveToAD = function ( angle, length) {
 *************************************************************************/
 IKRS.GirihCanvasHandler.prototype.moveToaD = function ( angle, length) {
     this.posToaD( angle, length);
-    this.context.moveTo(this.position.x * this.zoomFactor + this.drawOffset.x,
-			this.position.y * this.zoomFactor + this.drawOffset.y);
+    this.context.moveTo(this.turtlePosition.x * this.zoomFactor + this.drawOffset.x,
+			this.turtlePosition.y * this.zoomFactor + this.drawOffset.y);
 };
 
 
 //**** VECTOR DRAWING METHODS FOR SVG ************************************
 
-// round is used to limit the number of digits included in the SVG output
-IKRS.GirihCanvasHandler.prototype.round = function( n, digits) {
-    // round n to the digits number of digits right of decimal point
-    // n is the number to be rounded
-    // digits is the number of digits
-    if (digits === undefined) {
-      digits = 0
-    }
-    var magnitude = Math.pow( 10, digits)
-    return Math.round( n * magnitude) / magnitude
-}
-
-
 IKRS.GirihCanvasHandler.prototype.svgMoveToXY = function ( x, y) {
     this.posToXY( x, y)
-    return ' M '+ this.round( this.position.x, this.SVG_PRECISION) +' '+
-		  this.round( this.position.y, this.SVG_PRECISION)
+    return ' M'+ IKRS.round( this.turtlePosition.x, this.SVG_PRECISION) +' '+
+		 IKRS.round( this.turtlePosition.y, this.SVG_PRECISION)
 }
 
 
 IKRS.GirihCanvasHandler.prototype.svgLineToXY = function ( x, y) {
     this.posToXY( x, y)
-    return ' L '+ this.round( this.position.x, this.SVG_PRECISION) +' '+
-		  this.round( this.position.y, this.SVG_PRECISION)
+    return ' L'+ IKRS.round( this.turtlePosition.x, this.SVG_PRECISION) +' '+
+		 IKRS.round( this.turtlePosition.y, this.SVG_PRECISION)
 }
 
 
 IKRS.GirihCanvasHandler.prototype.svgMoveToAD = function ( angle, length) {
     this.posToAD( angle, length);
-    return ' M '+ this.round( this.position.x, this.SVG_PRECISION) +' '+
-		  this.round( this.position.y, this.SVG_PRECISION)
+    return ' M'+ IKRS.round( this.turtlePosition.x, this.SVG_PRECISION) +' '+
+		 IKRS.round( this.turtlePosition.y, this.SVG_PRECISION)
 }
 
 
 IKRS.GirihCanvasHandler.prototype.svgLineToAD = function ( angle, length) {
     this.posToAD( angle, length)
-    return ' L '+ this.round( this.position.x, this.SVG_PRECISION) +' '+
-		  this.round( this.position.y, this.SVG_PRECISION)
+    return ' L'+ IKRS.round( this.turtlePosition.x, this.SVG_PRECISION) +' '+
+		 IKRS.round( this.turtlePosition.y, this.SVG_PRECISION)
 };
 
 
 IKRS.GirihCanvasHandler.prototype.svgMoveToaD = function ( angle, length) {
     this.posToaD( angle, length)
-    return ' M '+ this.round( this.position.x, this.SVG_PRECISION) +' '+
-		  this.round( this.position.y, this.SVG_PRECISION)
+    return ' M'+ IKRS.round( this.turtlePosition.x, this.SVG_PRECISION) +' '+
+		 IKRS.round( this.turtlePosition.y, this.SVG_PRECISION)
 };
 
 
 IKRS.GirihCanvasHandler.prototype.svgLineToaD = function ( angle, length) {
     this.posToaD( angle, length)
-    return ' L '+ this.round( this.position.x, this.SVG_PRECISION) +' '+
-		  this.round( this.position.y, this.SVG_PRECISION)
+    return ' L'+ IKRS.round( this.turtlePosition.x, this.SVG_PRECISION) +' '+
+		 IKRS.round( this.turtlePosition.y, this.SVG_PRECISION)
 };
 
 
@@ -1016,14 +1046,19 @@ IKRS.GirihCanvasHandler.prototype._drawPolygonFromPoints = function( points,
 	return;
     }
 
-    this.context.save();
+//    this.context.save(); //needed for textures?
 
     this.context.beginPath();
     var point      = points[0].clone();
-    point.rotate( IKRS.Point2.ZERO_POINT, angle );
+//    point.rotate( IKRS.Point2.ZERO_POINT, angle );
     var startPoint = point.clone();
+/*
     this.context.moveTo( point.x * this.zoomFactor + this.drawOffset.x + position.x * this.zoomFactor,
 			 point.y * this.zoomFactor + this.drawOffset.y + position.y * this.zoomFactor
+		       );
+*/
+    this.context.moveTo( point.x * this.zoomFactor + this.drawOffset.x,
+			 point.y * this.zoomFactor + this.drawOffset.y
 		       );
 
     var bounds = new IKRS.BoundingBox2( point.x, point.y, point.x, point.y );
@@ -1031,20 +1066,31 @@ IKRS.GirihCanvasHandler.prototype._drawPolygonFromPoints = function( points,
     for( var i = 1; i < points.length; i++ ) {
 
 	point.set( points[i] );
-	point.rotate( IKRS.Point2.ZERO_POINT, angle );
+//	point.rotate( IKRS.Point2.ZERO_POINT, angle );
 	//window.alert( "point=(" + point.x + ", "+ point.y + ")" );
+/*
 	this.context.lineTo( point.x * this.zoomFactor + this.drawOffset.x + position.x * this.zoomFactor,
 			     point.y * this.zoomFactor + this.drawOffset.y + position.y * this.zoomFactor
 			   );
+*/
+	this.context.lineTo( point.x * this.zoomFactor + this.drawOffset.x,
+			     point.y * this.zoomFactor + this.drawOffset.y
+			   );
 
+// can't find reference to bounds...
 	bounds.xMin = Math.min( point.x, bounds.xMin );
 	bounds.xMax = Math.max( point.x, bounds.xMax );
 	bounds.yMin = Math.min( point.y, bounds.yMin );
 	bounds.yMax = Math.max( point.y, bounds.yMax );
     }
     // Close path
+/*
     this.context.lineTo( startPoint.x * this.zoomFactor + this.drawOffset.x + position.x * this.zoomFactor,
 			 startPoint.y * this.zoomFactor + this.drawOffset.y + position.y * this.zoomFactor
+		       );
+*/
+    this.context.lineTo( startPoint.x * this.zoomFactor + this.drawOffset.x,
+			 startPoint.y * this.zoomFactor + this.drawOffset.y
 		       );
     this.context.closePath();
 
@@ -1106,7 +1152,7 @@ IKRS.GirihCanvasHandler.prototype._drawPolygonFromPoints = function( points,
 	this.context.stroke();
     }
 
-    this.context.restore();
+//    this.context.restore();
 
 };
 
@@ -1150,16 +1196,24 @@ IKRS.GirihCanvasHandler.prototype._drawHighlightedPolygonEdge = function( points
     var pointA = points[ highlightedEdgeIndex ].clone();
     var pointB = points[ highlightedEdgeIndex+1 < points.length ? highlightedEdgeIndex+1 : 0 ].clone();
 
-    pointA.rotate( IKRS.Point2.ZERO_POINT, angle );
-    pointB.rotate( IKRS.Point2.ZERO_POINT, angle );
+//    pointA.rotate( IKRS.Point2.ZERO_POINT, angle );
+//    pointB.rotate( IKRS.Point2.ZERO_POINT, angle );
 
 
     this.context.beginPath();
+/*
     this.context.lineTo( pointA.x * this.zoomFactor + this.drawOffset.x + position.x * this.zoomFactor,
 			 pointA.y * this.zoomFactor + this.drawOffset.y + position.y * this.zoomFactor
 		       );
     this.context.lineTo( pointB.x * this.zoomFactor + this.drawOffset.x + position.x * this.zoomFactor,
 			 pointB.y * this.zoomFactor + this.drawOffset.y + position.y * this.zoomFactor
+		       );
+*/
+    this.context.lineTo( pointA.x * this.zoomFactor + this.drawOffset.x,
+			 pointA.y * this.zoomFactor + this.drawOffset.y
+		       );
+    this.context.lineTo( pointB.x * this.zoomFactor + this.drawOffset.x,
+			 pointB.y * this.zoomFactor + this.drawOffset.y
 		       );
     this.context.closePath();
     this.context.strokeStyle = colors.selectedEdgeColor;
@@ -1245,7 +1299,7 @@ IKRS.GirihCanvasHandler.prototype._drawCrosshairAt = function( position,
 		      position.y * this.zoomFactor + this.drawOffset.y,
 		      5.0,
 		      0.0,
-		      Math.PI*2.0,
+		      2 * Math.PI,
 		      false
 		    );
 
@@ -1276,7 +1330,7 @@ IKRS.GirihCanvasHandler.prototype._drawBoundingBox = function( position,
 				 },
 				 null,   // imgProperties,
 				 null,   // imageObject,
-				 -1,     // hightlightedEdgeIndex
+				 -1,     // highlightedEdgeIndex
 				 true    // drawOutlines
 			       );
 
@@ -1490,6 +1544,7 @@ IKRS.GirihCanvasHandler.prototype.getProperties = function() {
 
 
 IKRS.GirihCanvasHandler.prototype.redraw = function() {
+console.log("redraw triggered")
 
     this.context.fillStyle = this.getDrawProperties().backgroundColor; // "#F0F0F0";
     this.context.fillRect( 0, 0, this.canvasWidth, this.canvasHeight );
@@ -1533,8 +1588,8 @@ IKRS.GirihCanvasHandler.prototype.getSVGPolygonFromFaces = function( tile, idStr
     var preemble = ''
     for (var i = 0; i< faces.length; i++) {
 	polygon += preemble +
-		   this.round( this.position.x, this.SVG_PRECISION) +','+ 
-		   this.round( this.position.y, this.SVG_PRECISION)
+		   IKRS.round( this.position.x, this.SVG_PRECISION) +','+ 
+		   IKRS.round( this.position.y, this.SVG_PRECISION)
         boundingBox.evaluatePoint( this.position.x, this.position.y);// important to use translated vertices
 	face = faces[ i];
 	this.posToaD( face.angleToNextVertex, tile.size * face.lengthCoefficient);
@@ -1582,58 +1637,58 @@ IKRS.GirihCanvasHandler.prototype.getGlineSVG = function( distance, spacing, sta
     path.push( this.indent + '<path class="gfill" d="');
 //'"id="' + idStr
 //'"class="gfill ' + fillClassStr
-    path.push ('M'+ this.round( this.position.x, this.SVG_PRECISION) +' '+
-                    this.round( this.position.y, this.SVG_PRECISION));
-    path.push( this.svgLineToaD( this.round( startAngle, this.SVG_PRECISION),
-                                 this.round( startDiag/2, this.SVG_PRECISION)));
-    path.push( this.svgLineToaD( this.round( -startAngle, this.SVG_PRECISION),
-                                 this.round( distance + startRightDist + endRightDist, this.SVG_PRECISION)));
-    path.push( this.svgLineToaD( this.round( -endAngle, this.SVG_PRECISION),
-                                 this.round( endDiag, this.SVG_PRECISION)));
-    path.push( this.svgLineToaD( this.round( endAngle + 10* piTenths, this.SVG_PRECISION),
-                                 this.round( distance + startLeftDist + endLeftDist, this.SVG_PRECISION)));
-    path.push( this.svgLineToaD( this.round( startAngle - 10* piTenths, this.SVG_PRECISION),
-                                 this.round( startDiag/2, this.SVG_PRECISION)));
-    path.push( this.svgLineToaD( this.round( -startAngle, this.SVG_PRECISION), 0));
+    path.push('M'+ IKRS.round( this.position.x, this.SVG_PRECISION) +' '+
+                    IKRS.round( this.position.y, this.SVG_PRECISION));
+    path.push( this.svgLineToaD( startAngle,
+                                 startDiag/2));
+    path.push( this.svgLineToaD( -startAngle,
+                                 distance + startRightDist + endRightDist));
+    path.push( this.svgLineToaD( -endAngle,
+                                 endDiag));
+    path.push( this.svgLineToaD( endAngle + 10* piTenths,
+                                 distance + startLeftDist + endLeftDist));
+    path.push( this.svgLineToaD( startAngle - 10* piTenths,
+                                 startDiag/2));
+    path.push( this.svgLineToaD( -startAngle, 0));
     path.push( '"/>' + this.eol);
 
     // stroke the segment for real
     path.push( this.indent + '<path class="gstroke" d="');
 //'"class="gstroke ' + strokeClassStr
 //'"id="' + idStr
-    path.push( 'M'+ this.round( this.position.x, this.SVG_PRECISION) +' '+
-                    this.round( this.position.y, this.SVG_PRECISION));
+    path.push( 'M'+ IKRS.round( this.position.x, this.SVG_PRECISION) +' '+
+                    IKRS.round( this.position.y, this.SVG_PRECISION));
     if (startCap) {
 	path.push( this.svgLineToaD( 0,0)); // should not be necessary
-	path.push( this.svgLineToaD( this.round( startAngle, this.SVG_PRECISION),
-                                     this.round( startDiag/2, this.SVG_PRECISION)));
+	path.push( this.svgLineToaD( startAngle,
+                                     startDiag/2));
     } else {
-	path.push( this.svgMoveToaD( this.round( startAngle, this.SVG_PRECISION),
-                                     this.round( startDiag/2, this.SVG_PRECISION)));
+	path.push( this.svgMoveToaD( startAngle,
+                                     startDiag/2, ));
     }
-    path.push( this.svgLineToaD( this.round( -startAngle, this.SVG_PRECISION),
-                                 this.round( distance + startRightDist + endRightDist, this.SVG_PRECISION)));
+    path.push( this.svgLineToaD( -startAngle,
+                                 distance + startRightDist + endRightDist));
 
     if( endCap) {
-	path.push( this.svgLineToaD( this.round( -endAngle, this.SVG_PRECISION),
-                                     this.round( endDiag, this.SVG_PRECISION)));
+	path.push( this.svgLineToaD( -endAngle,
+                                     endDiag));
     } else {
-	path.push( this.svgMoveToaD( this.round( -endAngle, this.SVG_PRECISION),
-                                     this.round( endDiag, this.SVG_PRECISION)));
+	path.push( this.svgMoveToaD( -endAngle,
+                                     endDiag));
     }
-    path.push( this.svgLineToaD( this.round( endAngle + 10* piTenths, this.SVG_PRECISION),
-                                 this.round( distance + startLeftDist + endLeftDist, this.SVG_PRECISION)));
+    path.push( this.svgLineToaD( endAngle + 10* piTenths,
+                                 distance + startLeftDist + endLeftDist));
     if ( startCap) {
-	path.push( this.svgLineToaD( this.round( startAngle - 10* piTenths, this.SVG_PRECISION),
-                                     this.round( startDiag/2, this.SVG_PRECISION)));
+	path.push( this.svgLineToaD( startAngle - 10* piTenths,
+                                     startDiag/2));
     } else {
-	path.push( this.svgMoveToaD( this.round( startAngle - 10* piTenths, this.SVG_PRECISION),
-                                     this.round( startDiag/2, this.SVG_PRECISION)));
+	path.push( this.svgMoveToaD( startAngle - 10* piTenths,
+                                     startDiag/2));
     }
 
     // move to the end of the segment
-    path.push( this.moveToaD( this.round( -startAngle, this.SVG_PRECISION),
-                              this.round( distance, this.SVG_PRECISION)));
+    path.push( this.moveToaD( -startAngle,
+                              distance));
     path.push( '"/>' + this.eol);
 
 console.log("svgGline path:"+ path);
@@ -1745,16 +1800,16 @@ IKRS.GirihCanvasHandler.prototype.getSVGForeword = function( highWater) {
 
     var foreword = `` +
 `<svg id="girih-svg" xmlns="http://www.w3.org/2000/svg" version="1.1"
-   height="` + this.round( highWater.getHeight(), this.SVG_PRECISION) + `"
-   width="` + this.round( highWater.getWidth(), this.SVG_PRECISION) + `">
+   height="` + IKRS.round( highWater.getHeight(), this.SVG_PRECISION) + `"
+   width="` + IKRS.round( highWater.getWidth(), this.SVG_PRECISION) + `">
 <style>
 path {
     vector-effect:non-scaling-stroke;
 }
 polygon { /* includes inner and outer facets */
-    stroke:black;
-    stroke-width: 1px;
     fill:transparent;
+    stroke:transparent;
+    stroke-width: 1px;
 }
 `;
     if( this.drawProperties.drawPolygonColor) {
@@ -1763,68 +1818,86 @@ polygon { /* includes inner and outer facets */
 `.decagon{
   fill:`+ this.drawProperties.decagonFillColor + `;
   opacity:50%;
+  stroke:black;
 }
 .pentagon{
   fill:`+ this.drawProperties.pentagonFillColor + `;
   opacity:50%;
+  stroke:black;
 }
 .hexagon{
   fill:`+ this.drawProperties.hexagonFillColor + `;
   opacity:50%;
+  stroke:black;
 }
 .rhombus{
   fill:`+ this.drawProperties.rhombusFillColor + `;
   opacity:50%;
+  stroke:black;
 }
 .penrose_rhombus{
   fill:`+ this.drawProperties.penroseRhombusFillColor + `;
   opacity:50%;
+  stroke:black;
 }
 .bow_tie{
   fill:`+ this.drawProperties.bowTieFillColor + `;
   opacity:50%;
+  stroke:black;
 }
 `;
         } else if (this.drawProperties.polygonColorType === "random") {
             foreword += `` +
 `.decagon{
   opacity:50%;
+  stroke:black;
 }
 .pentagon{
   opacity:50%;
+  stroke:black;
 }
 .hexagon{
   opacity:50%;
+  stroke:black;
 }
 .rhombus{
   opacity:50%;
+  stroke:black;
 }
 .penrose_rhombus{
   opacity:50%;
+  stroke:black;
 }
 .bow_tie{
   opacity:50%;
+  stroke:black;
 }
 `;
         } else { //default?
             foreword += `` +
 `.decagon{
   opacity:50%;
+  stroke:black;
 }
 .pentagon{
   opacity:50%;
+  stroke:black;
 }
 .hexagon{
   opacity:50%;
+  stroke:black;
 }
 .rhombus{
   opacity:50%;
+  stroke:black;
 }
 .penrose_rhombus{
   opacity:50%;
+  stroke:black;
 }
 .bow_tie{
   opacity:50%;
+  stroke:black;
 }
 `
         }
@@ -1851,11 +1924,11 @@ polygon { /* includes inner and outer facets */
 }
 .inner polygon {
     /*fill: lightyellow;*/
-    fill:transparent;
+    /*fill:transparent;*/
 }
 .outer polygon {
     /*fill: aliceblue;*/
-    fill:transparent;
+    /*fill:transparent;*/
 }
 `
 
@@ -1874,8 +1947,8 @@ svg, .background {
 </style>
 
 <g transform="matrix(1 0 0 1 ` +
-    this.round( -highWater.getXMin(), this.SVG_PRECISION) + ` ` +
-    this.round( -highWater.getYMin(), this.SVG_PRECISION) + `)">
+    IKRS.round( -highWater.getXMin(), this.SVG_PRECISION) + ` ` +
+    IKRS.round( -highWater.getYMin(), this.SVG_PRECISION) + `)">
 `;
     return foreword;
 }
@@ -1903,7 +1976,7 @@ console.log("gCH.toSVG: start");
     if( typeof buffer == "undefined" || !buffer ) {
 	buffer = [];
 /*
-	retur
+	return
     <polygon points="282.077,66.333 253.077,66.333 261.849,54.06 280.111,60.282 291.228,44.514 305.539,49.287" />
     <polygon points="271,32.242 300,32.242 291.228,44.514 272.966,38.293 261.849,54.06 247.539,49.287" />
 <polygon id="tile_" class="polygon decagon" points="329,210.747 375.923,244.839 393.846,300 375.923,355.161 329,389.253 271,389.253 224.077,355.161 206.154,300 224.077,244.839 271,210.747"/>    <polygon points="352.461,nBuffer = true;
@@ -1923,6 +1996,20 @@ console.log("gCH.toSVG: start");
 	var background = ""
     }
 */
+
+    // find all of the chains (if not already done)
+    if( this.drawProperties.drawStrapping &&
+	   (this.drawProperties.drawStrappingType === "fancy" ||
+	    this.drawProperties.drawStrappingType === "random")) {
+	if (this.lastTileCount !== this.girih.tiles.length ||
+	    this.lastDrawStrappingType !== this.drawProperties.drawStrappingType) { // when tile added or deleted
+	    this.girih.buildConnectors( this.girih.tiles);
+	    this.girih.findConnections( this.girih.tiles);
+	    this.girih.findAllChains( this.girih.tiles);
+	    this.lastTileCount = this.girih.tiles.length;
+	}
+    }
+
     var highWater = new IKRS.BoundingBox3();
 
     var oldIndent = options.indent;
@@ -2006,7 +2093,7 @@ IKRS.GirihCanvasHandler.prototype._drawCircle = function( circle ) {
 		      circle.center.y * this.zoomFactor + this.drawOffset.y,
 		      circle.radius * this.zoomFactor,
 		      0,
-		      Math.PI*2
+		      2 * Math.PI
 		    );
     this.context.stroke();
 };

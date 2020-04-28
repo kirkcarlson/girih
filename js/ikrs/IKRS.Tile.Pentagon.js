@@ -11,6 +11,8 @@ IKRS.Tile.Pentagon = function( size, position, angle, fillColor ) {
 
     IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_PENTAGON );
 
+    this.buildPolygon();
+/*
     // Init the actual decahedron shape with the passed size
     var pointA = new IKRS.Point2(0,0);
     var pointB = pointA;
@@ -25,8 +27,10 @@ IKRS.Tile.Pentagon = function( size, position, angle, fillColor ) {
 	pointB.rotate( pointA, i*theta );
 	this._addVertex( pointB );
     }
+*/
 
 
+/*
     // Move to center
     // Calculate the diameter of the bounding circle
     var r_out  = (size/10) * Math.sqrt( 50 + 10*Math.sqrt(5) );
@@ -42,7 +46,7 @@ IKRS.Tile.Pentagon = function( size, position, angle, fillColor ) {
 
     }
 
-
+*/
     if (fillColor !== undefined) {
         this.fillColor = fillColor;
     } else {
@@ -72,7 +76,7 @@ IKRS.Tile.Pentagon.getFaces = function() {
     var faces = [];
     for (var i=0; i<5; i++) {
         faces.push( new IKRS.Face(
-             /*centralAngle:*/       -3* piTenths + i* 4* piTenths,
+             /*centralAngle:*/       0* piTenths + i* 4* piTenths,
              /*angleToNextVertex:*/  4* piTenths,
              /*lengthCoefficient:*/  1,
              /*angleToCenter:*/      7* piTenths,
@@ -84,6 +88,30 @@ IKRS.Tile.Pentagon.getFaces = function() {
 
 
 IKRS.Tile.Pentagon.prototype._buildInnerPolygons = function( edgeLength ) {
+    var innerTile = new IKRS.Polygon(); // [];
+    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+
+
+    girihCanvasHandler.posToXY( this.position.x, this.position.y); // center of pentagon
+    girihCanvasHandler.posToAD( this.angle + faces[0].centralAngle,
+                                faces[0].radialCoefficient * this.size); //at vertice 0
+    girihCanvasHandler.posToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex,
+                                0.5 * this.size); //midpoint of side 0
+    for( var i = 0; i<5; i++) {
+	innerTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //mid point
+	girihCanvasHandler.posToaD(  3* piTenths, 0.425 * this.size);
+	innerTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //bend point
+	girihCanvasHandler.posToaD( -2* piTenths, 0.425 * this.size);
+	girihCanvasHandler.posToaD( 3* piTenths, 0); // at next vertice
+    }
+    this.innerTilePolygons.push( innerTile );
+}
+
+
+
+
+
+IKRS.Tile.Pentagon.prototype._buildInnerPolygonsOLD = function( edgeLength ) {
     // Connect all edges half-the-way
     var innerTile = new IKRS.Polygon(); // [];
     //innerTile.push( this.vertices[0].scaleTowards( this.vertices[1], 0.5 ) );
@@ -92,7 +120,8 @@ IKRS.Tile.Pentagon.prototype._buildInnerPolygons = function( edgeLength ) {
     var center = new IKRS.Point2( 0, 0 );
     for( var i = 0; i < this.polygon.vertices.length; i++ ) {
 
-	innerTile.addVertex( this.getVertexAt(i).scaleTowards( this.getVertexAt(i+1), 0.5 ) );
+	innerTile.addVertex( this.getVertexAt(i).scaleTowards( this.getVertexAt(i+1), 0.5 ) ); //mid point
+
 
 	// This algorithm using circles to detect the intersection point
 	// does not work as expected:
@@ -249,7 +278,13 @@ IKRS.GirihCanvasHandler.prototype.tile_pentagon_drawBoundingBox = function(tile)
 IKRS.Tile.Pentagon.prototype.moveToXY                = IKRS.GirihCanvasHandler.prototype.moveToXY;
 IKRS.Tile.Pentagon.prototype.moveToAD                = IKRS.GirihCanvasHandler.prototype.moveToAD;
 IKRS.Tile.Pentagon.prototype.moveToaD                = IKRS.GirihCanvasHandler.prototype.moveToaD;
+//IKRS.Tile.Pentagon.prototype.posToXY                 = IKRS.GirihCanvasHandler.prototype.posToXY;
+//IKRS.Tile.Pentagon.prototype.posToAD                 = IKRS.GirihCanvasHandler.prototype.posToAD;
+//IKRS.Tile.Pentagon.prototype.posToaD                 = IKRS.GirihCanvasHandler.prototype.posToaD;
+//IKRS.Tile.Pentagon.prototype.getTurtlePosition       = IKRS.GirihCanvasHandler.prototype.getTurtlePosition;
+//IKRS.Tile.Pentagon.prototype.getTurtleAngle          = IKRS.GirihCanvasHandler.prototype.getTurtleAngle;
 IKRS.Tile.Pentagon.prototype.gline                   = IKRS.GirihCanvasHandler.prototype.gline;
+IKRS.Tile.Pentagon.prototype.buildPolygon            = IKRS.Tile.prototype.buildPolygon;
 IKRS.Tile.Pentagon.prototype.computeBounds           = IKRS.Tile.prototype.computeBounds;
 IKRS.Tile.Pentagon.prototype._addVertex              = IKRS.Tile.prototype._addVertex;
 IKRS.Tile.Pentagon.prototype._translateVertex        = IKRS.Tile.prototype._translateVertex;

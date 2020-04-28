@@ -33,7 +33,7 @@ IKRS.Tile = function( size,
 
     this.size                 = size;
     this.position             = position;
-    this.angle                = angle;
+    this.angle                = angle % (2* Math.PI);
     //this.vertices            = [];
     this.polygon              = new IKRS.Polygon(); // Empty vertice array
 
@@ -56,6 +56,24 @@ IKRS.Tile = function( size,
 
     this.tileType             = tileType;
 };
+
+
+IKRS.Tile.prototype.buildPolygon = function( ) {
+    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var face = faces[0];
+
+    girihCanvasHandler.posToXY( this.position.x, this.position.y)
+    girihCanvasHandler.posToAD( this.angle + face.centralAngle, face.radialCoefficient * this.size)
+    girihCanvasHandler.posToaD( Math.PI - face.angleToCenter, 0)
+    for (var i = 0; i< faces.length; i++) {
+	this.polygon.vertices[i] = girihCanvasHandler.turtlePosition.clone(); // save vertex
+
+	face = faces[ i];
+	girihCanvasHandler.posToaD( face.angleToNextVertex,
+		this.size * face.lengthCoefficient)
+    }
+}
+
 
 /**
  * This function applies MOD to the index.
@@ -119,8 +137,11 @@ IKRS.Tile.prototype.containsPoint = function( point ) {
     var i, j = 0;
     var c = false;
     for (i = 0, j = this.polygon.vertices.length-1; i < this.polygon.vertices.length; j = i++) {
-	vertI = this.getTranslatedVertex( i );
-	vertJ = this.getTranslatedVertex( j );
+//	vertI = this.getTranslatedVertex( i );
+//console.log("containsPoint: "+ i +" :"+ vertI)
+//	vertJ = this.getTranslatedVertex( j );
+vertI = this.getVertexAt(i)
+vertJ = this.getVertexAt(j)
     	if ( ((vertI.y>point.y) != (vertJ.y>point.y)) &&
     	     (point.x < (vertJ.x-vertI.x) * (point.y-vertI.y) / (vertJ.y-vertI.y) + vertI.x) )
     	    c = !c;
@@ -149,14 +170,17 @@ IKRS.Tile.prototype.locateEdgeAtPoint = function( point,
 	return -1;
 
 
-    var middle         = new IKRS.Point2( 0, 0 );
+    //var middle         = new IKRS.Point2( 0, 0 );
+    var middle         = this.position.clone();
     var tmpDistance    = 0;
     var resultDistance = tolerance*2;   // definitely outside the tolerance :)
     var resultIndex    = -1;
     for( var i = 0; i < this.polygon.vertices.length; i++ ) {
 
-	var vertI = this.getTranslatedVertex( i );
-	var vertJ = this.getTranslatedVertex( i+1 ); // (i+1 < this.vertices.length ? i+1 : 0) );
+	//var vertI = this.getTranslatedVertex( i );
+	//var vertJ = this.getTranslatedVertex( i+1 ); // (i+1 < this.vertices.length ? i+1 : 0) );
+	var vertI = this.getVertexAt( i );
+	var vertJ = this.getVertexAt( i+1 ); // (i+1 < this.vertices.length ? i+1 : 0) );
 
 	// Create a point in the middle of the edge
 	middle.x = vertI.x + (vertJ.x - vertI.x)/2.0;
@@ -170,7 +194,6 @@ IKRS.Tile.prototype.locateEdgeAtPoint = function( point,
     }
 
     return resultIndex;
-
 }
 
 /**
@@ -270,9 +293,10 @@ console.log("Tile.toSVG start")
 	var styleStr = "";
 	if (girihCanvasHandler.drawProperties.drawOutlines) {
 	    styleStr = 'style="stroke:black;';
-	} else {
-	    styleStr = 'style="stroke:transparent;';
+//	} else {
+//	    styleStr = 'style="stroke:transparent;';
 	}
+        // don't set stroke to transparent here because hard to override with css
 	if (girihCanvasHandler.drawProperties.drawPolygonColor &&
             girihCanvasHandler.drawProperties.polygonColorType === "random") {
 	    styleStr += ' fill:rgb(' + Math.round( Math.random()*255 ) + ',' +
@@ -296,7 +320,9 @@ console.log("Tile.toSVG start")
 		girihCanvasHandler.drawProperties.drawStrappingType === "basic") {
 		var polygonStyle = 'style="stroke:black;';
 	    } else {
-		var polygonStyle = 'style="stroke:transparent;';
+//		var polygonStyle = 'style="stroke:transparent;';
+		var polygonStyle = 'style="';
+        // don't set stroke to transparent here because hard to override with css
 	    }
 	    if( girihCanvasHandler.drawProperties.drawInnerPolygons &&
 	        girihCanvasHandler.drawProperties.innerRandomColorFill) {
@@ -304,14 +330,15 @@ console.log("Tile.toSVG start")
 			Math.round( Math.random()*255 ) + ',' +
 			Math.round( Math.random()*255 ) + ',' +
 			Math.round( Math.random()*255 ) + ');';
-	    } else {
-		polygonStyle += ' fill:transparent;';
+//	    } else {
+//		polygonStyle += ' fill:transparent;';
+        // don't set fill to transparent here because hard to override with css
 	    }
 	    polygonStyle += '"';
 	    buffer.push( girihCanvasHandler.indent +
 			 this._polygonToSVG( this.innerTilePolygons[i],
-				polygonStyle,
-				boundingBox) +
+					     polygonStyle,
+					     boundingBox) +
 			 girihCanvasHandler.eol);
 	}
 	girihCanvasHandler.indentDec();
@@ -323,7 +350,8 @@ console.log("Tile.toSVG mid1")
 		     girihCanvasHandler.eol);
 	girihCanvasHandler.indentInc();
 	for( var i = 0; i < this.outerTilePolygons.length; i++ ) {
-	    var polygonStyle = 'style="stroke:transparent;';
+//	    var polygonStyle = 'style="stroke:transparent;';
+	    var polygonStyle = 'style="';
 	    if (girihCanvasHandler.drawProperties.outerRandomColorFill) {
 		polygonStyle += ' fill:rgb(' +
 			Math.round( Math.random()*255 ) + ',' +
@@ -399,9 +427,9 @@ IKRS.Tile.prototype._polygonToSVG = function( polygon, // an array of vertices
     for( var i = 0; i < polygon.vertices.length; i++ ) {
 	vertex = this._translateVertex( polygon.getVertexAt(i) ); // getTranslatedVertex(i);
 	polyStr += preamble +
-		   girihCanvasHandler.round(vertex.x, girihCanvasHandler.SVG_PRECISION ) +
+		   IKRS.round(vertex.x, girihCanvasHandler.SVG_PRECISION ) +
 		   ','+
-		   girihCanvasHandler.round(vertex.y, girihCanvasHandler.SVG_PRECISION );
+		   IKRS.round(vertex.y, girihCanvasHandler.SVG_PRECISION );
 	boundingBox.evaluatePoint( vertex.x, vertex.y) // important to use translated vertices
 	preamble = ' ';
     }
@@ -417,7 +445,8 @@ IKRS.Tile.prototype.computeBounds = function() {
 };
 
 IKRS.Tile.prototype._translateVertex = function( vertex ) {
-    return vertex.clone().rotate( IKRS.Point2.ZERO_POINT, this.angle ).add( this.position );
+    //return vertex.clone().rotate( IKRS.Point2.ZERO_POINT, this.angle ).add( this.position );
+    return vertex.clone().rotate( IKRS.Point2.ZERO_POINT, this.angle );
 };
 
 IKRS.Tile.prototype._addVertex = function( vertex ) {

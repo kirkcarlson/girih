@@ -33,16 +33,13 @@ function onLoad() {
 	var tileSize = IKRS.Girih.DEFAULT_EDGE_LENGTH;
 
 
-	// Make a test penrose-rhombus
-	var penrose = new IKRS.Tile.PenroseRhombus( tileSize,
-						    new IKRS.Point2(276.5385,49.2873), 
-						    0.0
-					  );
-	girihCanvasHandler.addTile( penrose );
-	_makeTest_Decagon_BowTie( tileSize );
+	// Make a test tiles
+	_makeTest_Decagon( tileSize );
+	_makeTest_BowTie( tileSize );
 	_makeTest_Pentagon( tileSize );
 	_makeTest_IrregularHexagon( tileSize );
 	_makeTest_Rhombus( tileSize );
+	_makeTest_PenroseRhombus( tileSize );
 
 	// THIS DOES NOT WORK OUT (just a test)
 	// _makeTest_Octagon( tileSize );
@@ -53,6 +50,7 @@ function onLoad() {
     defaultTextureImage.src = "img/500px-Girih_tiles.Penrose_compatible_extended.png";
 
 }
+
 
 /*
 function _displayTileAlign( centerTile,
@@ -69,6 +67,7 @@ function _displayTileAlign( centerTile,
 	 );
 }
 */
+
 
 function _angle2constant( angle ) {
 
@@ -88,37 +87,26 @@ function _angle2constant( angle ) {
     return result;
 }
 
-function _makeTest_Decagon_BowTie( tileSize ) {
-console.log("_makeTest_Decagon_BowTie");
+
+function _makeTest_Decagon( tileSize ) {
     // Make a test decagon
     var deca = new IKRS.Tile.Decagon( tileSize, 
 				      new IKRS.Point2(300,300),  // position
 				      0.0
 				    );
-    // Make a test bow-tie
-    var tieA = new IKRS.Tile.BowTie( tileSize,
-				     new IKRS.Point2(333, 200),  // position
-				     0.0
-				  );
-    var tieB = new IKRS.Tile.BowTie( tileSize,
-				     new IKRS.Point2(386, 238),  // position
-				     IKRS.Girih.MINIMAL_ANGLE*2
-				   );
-    var tieC = new IKRS.Tile.BowTie( tileSize,
-				     new IKRS.Point2(386, 238),  // position
-				     IKRS.Girih.MINIMAL_ANGLE*2
-				   );
-    var tie = new IKRS.Tile.BowTie( tileSize,
-				    new IKRS.Point2(385, 184),  // position
-				    0 // IKRS.Girih.MINIMAL_ANGLE*6
-				  );
-    //tie.position.add( new IKRS.Point2(200, 200) );
-    tie.position.setXY( 57.7319, 110.9594 ); // 100, 150 );
     girihCanvasHandler.addTile( deca );
-    girihCanvasHandler.addTile( tie );
-    
-//    _displayTileAlign( deca, tie );
 }
+
+
+function _makeTest_BowTie( tileSize ) {
+    // Make a test bow-tie
+    var tie = new IKRS.Tile.BowTie( tileSize,
+				    new IKRS.Point2(57.7319, 110.9594),  // position
+				    0.0 // IKRS.Girih.MINIMAL_ANGLE*6
+				  );
+    girihCanvasHandler.addTile( tie );
+}
+
 
 function _makeTest_Pentagon( tileSize ) {
 console.log("_makeTest_Pentagon");
@@ -130,6 +118,7 @@ console.log("_makeTest_Pentagon");
     girihCanvasHandler.addTile( penta );
 }
 
+
 function _makeTest_IrregularHexagon( tileSize ) {
 console.log("_makeTest_Hextagon");
     // Make a test pentagon
@@ -140,6 +129,7 @@ console.log("_makeTest_Hextagon");
     girihCanvasHandler.addTile( hexa );
 }
 
+
 function _makeTest_Rhombus( tileSize ) {
 console.log("_makeTest_Rhombus");
     // Make a test pentagon
@@ -149,6 +139,16 @@ console.log("_makeTest_Rhombus");
 				      );
     girihCanvasHandler.addTile( rhomb );
 }
+
+
+function _makeTest_PenroseRhombus( tileSize ) {
+	var penrose = new IKRS.Tile.PenroseRhombus( tileSize,
+						    new IKRS.Point2(276.5385,49.2873), 
+						    0.0
+					  );
+	girihCanvasHandler.addTile( penrose );
+}
+
 
 // THIS IS NOT PART OF A PROPER GIRIH.
 function _makeTest_Octagon( tileSize ) {
@@ -322,22 +322,18 @@ function rotateByAmount( amount ) {
                  girihCanvasHandler.drawOffset.x) / girihCanvasHandler.zoomFactor,
                  (girihCanvasHandler.canvasCenter.y -
                  girihCanvasHandler.drawOffset.y) / girihCanvasHandler.zoomFactor);
-console.log( "canvasCenter="+ girihCanvasHandler.canvasCenter.toString() +" drawOffset="+ girihCanvasHandler.drawOffset.toString() +" tempCenter="+ tmpCenter.toString())
+	} else {
+	    var tmpCenter = girihCanvasHandler.girih.tiles[ index ].position;
+	}
+	for( var i = 0; i < girihCanvasHandler.girih.tiles.length; i++ ) {
+	    var tmpTile = girihCanvasHandler.girih.tiles[i];
+	    tmpTile.position.rotate( tmpCenter, amount );
+	    tmpTile.angle += amount;
 
-	    for( var i = 0; i < girihCanvasHandler.girih.tiles.length; i++ ) {
-	        var tmpTile = girihCanvasHandler.girih.tiles[i];
-	        tmpTile.position.rotate( tmpCenter, amount );
-	        tmpTile.angle += amount;
-	    }
-	} else { // tile selected
-
-            var tile = girihCanvasHandler.girih.tiles[ index ];
-
-	    for( var i = 0; i < girihCanvasHandler.girih.tiles.length; i++ ) {
-	        var tmpTile = girihCanvasHandler.girih.tiles[i];
-	        tmpTile.position.rotate( tile.position, amount ); 
-	        tmpTile.angle += amount; 
-	    }
+	    //rotate base, inner and outer polygons
+	    _rotatePolygon( tmpTile.polygon, tmpCenter, amount);
+	    _rotatePolygons( tmpTile.innerTilePolygons, tmpCenter, amount);
+	    _rotatePolygons( tmpTile.outerTilePolygons, tmpCenter, amount);
 	}
     } else { // rotate a single tile
 	if( index == -1 ) {
@@ -345,7 +341,14 @@ console.log( "canvasCenter="+ girihCanvasHandler.canvasCenter.toString() +" draw
 	    return;
 	}
         var tile = girihCanvasHandler.girih.tiles[ index ];
+	tmpCenter = tile.position;
+	tile.position.rotate( tmpCenter, amount );
 	tile.angle += amount;
+
+	//rotate base, inner and outer polygons
+	_rotatePolygon( tile.polygon, tmpCenter, amount);
+	_rotatePolygons( tile.innerTilePolygons, tmpCenter, amount);
+	_rotatePolygons( tile.outerTilePolygons, tmpCenter, amount);
     }
 
     //DEBUG( "" + IKRS.Girih.rad2deg(tile.angle) + "&deg;" );
@@ -364,6 +367,23 @@ console.log( "canvasCenter="+ girihCanvasHandler.canvasCenter.toString() +" draw
     */
     redrawGirih();
 };
+
+
+function _rotatePolygons( polygonArray, center, angle) {
+    if (polygonArray !== undefined) {
+	for (var i = 0; i < polygonArray.length; i++) {
+	    _rotatePolygon( polygonArray[i], center, angle)
+	}
+    }
+}
+
+
+function _rotatePolygon( polygon, center, angle) {
+    for (var j = 0; j < polygon.vertices.length; j++) {
+	polygon.vertices[j] = polygon.vertices[j].rotate(center, angle)
+    }
+}
+
 
 function moreStrapGap () {
     girihCanvasHandler.drawProperties.strappingGap += 0.25;
@@ -479,10 +499,10 @@ function redrawGirih() {
 
     // Then trigger redraw
     girihCanvasHandler.redraw();
-console.log( "strapGap: " + girihCanvasHandler.getDrawProperties().strappingGap);
-console.log( "strapWidth: " + girihCanvasHandler.getDrawProperties().strappingWidth);
-console.log( "strapStrokeWidth: " + girihCanvasHandler.getDrawProperties().strappingStrokeWidth);
-console.log( "strapPixelFactor: " + girihCanvasHandler.getDrawProperties().strappingPixelFactor);
+//console.log( "strapGap: " + girihCanvasHandler.getDrawProperties().strappingGap);
+//console.log( "strapWidth: " + girihCanvasHandler.getDrawProperties().strappingWidth);
+//console.log( "strapStrokeWidth: " + girihCanvasHandler.getDrawProperties().strappingStrokeWidth);
+//console.log( "strapPixelFactor: " + girihCanvasHandler.getDrawProperties().strappingPixelFactor);
 }
 
 /*

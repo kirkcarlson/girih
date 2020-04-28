@@ -11,6 +11,9 @@ IKRS.Tile.IrregularHexagon = function( size, position, angle, fillColor ) {
 
     IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_IRREGULAR_HEXAGON );
 
+    this.buildPolygon();
+
+/*
     //window.alert( "[IrregularHexagon.init()] size=" + size + ", position=" + position.toString() + ", angle=" + angle );
 
     // Init the actual decahedron shape with the passed size
@@ -54,6 +57,7 @@ IKRS.Tile.IrregularHexagon = function( size, position, angle, fillColor ) {
 	this.polygon.vertices[i].sub( move );
 
     }
+*/
 
     if (fillColor !== undefined) {
         this.fillColor = fillColor;
@@ -80,27 +84,28 @@ IKRS.Tile.IrregularHexagon = function( size, position, angle, fillColor ) {
 IKRS.Tile.IrregularHexagon.getFaces = function() {
     var faces = [];
     var halfNarrowWidth = Math.sin( 2* piTenths); // assuming size = 1
-    var radialShort = Math.sqrt( halfNarrowWidth*halfNarrowWidth + 1/4);
+    //var radialShort = Math.sqrt( halfNarrowWidth*halfNarrowWidth + 1/4);
     var radialLong =  Math.cos(2* piTenths) + 1/2 ;//half the long width of the hexagon
     var radialAngle = Math.atan( (1/2) / halfNarrowWidth)
+    var radialShort = halfNarrowWidth / Math.cos( radialAngle);
     //var radialAngle = Math.atan(  halfNarrowWidth/(1/2))
     for (var i=0; i<2; i++) {
-        faces.push( new IKRS.Face(
-            /*centralAngle*/       -7 * piTenths + radialAngle + i* Math.PI,
+        faces.push( new IKRS.Face( // left side of point
+            /*centralAngle*/        8* piTenths + radialAngle + i* Math.PI,
             /*angleToNextVertex:*/  2* piTenths,
             /*lengthCoefficient:*/  1,
             /*angleToCenter:*/      5* piTenths + radialAngle,
             /*radialCoefficient:*/  radialShort
         ));
-        faces.push( new IKRS.Face(
-            /*centralAngle:*/       -2* piTenths + i* Math.PI,
+        faces.push( new IKRS.Face( // right side of point
+            /*centralAngle:*/       13* piTenths + i* Math.PI,
             /*angleToNextVertex:*/  6* piTenths,
             /*lengthCoefficient:*/  1,
             /*angleToCenter:*/      8* piTenths,
             /*radialCoefficient:*/  radialLong
         ));
-        faces.push( new IKRS.Face(
-            /*centralAngle:*/       3 * piTenths - radialAngle + i* Math.PI,
+        faces.push( new IKRS.Face( // flat side
+            /*centralAngle:*/       -2 * piTenths - radialAngle + i* Math.PI,
             /*angleToNextVertex:*/  2* piTenths,
             /*lengthCoefficient:*/  1,
             /*angleToCenter:*/      7* piTenths - radialAngle,
@@ -223,7 +228,60 @@ console.log("HexEND")
 
 
 IKRS.Tile.IrregularHexagon.prototype._buildInnerPolygons = function() {
+    var innerTile = new IKRS.Polygon(); // [];
+    var faces = IKRS.Girih.TILE_FACES [this.tileType];
 
+
+    girihCanvasHandler.posToXY( this.position.x, this.position.y); // center of pentagon
+    girihCanvasHandler.posToAD( this.angle + faces[0].centralAngle,
+                                faces[0].radialCoefficient * this.size); //at vertice 0
+    girihCanvasHandler.posToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex,
+                                0.5 * this.size); //midpoint of side 0
+    for( var j = 0; j<2; j++) {
+	innerTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //[0][5]mid point 0,3
+	girihCanvasHandler.posToaD(  3* piTenths, 0.587 * this.size);
+
+        for( var i = 0; i<2; i++) {
+	    innerTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //mid point [1]1,[3]3, [6]4,[8]5
+	    girihCanvasHandler.posToaD( 6* piTenths, 0.587 * this.size);
+	    innerTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //bend point [2]1,[4]2 [7]3,[9]4
+
+	    girihCanvasHandler.posToaD( -4* piTenths, 0.587 * this.size);
+	}
+	girihCanvasHandler.posToaD( 3* piTenths, 0);
+    }
+    this.innerTilePolygons.push( innerTile );
+
+
+
+/*
+    var strapLength = 0.587 * tile.size
+    var faces = IKRS.Girih.TILE_FACES [tile.tileType];
+
+    this.moveToXY( tile.position.x, tile.position.y); // Center of hexagon
+    this.lineToAD( tile.angle + faces[0].centralAngle, faces[0].radialCoefficient * tile.size); //at polygon vertice
+    this.lineToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex, tile.size/2); //at midpoint
+    this.moveToaD( 3* piTenths, 0); // ready to go
+
+    for( var j = 0; j< 2; j++) {
+        this.gline( strapLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true, chainColor)
+        this.moveToaD( 0, capGap);
+        this.moveToaD( 6* piTenths, 0);
+        lineNumber = lineNumber + 1
+
+        for( var i = 0; i< 2; i++) {
+            this.gline( strapLength, strapWidth, 7* piTenths, 7* piTenths, false, false, chainColor)
+            this.moveToaD( -4* piTenths, 0);
+            this.gline( strapLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true, chainColor)
+            this.moveToaD( 0, capGap);
+            this.moveToaD( 6* piTenths, 0);
+        }
+    }
+*/
+}
+
+
+IKRS.Tile.IrregularHexagon.prototype._buildInnerPolygonsOld = function() {
 
     // Connect all edges half-the-way
     var innerTile = new IKRS.Polygon(); // []
@@ -350,7 +408,6 @@ IKRS.Tile.IrregularHexagon.prototype._buildOuterPolygons = function() {
 	outerTileY.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+5).clone() );
 	this.outerTilePolygons.push( outerTileY );
     }
-
 };
 
 
@@ -360,6 +417,7 @@ IKRS.Tile.IrregularHexagon.prototype.computeBounds           = IKRS.Tile.prototy
 IKRS.Tile.IrregularHexagon.prototype._addVertex              = IKRS.Tile.prototype._addVertex;
 IKRS.Tile.IrregularHexagon.prototype._translateVertex        = IKRS.Tile.prototype._translateVertex;
 IKRS.Tile.IrregularHexagon.prototype._polygonToSVG           = IKRS.Tile.prototype._polygonToSVG;
+IKRS.Tile.IrregularHexagon.prototype.buildPolygon            = IKRS.Tile.prototype.buildPolygon;
 IKRS.Tile.IrregularHexagon.prototype.getInnerTilePolygonAt   = IKRS.Tile.prototype.getInnerTilePolygonAt;
 IKRS.Tile.IrregularHexagon.prototype.getOuterTilePolygonAt   = IKRS.Tile.prototype.getOuterTilePolygonAt;
 IKRS.Tile.IrregularHexagon.prototype.getTranslatedVertex     = IKRS.Tile.prototype.getTranslatedVertex;

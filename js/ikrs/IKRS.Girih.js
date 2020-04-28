@@ -38,9 +38,9 @@ IKRS.Girih.prototype._minimizeTiles = function ( tiles) {
 	// get the essense of the tile position
 	var tileType = tiles [i].tileType;
 	var size =     tiles [i].size;
-	var x =        girihCanvasHandler.round(tiles [i].position.x, 3);
-	var y =        girihCanvasHandler.round(tiles [i].position.y, 3);
-	var angle =    girihCanvasHandler.round(tiles [i].angle, 3);
+	var x =        IKRS.round(tiles [i].position.x, 3);
+	var y =        IKRS.round(tiles [i].position.y, 3);
+	var angle =    IKRS.round(tiles [i].angle, 6); //angle is small number so more digits needed
 
 	obj.push ({ "tileType": tileType,
 		    "size": size,
@@ -117,8 +117,9 @@ IKRS.Girih.prototype.buildConnectors = function( tiles) {
 	for (var j=0; j<tiles[i].polygon.vertices.length; j++) { // all sides of each tile
 	    var edge = tiles[i].polygon.getEdgeAt( j);
 	    var midpoint = new IKRS.Point2 ((edge.pointA.x + edge.pointB.x)/2, (edge.pointA.y + edge.pointB.y)/2);
+console.log ("connector "+ j + ": "+ edge.pointA +" -- "+ edge.pointB +" == "+ midpoint)
 	    // ignoring pan, zoom and overall rotation for the midpoints
-	    midpoint.rotate( IKRS.Point2.ZERO_POINT, tiles[i].angle ).addXY( tiles[i].position.x, tiles[i].position.y);
+	    //midpoint.rotate( IKRS.Point2.ZERO_POINT, tiles[i].angle ).addXY( tiles[i].position.x, tiles[i].position.y);
 	    var connector = new IKRS.Connector( j, midpoint);
 	    tiles[i].connectors.push( connector);
 	}
@@ -154,18 +155,18 @@ IKRS.Girih.prototype.findConnections = function( tiles, chains) {
 		for (var l=startL; l<tiles[k].connectors.length; l++) {
 /*
 console.log("x,y:"+
-IKRS.Girih.round( point.x, IKRS.Girih.SVG_PRECISION) + "," +
-IKRS.Girih.round( point.y, IKRS.Girih.SVG_PRECISION) + " polyA:" + i + "-"+ j + " polyB:" + k + "-" + l +"x,y:" +
-IKRS.Girih.round( tiles[k].connectors[l].point.x, IKRS.Girih.SVG_PRECISION)  + "," +
-IKRS.Girih.round( tiles[k].connectors[l].point.y, IKRS.Girih.SVG_PRECISION));
+IKRS.round( point.x, IKRS.Girih.SVG_PRECISION) + "," +
+IKRS.round( point.y, IKRS.Girih.SVG_PRECISION) + " polyA:" + i + "-"+ j + " polyB:" + k + "-" + l +"x,y:" +
+IKRS.round( tiles[k].connectors[l].point.x, IKRS.Girih.SVG_PRECISION)  + "," +
+IKRS.round( tiles[k].connectors[l].point.y, IKRS.Girih.SVG_PRECISION));
 */
 		    if (point.inRange( tiles[k].connectors[l].point, IKRS.Girih.EPSILON)) {
 /*
 			console.log("Match x,y:"+
-IKRS.Girih.round( point.x, IKRS.Girih.SVG_PRECISION) + "," +
-IKRS.Girih.round( point.y, IKRS.Girih.SVG_PRECISION) + " " +
-IKRS.Girih.round( tiles[k].connectors[l].point.x, IKRS.Girih.SVG_PRECISION) + "," +
-IKRS.Girih.round( tiles[k].connectors[l].point.y, IKRS.Girih.SVG_PRECISION) + " " + " polyA:" + i + "-"+ j + " polyB:" + k + "-" + l);
+IKRS.round( point.x, IKRS.Girih.SVG_PRECISION) + "," +
+IKRS.round( point.y, IKRS.Girih.SVG_PRECISION) + " " +
+IKRS.round( tiles[k].connectors[l].point.x, IKRS.Girih.SVG_PRECISION) + "," +
+IKRS.round( tiles[k].connectors[l].point.y, IKRS.Girih.SVG_PRECISION) + " " + " polyA:" + i + "-"+ j + " polyB:" + k + "-" + l);
 */
 			console.log("common connectors: "+ + i + ","+ j + " " + k + "," + l);
 			// ensure that a third connector is not shared
@@ -343,7 +344,7 @@ IKRS.Girih.rad2deg = function( rad ) {
 
 // 18.0 * (Math.PI/180.0);
 IKRS.Girih.MINIMAL_ANGLE = IKRS.Girih.deg2rad(18.0); 
-IKRS.Girih.EPSILON       = 1.0e-6;
+IKRS.Girih.EPSILON       = 1.0e-3;
 IKRS.Girih.DEFAULT_EDGE_LENGTH          = 58;
 
 

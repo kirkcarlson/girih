@@ -4,7 +4,7 @@
  **/
 
 
-/* This reimagines the coordiate system for the Girih to be based on angles
+/* This re-imagines the coordiate system for the Girih to be based on angles
 rather than integer points for fixed sized polygons.
 
 All polygons are stroked and vertices numbered clockwise.
@@ -38,9 +38,9 @@ possiblePositions.push ( new IKRS.PossiblePosition ( IKRS.Girih.TILE_TYPE_PENTAG
 possiblePositions.push ( new IKRS.PossiblePosition ( IKRS.Girih.TILE_TYPE_GIRIH_HEXAGON,   2, true));
 possiblePositions.push ( new IKRS.PossiblePosition ( IKRS.Girih.TILE_TYPE_GIRIH_HEXAGON,   3, true));
 possiblePositions.push ( new IKRS.PossiblePosition ( IKRS.Girih.TILE_TYPE_GIRIH_HEXAGON,   4, true));
-possiblePositions.push ( new IKRS.PossiblePosition ( IKRS.Girih.TILE_TYPE_BOW_TIE,         3, true));
 possiblePositions.push ( new IKRS.PossiblePosition ( IKRS.Girih.TILE_TYPE_BOW_TIE,         2, true));
 possiblePositions.push ( new IKRS.PossiblePosition ( IKRS.Girih.TILE_TYPE_BOW_TIE,         1, true));
+possiblePositions.push ( new IKRS.PossiblePosition ( IKRS.Girih.TILE_TYPE_BOW_TIE,         0, true));
 possiblePositions.push ( new IKRS.PossiblePosition ( IKRS.Girih.TILE_TYPE_RHOMBUS,         0, true));
 possiblePositions.push ( new IKRS.PossiblePosition ( IKRS.Girih.TILE_TYPE_RHOMBUS,         1, true));
 possiblePositions.push ( new IKRS.PossiblePosition ( IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS, 0, true));

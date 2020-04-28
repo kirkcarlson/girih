@@ -15,7 +15,9 @@ IKRS.Tile.PenroseRhombus = function( size, position, angle, opt_addCenterPolygon
 
     IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS  );
 
+    this.buildPolygon();
 
+/*
     if( typeof opt_addCenterPolygon == "undefined" )
 	opt_addCenterPolygon = true;  // Add by default
 
@@ -43,7 +45,6 @@ IKRS.Tile.PenroseRhombus = function( size, position, angle, opt_addCenterPolygon
 
     }
 
-
     // Move to center
     var bounds = IKRS.BoundingBox2.computeFromPoints( this.polygon.vertices );
     var move   = new IKRS.Point2( bounds.getWidth()/2.0 - (bounds.getWidth()-size),
@@ -54,6 +55,7 @@ IKRS.Tile.PenroseRhombus = function( size, position, angle, opt_addCenterPolygon
 	this.polygon.vertices[i].add( move );
 
     }
+*/
 
     if (fillColor !== undefined) {
         this.fillColor = fillColor;
@@ -84,14 +86,14 @@ IKRS.Tile.PenroseRhombus.getFaces = function() {
     var radialLong = Math.cos( 1* piTenths);
     for (var i=0; i<2; i++) {
         faces.push( new IKRS.Face(
-            /*centralAngle:*/       4* piTenths + i* Math.PI,
+            /*centralAngle:*/       0* piTenths + i* Math.PI,
             /*angleToNextVertex:*/  2* piTenths,
             /*lengthCoefficient:*/  1,
             /*angleToCenter:*/      6* piTenths,
             /*radialCoefficient:*/  radialShort
         ));
         faces.push( new IKRS.Face(
-            /*centralAngle:*/       9* piTenths + i* Math.PI,
+            /*centralAngle:*/       5* piTenths + i* Math.PI,
             /*angleToNextVertex:*/  8* piTenths,
             /*lengthCoefficient:*/  1,
             /*angleToCenter:*/      9* piTenths,
@@ -103,6 +105,93 @@ IKRS.Tile.PenroseRhombus.getFaces = function() {
 
 
 IKRS.Tile.PenroseRhombus.prototype._buildInnerPolygons = function( addCenterPolygon ) {
+    const shortSegmentLength = 0.163 * this.size;
+    const mediumSegmentLength = 0.2625 * this.size;
+    const longSegmentLength = 0.587 * this.size;
+
+    var rightTile =  new IKRS.Polygon(); // [];
+    var centerTile = new IKRS.Polygon(); // [];
+    var leftTile =   new IKRS.Polygon(); // [];
+    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+
+    girihCanvasHandler.posToXY( this.position.x, this.position.y); // center of rhombus
+    girihCanvasHandler.posToAD( this.angle + faces[0].centralAngle,
+                                faces[0].radialCoefficient * this.size); //at vertice 0
+    girihCanvasHandler.posToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex,
+                                0.5 * this.size); //midpoint of side 0
+
+    rightTile.addVertex( girihCanvasHandler.getTurtlePosition().clone());
+
+    girihCanvasHandler.posToaD( 3* piTenths, shortSegmentLength)
+    rightTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //mid point 2,3, 4,5
+
+    girihCanvasHandler.posToaD( 2* piTenths, shortSegmentLength)
+    rightTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //mid point 2,3, 4,5
+
+    girihCanvasHandler.posToaD( 6* piTenths, mediumSegmentLength)
+    rightTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //mid point 2,3, 4,5
+
+    centerTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //mid point 2,3, 4,5
+
+    girihCanvasHandler.posToaD( 0* piTenths, longSegmentLength - mediumSegmentLength)
+    centerTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //mid point 2,3, 4,5
+
+    girihCanvasHandler.posToaD( -4* piTenths, longSegmentLength - mediumSegmentLength)
+    leftTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //mid point 2,3, 4,5
+
+    girihCanvasHandler.posToaD( 0* piTenths, mediumSegmentLength)
+    leftTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //mid point 2,3, 4,5
+
+    girihCanvasHandler.posToaD( 6* piTenths, shortSegmentLength)
+    leftTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //mid point 2,3, 4,5
+
+    girihCanvasHandler.posToaD( 2* piTenths, shortSegmentLength)
+    leftTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //mid point 2,3, 4,5
+
+    girihCanvasHandler.posToaD( 6* piTenths, mediumSegmentLength)
+    centerTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //mid point 2,3, 4,5
+
+    girihCanvasHandler.posToaD( 0 * piTenths, longSegmentLength - mediumSegmentLength)
+    centerTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //mid point 2,3, 4,5
+
+    this.innerTilePolygons.push( rightTile );
+    this.innerTilePolygons.push( centerTile );
+    this.innerTilePolygons.push( leftTile );
+
+
+
+/*
+FancyPenroseRhombusStrapping = function(tile) {
+    var faces = IKRS.Girih.TILE_FACES [tile.tileType];
+    const shortSegmentLength = 0.163 * tile.size;
+    const mediumSegmentLength = 0.2625 * tile.size;
+    const longSegmentLength = 0.587 * tile.size;
+
+    this.moveToXY( tile.position.x, tile.position.y); // Center of rhombus
+    this.lineToAD( tile.angle + faces[0].centralAngle, faces[0].radialCoefficient * tile.size); //corner of rhombus
+    this.lineToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex, tile.size/2); //ready to start
+    this.moveToaD( 3* piTenths, 0); // ready to go
+
+    for (var i = 0; i<2; i++ ) {
+        this.gline( shortSegmentLength, strapWidth, 7* piTenths, 4* piTenths, false, false, chainColor)
+        this.moveToaD( 2* piTenths, 0)
+        this.gline( shortSegmentLength - capGap, strapWidth, 4* piTenths, 4* piTenths, false, true, chainColor)
+        this.moveToaD( 0, capGap)
+        this.moveToaD( 6* piTenths, 0)
+
+        this.gline( mediumSegmentLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true, chainColor)
+        this.moveToaD( 0, 2* capGap); // capGap on each side of crossed segment
+        this.gline( longSegmentLength - mediumSegmentLength - capGap, strapWidth, 6* piTenths, 7* piTenths, true, false, chainColor)
+        this.moveToaD( -4* piTenths, 0)
+        this.gline( longSegmentLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true, chainColor)
+        this.moveToaD( 0, capGap)
+        this.moveToaD( 6* piTenths, 0)
+    }
+*/
+};
+
+
+IKRS.Tile.PenroseRhombus.prototype._buildInnerPolygonsOld = function( addCenterPolygon ) {
     var indices              = [ 0, 2 ];
     var innerPointIndexLeft  = -1;
     var innerPointIndexRight = -1;
@@ -138,7 +227,78 @@ IKRS.Tile.PenroseRhombus.prototype._buildInnerPolygons = function( addCenterPoly
 };
 
 
-IKRS.Tile.PenroseRhombus.prototype._buildOuterPolygons = function( centerPolygonExists ) {
+IKRS.Tile.PenroseRhombus.prototype._buildOuterPolygons = function( addCenterPolygon ) {
+    const shortSegmentLength = 0.163 * this.size;
+    const mediumSegmentLength = 0.2625 * this.size;
+    const longSegmentLength = 0.587 * this.size;
+
+    var rightPointTile = new IKRS.Polygon(); // [];
+    var topTile =        new IKRS.Polygon(); // [];
+    var bottomTile =     new IKRS.Polygon(); // [];
+    var leftPointTile =  new IKRS.Polygon(); // [];
+    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+
+    girihCanvasHandler.posToXY( this.position.x, this.position.y); // center of pentagon
+    girihCanvasHandler.posToAD( this.angle + faces[0].centralAngle,
+                                faces[0].radialCoefficient * this.size); //at vertice 0
+    girihCanvasHandler.posToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex,
+                                0.5 * this.size); //midpoint of side 0
+
+    rightPointTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); [0]
+
+    girihCanvasHandler.posToaD( 3* piTenths, shortSegmentLength)
+    rightPointTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); [1]
+
+    girihCanvasHandler.posToaD( 2* piTenths, shortSegmentLength)
+    rightPointTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); [2]
+    rightPointTile.addVertex( this.getVertexAt(1).clone()); [3]
+
+    bottomTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); [0]
+
+    girihCanvasHandler.posToaD( 6* piTenths, mediumSegmentLength)
+    bottomTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); [1]
+
+    girihCanvasHandler.posToaD( -4* piTenths, longSegmentLength - mediumSegmentLength)
+    bottomTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); [2]
+
+    girihCanvasHandler.posToaD( 4* piTenths, longSegmentLength - mediumSegmentLength)
+    bottomTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); [3]
+
+    girihCanvasHandler.posToaD( -4* piTenths, mediumSegmentLength)
+    bottomTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); [4]
+    bottomTile.addVertex( this.getVertexAt(2).clone()); [5]
+
+    leftPointTile.addVertex( this.getVertexAt(3).clone()); [0]
+    leftPointTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); [1]
+
+    girihCanvasHandler.posToaD( 6* piTenths, shortSegmentLength)
+    leftPointTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); [2]
+
+    girihCanvasHandler.posToaD( 2* piTenths, shortSegmentLength)
+    leftPointTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); [3]
+
+    topTile.addVertex( this.getVertexAt(0).clone()); [0]
+    topTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); [1]
+
+    girihCanvasHandler.posToaD( 6* piTenths, mediumSegmentLength)
+    topTile.addVertex( girihCanvasHandler.getTurtlePosition().clone());  [2]
+
+    girihCanvasHandler.posToaD( -4* piTenths, longSegmentLength - mediumSegmentLength)
+    topTile.addVertex( girihCanvasHandler.getTurtlePosition().clone());  [3]
+
+    girihCanvasHandler.posToaD( 4* piTenths, longSegmentLength - mediumSegmentLength)
+    topTile.addVertex( girihCanvasHandler.getTurtlePosition().clone());  [4]
+
+    girihCanvasHandler.posToaD( -4* piTenths, mediumSegmentLength)
+    topTile.addVertex( girihCanvasHandler.getTurtlePosition().clone());  [5]
+
+    this.outerTilePolygons.push( rightPointTile );
+    this.outerTilePolygons.push( bottomTile );
+    this.outerTilePolygons.push( leftPointTile );
+    this.outerTilePolygons.push( topTile );
+
+}
+IKRS.Tile.PenroseRhombus.prototype._buildOuterPolygonsOld = function( centerPolygonExists ) {
 
     // Add left and right 'spikes'.
     var indices = [ 0, 2 ];
@@ -308,8 +468,9 @@ IKRS.GirihCanvasHandler.prototype.getSVGforFancyPenroseRhombusStrapping = functi
 
 // This is totally shitty. Why object inheritance when I still
 // have to inherit object methods manually??!
-IKRS.Tile.PenroseRhombus.prototype.evaluatePoint           = IKRS.Tile.prototype.evaluatePoint; //kirk
+IKRS.Tile.PenroseRhombus.prototype.buildPolygon            = IKRS.Tile.prototype.buildPolygon;
 IKRS.Tile.PenroseRhombus.prototype.computeBounds           = IKRS.Tile.prototype.computeBounds;
+IKRS.Tile.PenroseRhombus.prototype.evaluatePoint           = IKRS.Tile.prototype.evaluatePoint; //kirk
 IKRS.Tile.PenroseRhombus.prototype._addVertex              = IKRS.Tile.prototype._addVertex;
 IKRS.Tile.PenroseRhombus.prototype._translateVertex        = IKRS.Tile.prototype._translateVertex;
 IKRS.Tile.PenroseRhombus.prototype._polygonToSVG           = IKRS.Tile.prototype._polygonToSVG;
