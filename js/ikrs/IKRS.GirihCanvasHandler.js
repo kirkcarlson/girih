@@ -10,17 +10,25 @@ IKRS.GirihCanvasHandler = function( imageObject ) {
 
     IKRS.Object.call( this );
 
+/*
     var width = 1024;
     var height = 768;
     this.canvasCenter              = new IKRS.Point2( width/2, height/2);
+*/
 
-    this.imageObject               = imageObject;
+    this.imageObject               = imageObject; // texture for tiles
 
     // this should be responsive to the size of the browser window
+/*
     this.canvasWidth               = width;
     this.canvasHeight              = height;
+*/
 
     this.canvas                    = document.getElementById("girih_canvas");
+//need to reset on resize
+    this.canvasWidth               = this.canvas.width;
+    this.canvasHeight              = this.canvas.height;
+    this.canvasCenter              = new IKRS.Point2( this.canvasWidth/2, this.canvasHeight/2);
     // Make a back-reference for event handling
     this.canvas.girihCanvasHandler = this;
     this.context                   = this.canvas.getContext( "2d" );
@@ -458,11 +466,14 @@ IKRS.GirihCanvasHandler.prototype._resolveCurrentAdjacentTilePreset = function( 
 
     //find the new tile angle
     //var proposedTileAngle = proposedFace.centralAngle;
-console.log("turtleAngle: " + this.turtleAngle * 180/Math.PI)
+//console.log("turtleAngle: " + this.turtleAngle * 180/Math.PI)
 
     var proposedTileAngle = (this.turtleAngle - proposedFace.centralAngle +
                              Math.PI) % (2* Math.PI);
-console.log("proposedTileAngle: " + proposedTileAngle * 180/Math.PI)
+    //normalize the tile angle from the get go
+// normalizing doesn't work for shape with radialAngles: hexagon and bowtie
+//    proposedTileAngle = Math.round( proposedTileAngle/Math.PI*10) * Math.PI
+//console.log("proposedTileAngle: " + proposedTileAngle * 180/Math.PI)
 //end new code
 
 
@@ -536,6 +547,7 @@ IKRS.GirihCanvasHandler.prototype._performDeleteSelectedTile = function() {
     }
 
     this.girih.tiles.splice( selectedTileIndex, 1 );
+    this.lastTileCount = -1; //force redo of connectors
     this.redraw();
 };
 
@@ -548,9 +560,6 @@ IKRS.GirihCanvasHandler.prototype.addTile = function( tile ) {
 		    highlightedEdgeIndex:  -1,
 		  };
     this.girih.addTile( tile );
-
-    // update the connections
-    this.girih.buildConnectors( this.girih.tiles); // slow but does job for now
 };
 
 
@@ -1547,6 +1556,9 @@ IKRS.GirihCanvasHandler.prototype.getProperties = function() {
 
 IKRS.GirihCanvasHandler.prototype.redraw = function() {
 console.log("redraw triggered")
+    // in case the canvas has resized...
+    this.canvasWidth               = this.canvas.width;
+    this.canvasHeight              = this.canvas.height;
 
     this.context.fillStyle = this.getDrawProperties().backgroundColor; // "#F0F0F0";
     this.context.fillRect( 0, 0, this.canvasWidth, this.canvasHeight );
@@ -1590,15 +1602,15 @@ IKRS.GirihCanvasHandler.prototype.getSVGPolygonFromFaces = function( tile, idStr
     var preemble = ''
     for (var i = 0; i< faces.length; i++) {
 	polygon += preemble +
-		   IKRS.round( this.position.x, this.SVG_PRECISION) +','+ 
-		   IKRS.round( this.position.y, this.SVG_PRECISION)
-        boundingBox.evaluatePoint( this.position.x, this.position.y);// important to use translated vertices
+		   IKRS.round( this.turtlePosition.x, this.SVG_PRECISION) +','+ 
+		   IKRS.round( this.turtlePosition.y, this.SVG_PRECISION)
+        boundingBox.evaluatePoint( this.turtlePosition.x, this.turtlePosition.y);// important to use translated vertices
 	face = faces[ i];
 	this.posToaD( face.angleToNextVertex, tile.size * face.lengthCoefficient);
 	preemble = ' '
     }
     polygon += '"/>' + this.eol;
-console.log("svgPoly: " + polygon)
+//console.log("svgPoly: " + polygon)
     return polygon;
 }
 
@@ -1639,8 +1651,8 @@ IKRS.GirihCanvasHandler.prototype.getGlineSVG = function( distance, spacing, sta
     path.push( this.indent + '<path class="gfill" d="');
 //'"id="' + idStr
 //'"class="gfill ' + fillClassStr
-    path.push('M'+ IKRS.round( this.position.x, this.SVG_PRECISION) +' '+
-                    IKRS.round( this.position.y, this.SVG_PRECISION));
+    path.push('M'+ IKRS.round( this.turtlePosition.x, this.SVG_PRECISION) +' '+
+                    IKRS.round( this.turtlePosition.y, this.SVG_PRECISION));
     path.push( this.svgLineToaD( startAngle,
                                  startDiag/2));
     path.push( this.svgLineToaD( -startAngle,
@@ -1658,8 +1670,8 @@ IKRS.GirihCanvasHandler.prototype.getGlineSVG = function( distance, spacing, sta
     path.push( this.indent + '<path class="gstroke" d="');
 //'"class="gstroke ' + strokeClassStr
 //'"id="' + idStr
-    path.push( 'M'+ IKRS.round( this.position.x, this.SVG_PRECISION) +' '+
-                    IKRS.round( this.position.y, this.SVG_PRECISION));
+    path.push( 'M'+ IKRS.round( this.turtlePosition.x, this.SVG_PRECISION) +' '+
+                    IKRS.round( this.turtlePosition.y, this.SVG_PRECISION));
     if (startCap) {
 	path.push( this.svgLineToaD( 0,0)); // should not be necessary
 	path.push( this.svgLineToaD( startAngle,
@@ -1693,7 +1705,7 @@ IKRS.GirihCanvasHandler.prototype.getGlineSVG = function( distance, spacing, sta
                               distance));
     path.push( '"/>' + this.eol);
 
-console.log("svgGline path:"+ path);
+//console.log("svgGline path:"+ path);
     return path.join("")
 }
 
@@ -1761,20 +1773,20 @@ IKRS.GirihCanvasHandler.prototype._getSVGSimilarChainClasses = function() {
     //generate CSS code for the chain identity lenghts
     css = "";
     for (id of members) {
-console.log ( ".Chain_Length_"+ id);
+//console.log ( ".Chain_Length_"+ id);
 	// make the id match the id generated by the SVG routines
 	id = id.replace(/^0+/,'');
 	if (id === '') {
 	    id = '0';
 	}
-       css += ".Chain_Length_"+ id + ` .gfill {
+       css += ".chain_length_"+ id + ` .gfill {
     fill:rgb(` + Math.round( Math.random()*255 ) + `,` +
 		 Math.round( Math.random()*255 ) + `,` +
 		 Math.round( Math.random()*255 ) + `);
 }
 `;
     }
-    console.log("CSS:"+ css);
+//    console.log("CSS:"+ css);
 //return CSS code string
     return css
 }
@@ -1919,7 +1931,7 @@ polygon { /* includes inner and outer facets */
 .gstroke {
     stroke: black;
     fill: transparent;
-    fill-opacity: 0; 
+    fill-opacity: 0;
     stroke-linejoin: miter;
     stroke-opacity: 1;
     stroke-width:` + this.drawProperties.strappingStrokeWidth + `px;
@@ -1934,9 +1946,10 @@ polygon { /* includes inner and outer facets */
 }
 `
 
-    if (this.drawProperties.drawStrappingType === "fancy") {
+    if (this.drawProperties.drawStrappingType === "fancy" ) {
 	foreword += this._getSVGSimilarChainClasses();
     } else if (this.drawProperties.drawStrappingType === "random") {
+	foreword += this._getSVGSimilarChainClasses();
 	foreword += this._getSVGMultipleChainClasses();
     }
 
@@ -1973,7 +1986,7 @@ IKRS.GirihCanvasHandler.prototype.toSVG = function( options,
 				       buffer
 				     ) {
 
-console.log("gCH.toSVG: start");
+//console.log("gCH.toSVG: start");
     var returnBuffer = false;
     if( typeof buffer == "undefined" || !buffer ) {
 	buffer = [];
@@ -2024,9 +2037,9 @@ console.log("gCH.toSVG: start");
 	buffer.push( this.indent + '</g>\n');
 
 	highWater.evaluatePoint(boundingBox)
-console.log("gCH.toSVG: check " + buffer.length);
+//console.log("gCH.toSVG: check " + buffer.length);
     }
-console.log("gCH.toSVG: mid");
+//console.log("gCH.toSVG: mid");
 
     options.indent = oldIndent;
 

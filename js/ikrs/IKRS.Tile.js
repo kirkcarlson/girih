@@ -254,7 +254,7 @@ IKRS.Tile.prototype.toSVG = function( options,
 				      buffer,
 				      boundingBox
 				    ) {
-console.log("Tile.toSVG start")
+//console.log("Tile.toSVG start")
     var returnBuffer = false;
     if( typeof buffer == "undefined" || !buffer ) {
 	buffer = [];
@@ -262,7 +262,6 @@ console.log("Tile.toSVG start")
     }
 
     // Export outer shape?
-    //***if( girihCanvasHandler.drawProperties.drawOutlines) {
 // idStr should be of the form: "tile_xx"
 // classStr should be of the form: "decagon"
 	idStr = "tile_";
@@ -304,14 +303,15 @@ console.log("Tile.toSVG start")
 				       Math.round( Math.random()*255 ) + ');';
 	}
         // don't set fill to transparent here because hard to override with css
-	styleStr += '"';
+	if (styleStr != "") {
+	    styleStr += '"';
+	}
 	buffer.push( girihCanvasHandler.indent + 
-		     girihCanvasHandler.getSVGPolygonFromFaces ( this, idStr, classStr, styleStr, boundingBox) +
-		     girihCanvasHandler.eol);
-    //***}
+		girihCanvasHandler.getSVGPolygonFromFaces ( this, idStr, classStr, styleStr, boundingBox) +
+		        girihCanvasHandler.eol);
 
     // Export inner polygons?
-    //***if( girihCanvasHandler.drawProperties.drawInnerPolygons) {
+    if( girihCanvasHandler.drawProperties.drawInnerPolygons) {
 	buffer.push( girihCanvasHandler.indent + '<g class="inner">' +
 		 girihCanvasHandler.eol);
 	girihCanvasHandler.indentInc();
@@ -320,9 +320,9 @@ console.log("Tile.toSVG start")
 		girihCanvasHandler.drawProperties.drawStrappingType === "basic") {
 		var polygonStyle = 'style="stroke:black;';
 	    } else {
+        // don't set stroke to transparent here because hard to override with css
 //		var polygonStyle = 'style="stroke:transparent;';
 		var polygonStyle = 'style="';
-        // don't set stroke to transparent here because hard to override with css
 	    }
 	    if( girihCanvasHandler.drawProperties.drawInnerPolygons &&
 	        girihCanvasHandler.drawProperties.innerRandomColorFill) {
@@ -343,16 +343,19 @@ console.log("Tile.toSVG start")
 	}
 	girihCanvasHandler.indentDec();
 	buffer.push( girihCanvasHandler.indent + '</g>' + girihCanvasHandler.eol);
-console.log("Tile.toSVG mid1")
+    }
+//console.log("Tile.toSVG mid1")
 
     // Export outer polygons?
+    if( girihCanvasHandler.drawProperties.drawInnerPolygons) {
 	buffer.push( girihCanvasHandler.indent + '<g class="outer">' +
 		     girihCanvasHandler.eol);
 	girihCanvasHandler.indentInc();
 	for( var i = 0; i < this.outerTilePolygons.length; i++ ) {
 //	    var polygonStyle = 'style="stroke:transparent;';
 	    var polygonStyle = 'style="';
-	    if (girihCanvasHandler.drawProperties.outerRandomColorFill) {
+	    if( girihCanvasHandler.drawProperties.drawInnerPolygons &&
+	        girihCanvasHandler.drawProperties.outerRandomColorFill) {
 		polygonStyle += ' fill:rgb(' +
 			Math.round( Math.random()*255 ) + ',' +
 			Math.round( Math.random()*255 ) + ',' +
@@ -367,8 +370,8 @@ console.log("Tile.toSVG mid1")
 	}
 	girihCanvasHandler.indentDec();
 	buffer.push( girihCanvasHandler.indent + '</g>' + girihCanvasHandler.eol);
-console.log("Tile.toSVG mid2")
-    //***}
+    }
+//console.log("Tile.toSVG mid2")
 
     if( girihCanvasHandler.drawProperties.drawStrapping && (
 	    girihCanvasHandler.drawProperties.drawStrappingType == "fancy" ||
@@ -401,7 +404,7 @@ console.log("Tile.toSVG mid2")
 	buffer.push( girihCanvasHandler.indent + '</g>' + girihCanvasHandler.eol);
     }
     
-console.log("Tile.toSVG end")
+//console.log("Tile.toSVG end")
     if( returnBuffer ) {
 	return buffer;
     } else {
@@ -425,12 +428,12 @@ IKRS.Tile.prototype._polygonToSVG = function( polygon, // an array of vertices
     polyStr += ' points="';
     var preamble = '';
     for( var i = 0; i < polygon.vertices.length; i++ ) {
-	vertex = this._translateVertex( polygon.getVertexAt(i) ); // getTranslatedVertex(i);
+	vertex = polygon.getVertexAt(i);
 	polyStr += preamble +
 		   IKRS.round(vertex.x, girihCanvasHandler.SVG_PRECISION ) +
 		   ','+
 		   IKRS.round(vertex.y, girihCanvasHandler.SVG_PRECISION );
-	boundingBox.evaluatePoint( vertex.x, vertex.y) // important to use translated vertices
+	boundingBox.evaluatePoint( vertex.x, vertex.y)
 	preamble = ' ';
     }
     polyStr += '"/>';

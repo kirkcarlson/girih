@@ -45,9 +45,11 @@
     <script src="js/main.js" language="Javascript" type="text/javascript"></script>
 <script>console.log("body mSG:" + typeof moreStrapGap);</script>
 <div id="container">
-  <!-- changing canvas size affects polygon proportions... -->
-  <canvas id="girih_canvas"  width="1024" height="768" class="tooltip" title="Hover over existing tiles to see possible adjacent tiles.
-
+  <!--<div id="canvas-div" width="1024" height="768"> -->
+  <div id="canvasPane">
+    <!-- changing canvas size affects polygon proportions... -->
+    <!--<canvas id="girih_canvas"  width="1024" height="768" class="tooltip" title="Hover over existing tiles to see possible adjacent tiles. -->
+    <canvas id="girih_canvas"  width="calc(100% - 240px)" height=calc(100%) class="tooltip" title="Hover over existing tiles to see possible adjacent tiles.
 Press keys to perform the following:
  [a] or [d] to navigate through the tile set.
  [0] to select the decagon tile.
@@ -63,7 +65,7 @@ Press keys to perform the following:
  [e] to save an image file.
 
  [Esc] to clear this help."></canvas>
-  <br/>
+  </div> <!-- end of canvas-div -->
 
   <div id="controlPane">
     <form name="girih_form">
@@ -79,7 +81,7 @@ Press keys to perform the following:
       </label>
       &nbsp;&nbsp;&nbsp;<input type="radio" name="texture_type" id="texture_type_default" onclick="document.getElementById('custom_texture_file').disabled = this.checked; if( this.checked ) { girihCanvasHandler.setTextureImage( defaultTextureImage, true ); }" value="default" checked="checked" /> Default Background<br/>
       <label>
-      &nbsp;&nbsp;&nbsp;<input type="radio" name="texture_type" id="texture_type_custom" onclick="document.getElementById('custom_texture_file').disabled = !this.checked; document.getElementById('custom_texture_file').click();" value="custom" /><span x-style="margin-left: 32px;"><input type="file" name="custom_texture_file" id="custom_texture_file" onchange="ImageFileReader.readTextureImage();" /></span></br>
+      &nbsp;&nbsp;&nbsp;<input type="radio" name="texture_type" id="texture_type_custom" onclick="document.getElementById('custom_texture_file').disabled = !this.checked; document.getElementById('custom_texture_file').click();" value="custom" /><span x-style="margin-left: 32px;"><input type="file" name="custom_texture_file" id="custom_texture_file"   onchange="ImageFileReader.readTextureImage();" /></span></br>
       </label>
       <label>
         <input type="checkbox" name="draw_polygon_color" onclick="redrawGirih()" checked="checked" /> Draw Polygon Color</br>
@@ -117,7 +119,7 @@ Press keys to perform the following:
         <div class="floatRight">
 <script>console.log("body mSG:" + typeof moreStrapGap);</script>
           <button id="moreStrapGapButton" onclick="moreStrapGap();return false;">+</button>
-          <input type="text" id="strapGap">
+          <input type="text" id="strapGap" onkeydown="event.stopPropagation();">
           <button id="lessStrapGapButton" onclick="lessStrapGap();return false;">&ndash;</button>
         </div>
         </div>
@@ -125,7 +127,7 @@ Press keys to perform the following:
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strapping Width
         <div class="floatRight">
           <button id="moreStrapWidthButton" onclick="moreStrapWidth();return false;">+</button>
-          <input type="text" id="strapWidth">
+          <input type="text" id="strapWidth" onkeydown="event.stopPropagation();">
           <button id="lessStrapWidthButton" onclick="lessStrapWidth();return false;">&ndash;</button>
         </div>
         </div>
@@ -133,7 +135,7 @@ Press keys to perform the following:
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Line Width
         <div class="floatRight">
           <button id="moreStrapStrokeWidthButton" onclick="moreStrapStrokeWidth();return false;">+</button>
-          <input type="text" id="strapStrokeWidth">
+          <input type="text" id="strapStrokeWidth" onkeydown="event.stopPropagation();">
           <button id="lessStrapStrokeWidthButton" onclick="lessStrapStrokeWidth();return false;">&ndash;</button>
         </div>
         </div>
@@ -141,7 +143,7 @@ Press keys to perform the following:
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Pixel Factor
           <div class="floatRight">
             <button id="morePixelFactorButton" onclick="morePixelFactor();return false;">+</button>
-            <input type="text" id="pixelFactor">
+            <input type="text" id="pixelFactor" onkeydown="event.stopPropagation();">
             <button id="lessPixelFactorButton" onclick="lessPixelFactor();return false;">&ndash;</button>
           </div>
         </div><!--end ButtonGroup -->
@@ -187,7 +189,7 @@ Press keys to perform the following:
       <span class="fileInput">Load</span><input type="file" id="importButton" />
       <button id="exportSVGKey"   onclick="exportSVG();return   false">Save SVG</button><br/>
       <button id="exportTilesKey" onclick="exportTiles();return false">Save</button><br/>
-      <input type="text" id="downloadFilename" placeholder="girih">
+      <input type="text" id="downloadFilename" placeholder="girih" onkeydown="event.stopPropagation();">
     </div>
     <br/>
     <br/>
@@ -198,7 +200,7 @@ Press keys to perform the following:
            this.document.getElementById("debug").innerHTML = msg;
         }
       </script>
-  </div>
-</div>
+  </div> <!-- end of control pane div -->
+</div> <!-- end of container div -->
 </body>
 </html>

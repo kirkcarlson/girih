@@ -63,7 +63,7 @@ br{
     left:0;
     margin:0;
     padding:0;
-    position:absolute;
+    position:relative;
     top:0;
     width:100%;
 }
@@ -75,14 +75,21 @@ br{
     width:80%;
 }
 */
+#canvasPane {
+    bottom:0;
+    left:0;
+    position: absolute;
+    right:22em;
+    top:0;
+}
 #controlPane {
     height:100%;
-    margin-right:20pt;
+    margin-right:00pt;
     overflow:scroll;
     position: absolute;
     right: 0;
     top: 0;
-    width:240pt;
+    width:22em;
 }
 #panAndZoom{
     height: 90pt;

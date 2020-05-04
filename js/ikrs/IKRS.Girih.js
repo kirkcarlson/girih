@@ -16,17 +16,21 @@ IKRS.Girih = function() {
 
 };
 
+
 IKRS.Girih.prototype.addTile = function( tile ) {
     this.tiles.push( tile );
 };
+
 
 IKRS.Girih.prototype.addChain = function( chain ) {
     this.chains.push( chain );
 };
 
+
 IKRS.Girih.prototype.deleteAllChains = function() {
     this.chains = [];
 };
+
 
 IKRS.Girih.prototype._minimizeTiles = function ( tiles) {
     // returns an object that is the essence of the passed tile object
@@ -52,10 +56,12 @@ IKRS.Girih.prototype._minimizeTiles = function ( tiles) {
     return obj
 }
 
+
 IKRS.Girih.prototype.getTilesJSON = function() {
     // returns json for the minimal information about tiles
     return JSON.stringify( this._minimizeTiles( this.tiles));
 };
+
 
 IKRS.Girih.prototype.setTilesJSON = function( jsonFile) {
     // file is a json file with minimal information about tiles
@@ -241,7 +247,7 @@ console.log( "set loop begin ChainID connector:" + tileIndex + "," + connector.c
 //	connector = tile.connectors[ connector.sharedConnectorLink.connectorIndex]; // (tail)
 //	connector.setChainID( CW, chainNumber);
     }
-    chain.setSVGClass( "Chain_"+ chainNumber +" chainLength_" + chain.links.length);
+    chain.setSVGClass( "chain_"+ chainNumber +" chainLength_" + chain.links.length);
     if (looping) {
 	chain.addSVGClass( "loopedChain");
     }
@@ -337,6 +343,7 @@ IKRS.Girih.deg2rad = function( deg ) {
     return deg * (Math.PI/180.0);
 };
 
+
 IKRS.Girih.rad2deg = function( rad ) {
     return (rad * 180.0) / Math.PI
 };
@@ -344,7 +351,7 @@ IKRS.Girih.rad2deg = function( rad ) {
 
 // 18.0 * (Math.PI/180.0);
 IKRS.Girih.MINIMAL_ANGLE = IKRS.Girih.deg2rad(18.0); 
-IKRS.Girih.EPSILON       = 1.0e-3;
+IKRS.Girih.EPSILON       = 2.0e-3;
 IKRS.Girih.DEFAULT_EDGE_LENGTH          = 58;
 
 

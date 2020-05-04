@@ -8,8 +8,23 @@ var girihCanvasHandler = null;
 var defaultTextureImage = null;
 
 
+function adjustCanvasSize () {
+    var canvasPaneWidth = document.getElementById("canvasPane");
+    var girihCanvas = document.getElementById("girih_canvas");
+    girihCanvas.width = canvasPane.clientWidth;
+    girihCanvas.height = canvasPane.clientHeight;
+}
+
+
+window.onresize = function () {
+    adjustCanvasSize();
+    redrawGirih();
+}
+
 function onLoad() {
     // adjust the size of the canvas
+    adjustCanvasSize();
+/*
     var w = window.innerWidth
     || document.documentElement.clientWidth
     || document.body.clientWidth; // variations for cross browser support
@@ -21,10 +36,15 @@ function onLoad() {
     var controlPaneWidth = document.getElementById("controlPane").clientWidth
     var girihCanvas = document.getElementById("girih_canvas")
     console.log("changing canvas to "+ (w-controlPaneWidth + "x" + h + "px"));
-    //girihCanvas.width = (w - controlPaneWidth) +"px"
-    //girihCanvas.height = h +"px"
+    //canvasWidth = (w - controlPaneWidth)
+    //canvasHeight = h
 
+    var canvasPaneWidth = document.getElementById("canvasPane");
+    var girihCanvas = document.getElementById("girih_canvas");
+    girihCanvas.width = canvasPane.clientWidth;
+    girihCanvas.height = canvasPane.clientHeight;
 
+*/
     // Load girih template image
     defaultTextureImage = new Image();
     

@@ -237,7 +237,7 @@ if (chainColor === undefined) {
 	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber} , ["strap"]))
         svgStrings.push( this.indent + '<g class="Link_'+ lineNumber +
 		' Chain_'+ chainNumber +
-		' Chain_Length_' + girihCanvasHandler.girih.chains[chainNumber].links.length +
+		' chain_length_' + girihCanvasHandler.girih.chains[chainNumber].links.length +
 		(girihCanvasHandler.girih.chains[chainNumber].isLoop ? ' Loop' : '') +
 		'">' + this.eol);
         this.indentInc();
@@ -289,7 +289,7 @@ if (chainColor === undefined) {
 	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber} , ["strap"]))
         svgStrings.push( this.indent + '<g class="Link_'+ lineNumber +
 		' Chain_'+ chainNumber +
-		' Chain_Length_' + girihCanvasHandler.girih.chains[chainNumber].links.length +
+		' chain_length_' + girihCanvasHandler.girih.chains[chainNumber].links.length +
 		(girihCanvasHandler.girih.chains[chainNumber].isLoop ? ' Loop' : '') +
 		'">' + this.eol);
         this.indentInc();

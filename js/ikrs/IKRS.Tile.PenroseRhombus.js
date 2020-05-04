@@ -427,7 +427,7 @@ IKRS.GirihCanvasHandler.prototype.getSVGforFancyPenroseRhombusStrapping = functi
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
         svgStrings.push( this.indent + '<g class="Link_'+ lineNumber +
 		' Chain_'+ chainNumber +
-		' Chain_Length_' + girihCanvasHandler.girih.chains[chainNumber].links.length +
+		' chain_length_' + girihCanvasHandler.girih.chains[chainNumber].links.length +
 		(girihCanvasHandler.girih.chains[chainNumber].isLoop ? ' Loop' : '') +
 		'">' + this.eol);
         this.indentInc();
@@ -446,7 +446,7 @@ IKRS.GirihCanvasHandler.prototype.getSVGforFancyPenroseRhombusStrapping = functi
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
         svgStrings.push( this.indent + '<g class="Link_'+ lineNumber +
 		' Chain_'+ chainNumber +
-		' Chain_Length_' + girihCanvasHandler.girih.chains[chainNumber].links.length +
+		' chain_length_' + girihCanvasHandler.girih.chains[chainNumber].links.length +
 		(girihCanvasHandler.girih.chains[chainNumber].isLoop ? ' Loop' : '') +
 		'">' + this.eol);
         this.indentInc();
