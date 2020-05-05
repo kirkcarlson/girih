@@ -146,19 +146,37 @@ console.log ("connector "+ j + ": "+ edge.pointA +" -- "+ edge.pointB +" == "+ m
 
 IKRS.Girih.prototype.findConnections = function( tiles, chains) {
     console.log ('find the connections');
+    // find a minimum distance to check in detail (about two decagon diameters)
+    if (tiles.length == 0) {
+        return;
+    }
+    var bigRadius = tiles[0].size /(2* Math.sin(piTenths)); // radius of decagon
+    fineDistance = 2.1 * bigRadius
+
+
+
     // find connectors at the same position
     for (var i=0; i<tiles.length; i++) {
-	connectors = tiles[i].connectors;
+	var tileI = tiles[i];
+	var connectors = tileI.connectors;
 	for (var j=0; j<connectors.length; j++) {
 	    var point = connectors[j].point;
 	    var startK = i;
 	    var startL = j+1;
+	    var lowX =  tileI.position.x - fineDistance
+	    var highX = tileI.position.x + fineDistance
+	    var lowY =  tileI.position.y - fineDistance
+	    var highY = tileI.position.y + fineDistance
 	    if (j === connectors.length - 1) {
 		startL = 0
 		startK = i+1
 	    }
 	    for (var k=startK; k<tiles.length; k++) {
-		for (var l=startL; l<tiles[k].connectors.length; l++) {
+		var tileK = tiles[k];
+		if (tileK.position.x > lowX && tileK.position.x < highX &&
+                    tileK.position.y > lowY && tileK.position.y < highY) {
+
+		    for (var l=startL; l<tileK.connectors.length; l++) {
 /*
 console.log("x,y:"+
 IKRS.round( point.x, IKRS.Girih.SVG_PRECISION) + "," +
@@ -166,7 +184,7 @@ IKRS.round( point.y, IKRS.Girih.SVG_PRECISION) + " polyA:" + i + "-"+ j + " poly
 IKRS.round( tiles[k].connectors[l].point.x, IKRS.Girih.SVG_PRECISION)  + "," +
 IKRS.round( tiles[k].connectors[l].point.y, IKRS.Girih.SVG_PRECISION));
 */
-		    if (point.inRange( tiles[k].connectors[l].point, IKRS.Girih.EPSILON)) {
+		        if (point.inRange( tileK.connectors[l].point, IKRS.Girih.EPSILON)) {
 /*
 			console.log("Match x,y:"+
 IKRS.round( point.x, IKRS.Girih.SVG_PRECISION) + "," +
@@ -174,17 +192,18 @@ IKRS.round( point.y, IKRS.Girih.SVG_PRECISION) + " " +
 IKRS.round( tiles[k].connectors[l].point.x, IKRS.Girih.SVG_PRECISION) + "," +
 IKRS.round( tiles[k].connectors[l].point.y, IKRS.Girih.SVG_PRECISION) + " " + " polyA:" + i + "-"+ j + " polyB:" + k + "-" + l);
 */
-			console.log("common connectors: "+ + i + ","+ j + " " + k + "," + l);
-			// ensure that a third connector is not shared
-			if (connectors[j].isShared()) {
-			    throw " connector is already shared: "+ i +","+ j +" "+ k +","+ l;
-			} else if (tiles[k].connectors[l].isShared()) {
-			    throw " shared connector is already shared: "+ k +","+ l;
-			} else {
-			// mark both connectors as shared
-			    connectors[j].setShared( new IKRS.Link (k, l));
-			    tiles[k].connectors[l].setShared( new IKRS.Link (i, j));
-			}
+			    console.log("common connectors: "+ + i + ","+ j + " " + k + "," + l);
+			    // ensure that a third connector is not shared
+			    if (connectors[j].isShared()) {
+			        throw " connector is already shared: "+ i +","+ j +" "+ k +","+ l;
+			    } else if (tileK.connectors[l].isShared()) {
+			        throw " shared connector is already shared: "+ k +","+ l;
+			    } else {
+			    // mark both connectors as shared
+			        connectors[j].setShared( new IKRS.Link (k, l));
+			        tileK.connectors[l].setShared( new IKRS.Link (i, j));
+			    }
+		        }
 		    }
 		}
 		startL = 0
