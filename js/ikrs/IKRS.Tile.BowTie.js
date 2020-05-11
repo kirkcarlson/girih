@@ -7,11 +7,26 @@
  **/
 
 
-IKRS.Tile.BowTie = function( size, position, angle, fillColor) {
 
-    IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_BOW_TIE );
+//IKRS.Tile.BowTie = function( size, position, angle, fillColor) {
 
-    this.buildPolygon();
+//    IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_BOW_TIE );
+
+class BowTie extends Tile {
+    constructor ( size, position, angle, fillColor) {
+        if (fillColor !== undefined) {
+            fillColor = fillColor;
+        } else {
+            fillColor = girihCanvasHandler.drawProperties.bowTieFillColor;
+        }
+
+        super( size, position, angle, IKRS.Girih.TILE_TYPE_BOW_TIE, fillColor );
+        // in theory type should not be needed.
+
+        this.buildPolygon();
+        this._buildInnerPolygons( size );
+        this._buildOuterPolygons();       // Only call AFTER the inner polygons were created!
+        this.buildConnectors();
 
 console.log( "bowtie position: " + this.position)
 /*
@@ -67,28 +82,19 @@ console.log( "bowtie position: " + this.position)
 	destination: { xOffset: 0.0,
 		       yOffset: 0.0
 		     }
-    };
-
-    if (fillColor !== undefined) {
-        this.fillColor = fillColor;
-    } else {
-        this.fillColor = girihCanvasHandler.drawProperties.bowTieFillColor;
     }
-
-    this._buildInnerPolygons( size );
-    this._buildOuterPolygons();       // Only call AFTER the inner polygons were created!
+    }
 };
 
 
-IKRS.Tile.BowTie.getFaces = function () {
+BowTie.getFaces = function () {
     var faces = [];
-    var halfLongWidth = Math.sin(4* piTenths);
+    var halfLongWidth = Math.sin( 4* piTenths);
     var radialShort = 1/2 - Math.cos( 4* piTenths)
-    var radialLong = Math.sqrt( 1/4 + halfLongWidth*halfLongWidth) // 1/4 is equivalent to side/2 * side/2)
+    var radialLong = Math.sqrt( 1/4 + halfLongWidth*halfLongWidth)
     var angleB = Math.atan((1/2) / halfLongWidth)
     for (var i=0; i<2; i++) {
         faces.push( new IKRS.Face(
-            /*centralAngle:*/       //-4* piTenths + i* Math.PI,
             /*centralAngle:*/       0 + i* Math.PI,
             /*angleToNextVertex:*/  -2* piTenths,
             /*lengthCoefficient:*/  1,
@@ -96,15 +102,13 @@ IKRS.Tile.BowTie.getFaces = function () {
             /*radialCoefficient:*/  radialShort
         ));
         faces.push( new IKRS.Face(
-            /*centralAngle:*/       //1 * piTenths - angleB + i* Math.PI,
             /*centralAngle:*/       5 * piTenths - angleB + i* Math.PI,
             /*angleToNextVertex:*/  6* piTenths,
             /*lengthCoefficient:*/  1,
-            /*angleToCenter:*/      11 * piTenths - angleB, //pi - angleAprime
+            /*angleToCenter:*/      11 * piTenths - angleB,
             /*radialCoefficient:*/  radialLong
         ));
         faces.push( new IKRS.Face(
-            /*centralAngle:*/       //1* piTenths + angleB + i* Math.PI,
             /*centralAngle:*/       5* piTenths + angleB + i* Math.PI,
             /*angleToNextVertex:*/  6* piTenths,
             /*lengthCoefficient:*/  1,
@@ -116,7 +120,7 @@ IKRS.Tile.BowTie.getFaces = function () {
 }
 
 
-IKRS.Tile.BowTie.prototype._buildInnerPolygons = function( edgeLength ) {
+BowTie.prototype._buildInnerPolygons = function( edgeLength ) {
     var faces = IKRS.Girih.TILE_FACES [this.tileType];
     var shortBentLength = 0.35845 * this.size
     var longDirectLength = 0.58 * this.size
@@ -183,7 +187,7 @@ console.log( "bowtie inner position: " + this.position)
 
 
 
-IKRS.Tile.BowTie.prototype._buildInnerPolygonsOld = function( edgeLength ) {
+BowTie.prototype._buildInnerPolygonsOld = function( edgeLength ) {
 
     var indices = [ 1, 4 ];
     for( var i = 0; i < indices.length; i++ ) {
@@ -206,7 +210,7 @@ IKRS.Tile.BowTie.prototype._buildInnerPolygonsOld = function( edgeLength ) {
     }
 };
 
-IKRS.Tile.BowTie.prototype._buildOuterPolygons = function() {
+BowTie.prototype._buildOuterPolygons = function() {
 
     // Add the outer four 'edges'
     var indices = [ 0, 3 ];
@@ -246,7 +250,8 @@ IKRS.Tile.BowTie.prototype._buildOuterPolygons = function() {
 };
 
 
-IKRS.GirihCanvasHandler.prototype.drawFancyBowTieStrapping = function(tile) {
+//IKRS.GirihCanvasHandler.prototype.drawFancyBowTieStrapping = function(tile) {
+BowTie.prototype.drawFancyStrapping = function( context) {
     // each segment in this function is its own path/segment
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
 
@@ -259,26 +264,31 @@ IKRS.GirihCanvasHandler.prototype.drawFancyBowTieStrapping = function(tile) {
     var capGap = this.capGap();
     var strapWidth = this.drawProperties.strappingWidth;
     var faces = IKRS.Girih.TILE_FACES [tile.tileType];
+    var turtle = new Turtle();
 
-    this.moveToXY( tile.position.x, tile.position.y)
+    turtle.moveToXY( tile.position.x, tile.position.y)
     this.lineToAD( tile.angle + faces[0].centralAngle, faces[0].radialCoefficient * tile.size); //waist of bowtie
-    this.lineToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex, tile.size/2); //ready to start
+    context.moveTo( turtle.toAD( tile.angle + faces[0].centralAngle,
+                 faces[0].radialCoefficient * tile.size)); //waist of bowtie
+    context.moveTo( turtle.toaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex,
+                 tile.size/2)); //ready to start
 
     for (var i = 0; i<2; i++ ) {
         var chainNumber = tile.connectors[ lineNumber].CWchainID
         var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
 
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
-        this.moveToaD( 3* piTenths, 0) // mid to end
+        turtle.toaD( 3* piTenths, 0) // mid to end
+//gline is called with the turtle context and the canvas context and there are a series of moves...
         this.gline( longDirectLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true, chainColor)
-        this.moveToaD( 0, capGap)
+        turtle.moveToaD( 0, capGap)
         //endGroup()
         lineNumber = lineNumber + 1
 
         var chainNumber = tile.connectors[ lineNumber].CWchainID
         var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
         //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
-        this.moveToaD( 6* piTenths, 0) // edge to start
+        turtle.moveToaD( 6* piTenths, 0) // edge to start
         this.gline( longDirectLength - capGap, strapWidth, 7* piTenths, 4* piTenths, false, true, chainColor)
         this.moveToaD( 0, capGap)
         //endGroup()
@@ -303,7 +313,8 @@ IKRS.GirihCanvasHandler.prototype.drawFancyBowTieStrapping = function(tile) {
 }
 
 
-IKRS.GirihCanvasHandler.prototype.getSVGforFancyBowTieStrapping = function(tile) {
+/*
+BowTie.prototype.getSVGforFancyStrapping = function(tile) {
     // each segment in this function is its own path/segment
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
 
@@ -388,22 +399,246 @@ IKRS.GirihCanvasHandler.prototype.getSVGforFancyBowTieStrapping = function(tile)
     }
     return svgStrings.join("")
 }
+*/
 
+BowTie.prototype.getSVGforFancyStrapping = function( options) {
+    this._drawFancyStrapping (undefined, true, options);
+}
+
+BowTie.prototype.drawFancyStrapping = function( canvasContext, options) {
+    this._drawFancyStrapping (canvasContext, false, options);
+}
+
+
+BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
+//inputs: size, position, angle, canvas context
+    // each segment in this function is its own path/segment
+    // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
+
+    turtle = new Turtle();
+    var shortBentLength = 0.35845 * this.size
+    var longDirectLength = 0.58 * this.size
+    var lineNumber = 0
+    var capGap = options.capGap;
+    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+
+
+    // do all of the straps in two passes
+    for( var i = 0; i<2; i++) {
+        //set up for the other end
+        turtle.toPoint( this.position); // to center
+        turtle.toAD( this.angle + faces[0 +i*3].centralAngle,
+                faces[0 +i*3].radialCoefficient * this.size); //waist of bowtie
+        turtle.toaD( Math.PI - faces[0 +i*3].angleToCenter + faces[0 +i*3].angleToNextVertex,
+                this.size/2); //ready to start
+        turtle.toaD( 3* piTenths, 0); // ready for strapping
+
+        var chainNumber = this.connectors[0 +i*3].CWchainID
+        if (chainNumber === undefined) {
+            console.log("bad chain number for tile")
+        }
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+        if (chainColor === undefined) {
+            console.log( "chain fill color not defined")
+        }
+
+	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:i} , ["strap"]))
+	strapOptions = { turtle: turtle,
+                         distance: longDirectLength - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 7* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: true,
+                         fillStyle: chainColor,
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( 0 +i*3, chainNumber)
+                       };
+        if (svg) {
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+        } else {
+            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+        }
+	turtle.toaD( 0, capGap); // gap at end of strap
+	turtle.toaD( 6*piTenths, 0); // to start of strap
+
+        var chainNumber = this.connectors[1 +i*3].CWchainID
+        if (chainNumber === undefined) {
+            console.log("bad chain number for tile")
+        }
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+        if (chainColor === undefined) {
+            console.log( "chain fill color not defined")
+        }
+	strapOptions = { turtle: turtle,
+                         distance: longDirectLength - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 7* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: true,
+                         fillStyle: chainColor,
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( 1 +i*3, chainNumber)
+                       };
+        if (svg) {
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+        } else {
+            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+        }
+
+	turtle.toaD( 0, capGap); // to start of next segment
+	turtle.toaD( 6* piTenths, 0); // toward start via bend
+        var chainNumber = this.connectors[2 +i*3].CWchainID
+        if (chainNumber === undefined) {
+            console.log("bad chain number for tile")
+        }
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+        if (chainColor === undefined) {
+            console.log( "chain fill color not defined")
+        }
+	strapOptions = { turtle: turtle,
+                         distance: shortBentLength - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 7* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: false,
+                         fillStyle: chainColor,
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( 2 +i*3, chainNumber)
+                       };
+        if (svg) {
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+        } else {
+            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+        }
+	//endGroup()
+
+	turtle.toaD( 2* piTenths, 0); // middle of bend
+	strapOptions = { turtle: turtle,
+                         distance: shortBentLength - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 4* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: true,
+                         fillStyle: chainColor,
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( 2 +i*3, chainNumber)
+                       };
+        if (svg) {
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+        } else {
+            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+        }
+	//endGroup()
+    }
+}
+
+
+/*
+BowTie.prototype.getSVGforFancyStrapping = function(tile) {
+    // each segment in this function is its own path/segment
+    // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
+
+    //color( lineColor)
+    //width( lineWidth)
+
+    var shortBentLength = 0.35845 * tile.size
+    var longDirectLength = 0.58 * tile.size
+    var lineNumber = 0
+    var capGap = this.capGap();
+    var strapWidth = this.drawProperties.strappingWidth;
+    var faces = IKRS.Girih.TILE_FACES [tile.tileType];
+    var svgStrings = [];
+
+    this.posToXY( tile.position.x, tile.position.y)
+    this.posToAD( tile.angle + faces[0].centralAngle, faces[0].radialCoefficient * tile.size); //waist of bowtie
+    this.posToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex, tile.size/2); //ready to start
+
+    for (var i = 0; i<2; i++ ) {
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+
+        //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
+        svgStrings.push( this.indent + '<g class="Link_'+ lineNumber +
+		' Chain_'+ chainNumber +
+		' chain_length_' + girihCanvasHandler.girih.chains[chainNumber].links.length +
+		(girihCanvasHandler.girih.chains[chainNumber].isLoop ? ' Loop' : '') +
+		'">' + this.eol);
+	this.indentInc();
+        this.posToaD( 3* piTenths, 0) // mid to end
+        svgStrings.push( this.getGlineSVG( longDirectLength - capGap, strapWidth,
+			 7* piTenths, 4* piTenths, false, true, chainColor))
+        this.posToaD( 0, capGap)
+        //endGroup()
+	this.indentDec();
+	svgStrings.push( this.indent + '</g>' + this.eol);
+        lineNumber = lineNumber + 1
+
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+        //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
+        svgStrings.push( this.indent + '<g class="Link_'+ lineNumber +
+		' Chain_'+ chainNumber +
+		' chain_length_' + girihCanvasHandler.girih.chains[chainNumber].links.length +
+		(girihCanvasHandler.girih.chains[chainNumber].isLoop ? ' Loop' : '') +
+		'">' + this.eol);
+        this.indentInc();
+        this.posToaD( 6* piTenths, 0) // edge to start
+        svgStrings.push( this.getGlineSVG( longDirectLength - capGap, strapWidth,
+			 7* piTenths, 4* piTenths, false, true, chainColor))
+        this.posToaD( 0, capGap)
+        //endGroup()
+	this.indentDec();
+	svgStrings.push( this.indent + '</g>' + this.eol);
+        lineNumber = lineNumber + 1
+
+        var chainNumber = tile.connectors[ lineNumber].CWchainID
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+        //beginGroup( idClass({polygonNumber:polygonCount,lineNumber:lineNumber}, ["detailedLine"]))
+        svgStrings.push( this.indent + '<g class="Link_'+ lineNumber +
+		' Chain_'+ chainNumber +
+		' chain_length_' + girihCanvasHandler.girih.chains[chainNumber].links.length +
+		(girihCanvasHandler.girih.chains[chainNumber].isLoop ? ' Loop' : '') +
+		'">' + this.eol);
+        this.indentInc();
+        this.posToaD ( 6* piTenths, 0) //back toward start
+        svgStrings.push( this.getGlineSVG( shortBentLength, strapWidth, 7* piTenths,
+			 4* piTenths, false, false, chainColor))
+        this.posToaD ( 2* piTenths, 0) //mid
+        svgStrings.push( this.getGlineSVG( shortBentLength - capGap, strapWidth,
+			 4* piTenths, 4* piTenths, false, true, chainColor))
+        this.posToaD( 0, capGap)
+        //endGroup()
+	this.indentDec();
+	svgStrings.push( this.indent + '</g>' + this.eol);
+        lineNumber = lineNumber + 1
+
+        //set up for the other end
+        this.posToXY( tile.position.x, tile.position.y)
+        this.posToAD( tile.angle + faces[0].centralAngle + Math.PI, faces[0].radialCoefficient * tile.size); //waist of bowtie
+        this.posToaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex, tile.size/2); //ready to start
+    }
+    return svgStrings.join("")
+}
+*/
 
 // This is totally shitty. Why object inheritance when I still
 // have to inherit object methods manually??!
-IKRS.Tile.BowTie.prototype.computeBounds           = IKRS.Tile.prototype.computeBounds;
-IKRS.Tile.BowTie.prototype._addVertex              = IKRS.Tile.prototype._addVertex;
-IKRS.Tile.BowTie.prototype._translateVertex        = IKRS.Tile.prototype._translateVertex;
-IKRS.Tile.BowTie.prototype._polygonToSVG           = IKRS.Tile.prototype._polygonToSVG;
-IKRS.Tile.BowTie.prototype.buildPolygon            = IKRS.Tile.prototype.buildPolygon;
-IKRS.Tile.BowTie.prototype.getInnerTilePolygonAt   = IKRS.Tile.prototype.getInnerTilePolygonAt;
-IKRS.Tile.BowTie.prototype.getOuterTilePolygonAt   = IKRS.Tile.prototype.getOuterTilePolygonAt;
-IKRS.Tile.BowTie.prototype.getTranslatedVertex     = IKRS.Tile.prototype.getTranslatedVertex;
-IKRS.Tile.BowTie.prototype.containsPoint           = IKRS.Tile.prototype.containsPoint;
-IKRS.Tile.BowTie.prototype.locateEdgeAtPoint       = IKRS.Tile.prototype.locateEdgeAtPoint;
-IKRS.Tile.BowTie.prototype.locateAdjacentEdge      = IKRS.Tile.prototype.locateAdjacentEdge;
-IKRS.Tile.BowTie.prototype.getVertexAt             = IKRS.Tile.prototype.getVertexAt;
-IKRS.Tile.BowTie.prototype.toSVG                   = IKRS.Tile.prototype.toSVG;
+//IKRS.Tile.BowTie.prototype.computeBounds           = IKRS.Tile.prototype.computeBounds;
+//IKRS.Tile.BowTie.prototype._addVertex              = IKRS.Tile.prototype._addVertex;
+//IKRS.Tile.BowTie.prototype._translateVertex        = IKRS.Tile.prototype._translateVertex;
+//IKRS.Tile.BowTie.prototype._polygonToSVG           = IKRS.Tile.prototype._polygonToSVG;
+//IKRS.Tile.BowTie.prototype.buildPolygon            = IKRS.Tile.prototype.buildPolygon;
+//IKRS.Tile.BowTie.prototype.getInnerTilePolygonAt   = IKRS.Tile.prototype.getInnerTilePolygonAt;
+//IKRS.Tile.BowTie.prototype.getOuterTilePolygonAt   = IKRS.Tile.prototype.getOuterTilePolygonAt;
+//IKRS.Tile.BowTie.prototype.getTranslatedVertex     = IKRS.Tile.prototype.getTranslatedVertex;
+//IKRS.Tile.BowTie.prototype.containsPoint           = IKRS.Tile.prototype.containsPoint;
+//IKRS.Tile.BowTie.prototype.locateEdgeAtPoint       = IKRS.Tile.prototype.locateEdgeAtPoint;
+//IKRS.Tile.BowTie.prototype.locateAdjacentEdge      = IKRS.Tile.prototype.locateAdjacentEdge;
+//IKRS.Tile.BowTie.prototype.getVertexAt             = IKRS.Tile.prototype.getVertexAt;
+//IKRS.Tile.BowTie.prototype.toSVG                   = IKRS.Tile.prototype.toSVG;
 
-IKRS.Tile.BowTie.prototype.constructor             = IKRS.Tile.BowTie;
+//IKRS.Tile.BowTie.prototype.constructor             = IKRS.Tile.BowTie;

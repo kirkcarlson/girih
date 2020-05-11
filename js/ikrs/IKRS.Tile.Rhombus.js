@@ -7,11 +7,25 @@
  **/
 
 
-IKRS.Tile.Rhombus = function( size, position, angle, fillColor) {
+//IKRS.Tile.Rhombus = function( size, position, angle, fillColor) {
 
-    IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_RHOMBUS  );
+//    IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_RHOMBUS  );
 
-    this.buildPolygon();
+class Rhombus extends Tile {
+    constructor ( size, position, angle, fillColor) {
+        if (fillColor !== undefined) {
+            fillColor = fillColor;
+        } else {
+            fillColor = girihCanvasHandler.drawProperties.rhombusFillColor;
+        }
+
+        super( size, position, angle, IKRS.Girih.TILE_TYPE_RHOMBUS, fillColor );
+        // in theory type should not be needed.
+
+        this.buildPolygon();
+        this._buildInnerPolygons( size );
+        this._buildOuterPolygons();       // Only call AFTER the inner polygons were created!
+        this.buildConnectors();
 
 /*
     // Init the actual decahedron shape with the passed size
@@ -51,11 +65,6 @@ IKRS.Tile.Rhombus = function( size, position, angle, fillColor) {
     }
 
 */
-    if (fillColor !== undefined) {
-        this.fillColor = fillColor;
-    } else {
-        this.fillColor = girihCanvasHandler.drawProperties.rhombusFillColor;
-    }
 
     this.imageProperties = {
 	source: { x:      32/500.0,
@@ -66,14 +75,12 @@ IKRS.Tile.Rhombus = function( size, position, angle, fillColor) {
 	destination: { xOffset: 0.0,
 		       yOffset: 0.0
 		     }
-    };
-
-    this._buildInnerPolygons();
-    this._buildOuterPolygons();  // Call only AFTER the inner polygons were built!
+    }
+    }
 };
 
 
-IKRS.Tile.Rhombus.getFaces = function () {
+Rhombus.getFaces = function () {
     var faces = [];
     var radialShort = Math.sin( 2* piTenths);
     var radialLong = Math.cos( 2* piTenths);
@@ -97,7 +104,7 @@ IKRS.Tile.Rhombus.getFaces = function () {
 }
 
 
-IKRS.Tile.Rhombus.prototype._buildInnerPolygons = function( ) {
+Rhombus.prototype._buildInnerPolygons = function( ) {
     const bentSegmentLength = 0.424 * this.size // bent segment
     const directSegmentLength = 0.587 * this.size // direct cross segment
 
@@ -156,7 +163,7 @@ IKRS.GirihCanvasHandler.prototype.drawFancyRhombusStrapping = function(tile) {
 */
 };
 
-IKRS.Tile.Rhombus.prototype._buildInnerPolygonsOld = function() {
+Rhombus.prototype._buildInnerPolygonsOld = function() {
 
        // Connect all edges half-the-way
     var innerTile = new IKRS.Polygon(); // [];
@@ -191,7 +198,7 @@ IKRS.Tile.Rhombus.prototype._buildInnerPolygonsOld = function() {
 };
 
 
-IKRS.Tile.Rhombus.prototype._buildOuterPolygons = function() {
+Rhombus.prototype._buildOuterPolygons = function() {
     const bentSegmentLength = 0.424 * this.size // bent segment
     const directSegmentLength = 0.587 * this.size // direct cross segment
 
@@ -239,7 +246,7 @@ IKRS.Tile.Rhombus.prototype._buildOuterPolygons = function() {
 }
 
 
-IKRS.Tile.Rhombus.prototype._buildOuterPolygonsOld = function() {
+Rhombus.prototype._buildOuterPolygonsOld = function() {
 
     var indicesA = [ 0, 2 ];  // 4:2
     var indicesB = [ 0, 3 ];  // 6:2
@@ -276,7 +283,8 @@ IKRS.Tile.Rhombus.prototype._buildOuterPolygonsOld = function() {
 };
 
 
-IKRS.GirihCanvasHandler.prototype.drawFancyRhombusStrapping = function(tile) {
+/*
+Rhombus.prototype.drawFancyStrapping = function(tile) {
 //inputs: size, position, angle, context
     // each segment in this function is its own path/segment
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
@@ -324,7 +332,7 @@ IKRS.GirihCanvasHandler.prototype.drawFancyRhombusStrapping = function(tile) {
 }
 
 
-IKRS.GirihCanvasHandler.prototype.getSVGforFancyRhombusStrapping = function(tile) {
+Rhombus.prototype.getSVGforFancyStrapping = function(tile) {
 //inputs: size, position, angle, context
     // each segment in this function is its own path/segment
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
@@ -388,22 +396,132 @@ IKRS.GirihCanvasHandler.prototype.getSVGforFancyRhombusStrapping = function(tile
     }
     return svgStrings.join("")
 }
+*/
+
+
+Rhombus.prototype.getSVGforFancyStrapping = function( options) {
+    this._drawFancyStrapping (undefined, true, options);
+}
+
+
+Rhombus.prototype.drawFancyStrapping = function( canvasContext, options) {
+    this._drawFancyStrapping (canvasContext, false, options);
+}
+
+
+Rhombus.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
+//inputs: size, position, angle, canvas context
+    // each segment in this function is its own path/segment
+    // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
+
+    turtle = new Turtle();
+    var bentSegmentLength = 0.424 * this.size // bent segment
+    var directSegmentLength = 0.587 * this.size // direct cross segment
+    var capGap = options.capGap;
+    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+
+    // do all of the straps
+    for( var i = 0; i<2; i++) {
+        turtle.toXY( this.position.x, this.position.y); // center of decagon
+        turtle.toAD( this.angle + faces[0 +i*2].centralAngle, faces[0 +i*2].radialCoefficient * this.size); //vertex of decagon
+        turtle.toaD( Math.PI - faces[0 +i*2].angleToCenter + faces[0 +i*2].angleToNextVertex, this.size/2); //at midpoint
+
+        turtle.toaD( 3* piTenths, 0); // ready for strapping
+
+        var chainNumber = this.connectors[ 0 +i*2].CWchainID
+        if (chainNumber === undefined) {
+            console.log("bad chain number for tile")
+        }
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+        if (chainColor === undefined) {
+            console.log( "chain fill color not defined")
+        }
+
+	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:i} , ["strap"]))
+	strapOptions = { turtle: turtle,
+                         distance: directSegmentLength - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 7* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: true,
+                         fillStyle: chainColor,
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( 0 +i*2, chainNumber)
+                       };
+        if (svg) {
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+        } else {
+            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+        }
+        //endGroup
+        turtle.toaD( 0, capGap); // to edgue
+        turtle.toaD( 6 * piTenths, 0) // ready for next strap
+
+        var chainNumber = this.connectors[ 1 +i*2].CWchainID
+        if (chainNumber === undefined) {
+            console.log("bad chain number for tile")
+        }
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+        if (chainColor === undefined) {
+            console.log( "chain fill color not defined")
+        }
+
+	strapOptions = { turtle: turtle,
+                         distance: bentSegmentLength,
+                         spacing: options.strappingWidth,
+                         startAngle: 7* piTenths,
+                         endAngle: 6* piTenths,
+                         startCap: false,
+                         endCap: false,
+                         fillStyle: chainColor,
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( 1+ i*2, chainNumber)
+                       };
+        if (svg) {
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+        } else {
+            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+        }
+	turtle.toaD( -2* piTenths, 0); //do the bend
+
+	strapOptions = { turtle: turtle,
+                         distance: bentSegmentLength - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 6* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: true,
+                         fillStyle: chainColor,
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( 1+ i*2, chainNumber)
+                       };
+        if (svg) {
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+        } else {
+            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+        }
+	//endGroup()
+    }
+}
+
+
 
 
 // This is totally shitty. Why object inheritance when I still
 // have to inherit object methods manually??!
-IKRS.Tile.Rhombus.prototype.buildPolygon            = IKRS.Tile.prototype.buildPolygon;
-IKRS.Tile.Rhombus.prototype.computeBounds           = IKRS.Tile.prototype.computeBounds;
-IKRS.Tile.Rhombus.prototype._addVertex              = IKRS.Tile.prototype._addVertex;
-IKRS.Tile.Rhombus.prototype._translateVertex        = IKRS.Tile.prototype._translateVertex;
-IKRS.Tile.Rhombus.prototype._polygonToSVG           = IKRS.Tile.prototype._polygonToSVG;
-IKRS.Tile.Rhombus.prototype.getInnerTilePolygonAt   = IKRS.Tile.prototype.getInnerTilePolygonAt;
-IKRS.Tile.Rhombus.prototype.getOuterTilePolygonAt   = IKRS.Tile.prototype.getOuterTilePolygonAt;
-IKRS.Tile.Rhombus.prototype.getTranslatedVertex     = IKRS.Tile.prototype.getTranslatedVertex;
-IKRS.Tile.Rhombus.prototype.containsPoint           = IKRS.Tile.prototype.containsPoint;
-IKRS.Tile.Rhombus.prototype.locateEdgeAtPoint       = IKRS.Tile.prototype.locateEdgeAtPoint;
-IKRS.Tile.Rhombus.prototype.locateAdjacentEdge      = IKRS.Tile.prototype.locateAdjacentEdge;
-IKRS.Tile.Rhombus.prototype.getVertexAt             = IKRS.Tile.prototype.getVertexAt;
-IKRS.Tile.Rhombus.prototype.toSVG                   = IKRS.Tile.prototype.toSVG;
+//IKRS.Tile.Rhombus.prototype.buildPolygon            = IKRS.Tile.prototype.buildPolygon;
+//IKRS.Tile.Rhombus.prototype.computeBounds           = IKRS.Tile.prototype.computeBounds;
+//IKRS.Tile.Rhombus.prototype._addVertex              = IKRS.Tile.prototype._addVertex;
+//IKRS.Tile.Rhombus.prototype._translateVertex        = IKRS.Tile.prototype._translateVertex;
+//IKRS.Tile.Rhombus.prototype._polygonToSVG           = IKRS.Tile.prototype._polygonToSVG;
+//IKRS.Tile.Rhombus.prototype.getInnerTilePolygonAt   = IKRS.Tile.prototype.getInnerTilePolygonAt;
+//IKRS.Tile.Rhombus.prototype.getOuterTilePolygonAt   = IKRS.Tile.prototype.getOuterTilePolygonAt;
+//IKRS.Tile.Rhombus.prototype.getTranslatedVertex     = IKRS.Tile.prototype.getTranslatedVertex;
+//IKRS.Tile.Rhombus.prototype.containsPoint           = IKRS.Tile.prototype.containsPoint;
+//IKRS.Tile.Rhombus.prototype.locateEdgeAtPoint       = IKRS.Tile.prototype.locateEdgeAtPoint;
+//IKRS.Tile.Rhombus.prototype.locateAdjacentEdge      = IKRS.Tile.prototype.locateAdjacentEdge;
+//IKRS.Tile.Rhombus.prototype.getVertexAt             = IKRS.Tile.prototype.getVertexAt;
+//IKRS.Tile.Rhombus.prototype.toSVG                   = IKRS.Tile.prototype.toSVG;
 
-IKRS.Tile.Rhombus.prototype.constructor             = IKRS.Tile.Rhombus;
+//IKRS.Tile.Rhombus.prototype.constructor             = IKRS.Tile.Rhombus;

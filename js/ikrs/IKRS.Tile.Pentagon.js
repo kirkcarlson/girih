@@ -7,11 +7,26 @@
  **/
 
 
-IKRS.Tile.Pentagon = function( size, position, angle, fillColor ) {
+//IKRS.Tile.Pentagon = function( size, position, angle, fillColor ) {
 
-    IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_PENTAGON );
+//    IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_PENTAGON );
 
-    this.buildPolygon();
+class Pentagon extends Tile {
+    constructor ( size, position, angle, fillColor) {
+        if (fillColor !== undefined) {
+            fillColor = fillColor;
+        } else {
+            fillColor = girihCanvasHandler.drawProperties.pentagonFillColor;
+        }
+
+        super( size, position, angle, IKRS.Girih.TILE_TYPE_PENTAGON, fillColor );
+        // in theory type should not be needed.
+
+        this.buildPolygon();
+        this._buildInnerPolygons( size );
+        this._buildOuterPolygons();       // Only call AFTER the inner polygons were created!
+        this.buildConnectors();
+
 /*
     // Init the actual decahedron shape with the passed size
     var pointA = new IKRS.Point2(0,0);
@@ -47,12 +62,6 @@ IKRS.Tile.Pentagon = function( size, position, angle, fillColor ) {
     }
 
 */
-    if (fillColor !== undefined) {
-        this.fillColor = fillColor;
-    } else {
-        this.fillColor = girihCanvasHandler.drawProperties.pentagonFillColor;
-    }
-
     this.imageProperties = {
 	source: {	x:      7/500.0,
 			y:      (303-15)/460.0, // -16
@@ -63,16 +72,13 @@ IKRS.Tile.Pentagon = function( size, position, angle, fillColor ) {
 		       yOffset: -18/460.0 // -16
 		     }
 
-    };
+    }
     //this.imageProperties.source.center = new IKRS.Point2( this.imageProperties.source.x + this.imageProperties.source.x
-
-
-    this._buildInnerPolygons( size );
-    this._buildOuterPolygons();       // Only call AFTER the inner polygons were built!
+    }
 };
 
 
-IKRS.Tile.Pentagon.getFaces = function() {
+Pentagon.getFaces = function() {
     var faces = [];
     for (var i=0; i<5; i++) {
         faces.push( new IKRS.Face(
@@ -87,7 +93,7 @@ IKRS.Tile.Pentagon.getFaces = function() {
 }
 
 
-IKRS.Tile.Pentagon.prototype._buildInnerPolygons = function( edgeLength ) {
+Pentagon.prototype._buildInnerPolygons = function( edgeLength ) {
     var innerTile = new IKRS.Polygon(); // [];
     var faces = IKRS.Girih.TILE_FACES [this.tileType];
 
@@ -111,7 +117,7 @@ IKRS.Tile.Pentagon.prototype._buildInnerPolygons = function( edgeLength ) {
 
 
 
-IKRS.Tile.Pentagon.prototype._buildInnerPolygonsOLD = function( edgeLength ) {
+Pentagon.prototype._buildInnerPolygonsOLD = function( edgeLength ) {
     // Connect all edges half-the-way
     var innerTile = new IKRS.Polygon(); // [];
     //innerTile.push( this.vertices[0].scaleTowards( this.vertices[1], 0.5 ) );
@@ -154,7 +160,7 @@ IKRS.Tile.Pentagon.prototype._buildInnerPolygonsOLD = function( edgeLength ) {
 };
 
 
-IKRS.Tile.Pentagon.prototype._buildOuterPolygons = function() {
+Pentagon.prototype._buildOuterPolygons = function() {
 
     for( var i = 0; i < this.polygon.vertices.length; i++ ) {
 
@@ -173,13 +179,8 @@ IKRS.Tile.Pentagon.prototype._buildOuterPolygons = function() {
 };
 
 
-// Nasty Trick #1
-//the following three functions are really in the wrong place
-// it is in this file because it is specific to Pentagons
-// it is part of the GirihCanvasHandler because it is manipulating the canvas image
-
-
-IKRS.GirihCanvasHandler.prototype.drawFancyPentagonStrapping = function(tile) {
+/*
+Pentagon.prototype.drawFancyStrapping = function(tile) {
 //inputs: size, position, angle, context
     // each segment in this function is its own path/segment
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
@@ -209,7 +210,7 @@ this.context.stroke(); //DEBUG
 }
 
 
-IKRS.GirihCanvasHandler.prototype.getSVGforFancyPentagonStrapping = function(tile) {
+Pentagon.prototype.getSVGforFancyStrapping = function(tile) {
 //inputs: size, position, angle, context
     // each segment in this function is its own path/segment
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
@@ -246,8 +247,89 @@ IKRS.GirihCanvasHandler.prototype.getSVGforFancyPentagonStrapping = function(til
     }
     return svgStrings.join("");
 }
+*/
 
 
+Pentagon.prototype.getSVGforFancyStrapping = function( options) {
+    this._drawFancyStrapping (undefined, true, options);
+}
+
+
+Pentagon.prototype.drawFancyStrapping = function( canvasContext, options) {
+    this._drawFancyStrapping (canvasContext, false, options);
+}
+
+
+Pentagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
+//inputs: size, position, angle, canvas context
+    // each segment in this function is its own path/segment
+    // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
+
+    turtle = new Turtle();
+    var strapLength = 0.425 * this.size // overall length of each strap
+    var capGap = options.capGap;
+    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+
+    turtle.toXY( this.position.x, this.position.y); // center of decagon
+    turtle.toAD( this.angle + faces[0].centralAngle, faces[0].radialCoefficient * this.size); //corner of decagon
+    turtle.toaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex, this.size/2); //midpoint of side 0
+
+    // do all of the straps
+    for( var i = 0; i<5; i++) {
+
+        var chainNumber = this.connectors[ i].CWchainID
+        if (chainNumber === undefined) {
+            console.log("bad chain number for tile")
+        }
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+        if (chainColor === undefined) {
+            console.log( "chain fill color not defined")
+        }
+
+	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:i} , ["strap"]))
+        turtle.toaD( 3* piTenths, 0); // ready for strapping
+	strapOptions = { turtle: turtle,
+                         distance: strapLength,
+                         spacing: options.strappingWidth,
+                         startAngle: 7* piTenths,
+                         endAngle: 6* piTenths,
+                         startCap: false,
+                         endCap: false,
+                         fillStyle: chainColor,
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( i, chainNumber)
+                       };
+        if (svg) {
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+        } else {
+            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+        }
+
+	turtle.toaD( -2* piTenths, 0); // do the bend
+	strapOptions = { turtle: turtle,
+                         distance: strapLength - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 6* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: true,
+                         fillStyle: chainColor,
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( i, chainNumber)
+                       };
+        if (svg) {
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+        } else {
+            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+        }
+	turtle.toaD( 0, capGap);
+	turtle.toaD( 3* piTenths, 0);
+    }
+}
+
+
+
+/*
 //this would be more efficient to use the generic routines
 IKRS.GirihCanvasHandler.prototype.tile_pentagon_drawBoundingBox = function(tile) {
 //inputs: size, position, angle, context
@@ -270,32 +352,32 @@ IKRS.GirihCanvasHandler.prototype.tile_pentagon_drawBoundingBox = function(tile)
     this.context.stroke();
     this.context.closePath();
 }
-
+*/
 
 
 // This is totally shitty. Why object inheritance when I still
 // have to inherit object methods manually??!
-IKRS.Tile.Pentagon.prototype.moveToXY                = IKRS.GirihCanvasHandler.prototype.moveToXY;
-IKRS.Tile.Pentagon.prototype.moveToAD                = IKRS.GirihCanvasHandler.prototype.moveToAD;
-IKRS.Tile.Pentagon.prototype.moveToaD                = IKRS.GirihCanvasHandler.prototype.moveToaD;
+//IKRS.Tile.Pentagon.prototype.moveToXY                = IKRS.GirihCanvasHandler.prototype.moveToXY;
+//IKRS.Tile.Pentagon.prototype.moveToAD                = IKRS.GirihCanvasHandler.prototype.moveToAD;
+//IKRS.Tile.Pentagon.prototype.moveToaD                = IKRS.GirihCanvasHandler.prototype.moveToaD;
 //IKRS.Tile.Pentagon.prototype.posToXY                 = IKRS.GirihCanvasHandler.prototype.posToXY;
 //IKRS.Tile.Pentagon.prototype.posToAD                 = IKRS.GirihCanvasHandler.prototype.posToAD;
 //IKRS.Tile.Pentagon.prototype.posToaD                 = IKRS.GirihCanvasHandler.prototype.posToaD;
 //IKRS.Tile.Pentagon.prototype.getTurtlePosition       = IKRS.GirihCanvasHandler.prototype.getTurtlePosition;
 //IKRS.Tile.Pentagon.prototype.getTurtleAngle          = IKRS.GirihCanvasHandler.prototype.getTurtleAngle;
-IKRS.Tile.Pentagon.prototype.gline                   = IKRS.GirihCanvasHandler.prototype.gline;
-IKRS.Tile.Pentagon.prototype.buildPolygon            = IKRS.Tile.prototype.buildPolygon;
-IKRS.Tile.Pentagon.prototype.computeBounds           = IKRS.Tile.prototype.computeBounds;
-IKRS.Tile.Pentagon.prototype._addVertex              = IKRS.Tile.prototype._addVertex;
-IKRS.Tile.Pentagon.prototype._translateVertex        = IKRS.Tile.prototype._translateVertex;
-IKRS.Tile.Pentagon.prototype._polygonToSVG           = IKRS.Tile.prototype._polygonToSVG;
-IKRS.Tile.Pentagon.prototype.getInnerTilePolygonAt   = IKRS.Tile.prototype.getInnerTilePolygonAt;
-IKRS.Tile.Pentagon.prototype.getOuterTilePolygonAt   = IKRS.Tile.prototype.getOuterTilePolygonAt;
-IKRS.Tile.Pentagon.prototype.getTranslatedVertex     = IKRS.Tile.prototype.getTranslatedVertex;
-IKRS.Tile.Pentagon.prototype.containsPoint           = IKRS.Tile.prototype.containsPoint;
-IKRS.Tile.Pentagon.prototype.locateEdgeAtPoint       = IKRS.Tile.prototype.locateEdgeAtPoint;
-IKRS.Tile.Pentagon.prototype.locateAdjacentEdge      = IKRS.Tile.prototype.locateAdjacentEdge;
-IKRS.Tile.Pentagon.prototype.getVertexAt             = IKRS.Tile.prototype.getVertexAt;
-IKRS.Tile.Pentagon.prototype.toSVG                   = IKRS.Tile.prototype.toSVG;
+//IKRS.Tile.Pentagon.prototype.gline                   = IKRS.GirihCanvasHandler.prototype.gline;
+//IKRS.Tile.Pentagon.prototype.buildPolygon            = IKRS.Tile.prototype.buildPolygon;
+//IKRS.Tile.Pentagon.prototype.computeBounds           = IKRS.Tile.prototype.computeBounds;
+//IKRS.Tile.Pentagon.prototype._addVertex              = IKRS.Tile.prototype._addVertex;
+//IKRS.Tile.Pentagon.prototype._translateVertex        = IKRS.Tile.prototype._translateVertex;
+//IKRS.Tile.Pentagon.prototype._polygonToSVG           = IKRS.Tile.prototype._polygonToSVG;
+//IKRS.Tile.Pentagon.prototype.getInnerTilePolygonAt   = IKRS.Tile.prototype.getInnerTilePolygonAt;
+//IKRS.Tile.Pentagon.prototype.getOuterTilePolygonAt   = IKRS.Tile.prototype.getOuterTilePolygonAt;
+//IKRS.Tile.Pentagon.prototype.getTranslatedVertex     = IKRS.Tile.prototype.getTranslatedVertex;
+//IKRS.Tile.Pentagon.prototype.containsPoint           = IKRS.Tile.prototype.containsPoint;
+//IKRS.Tile.Pentagon.prototype.locateEdgeAtPoint       = IKRS.Tile.prototype.locateEdgeAtPoint;
+//IKRS.Tile.Pentagon.prototype.locateAdjacentEdge      = IKRS.Tile.prototype.locateAdjacentEdge;
+//IKRS.Tile.Pentagon.prototype.getVertexAt             = IKRS.Tile.prototype.getVertexAt;
+//IKRS.Tile.Pentagon.prototype.toSVG                   = IKRS.Tile.prototype.toSVG;
 
-IKRS.Tile.Pentagon.prototype.constructor             = IKRS.Tile.Pentagon;
+//IKRS.Tile.Pentagon.prototype.constructor             = IKRS.Tile.Pentagon;

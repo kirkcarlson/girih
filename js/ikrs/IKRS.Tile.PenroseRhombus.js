@@ -11,11 +11,25 @@
  **/
 
 
-IKRS.Tile.PenroseRhombus = function( size, position, angle, opt_addCenterPolygon, fillColor ) {
+//IKRS.Tile.PenroseRhombus = function( size, position, angle, opt_addCenterPolygon, fillColor ) {
 
-    IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS  );
+//    IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS  );
 
-    this.buildPolygon();
+class PenroseRhombus extends Tile {
+    constructor ( size, position, angle, fillColor) {
+        if (fillColor !== undefined) {
+            fillColor = fillColor;
+        } else {
+            fillColor = girihCanvasHandler.drawProperties.penroseRhombusFillColor;
+        }
+
+        super( size, position, angle, IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS, fillColor );
+        // in theory type should not be needed.
+
+        this.buildPolygon();
+        this._buildInnerPolygons( size );
+        this._buildOuterPolygons();       // Only call AFTER the inner polygons were created!
+        this.buildConnectors();
 
 /*
     if( typeof opt_addCenterPolygon == "undefined" )
@@ -57,12 +71,6 @@ IKRS.Tile.PenroseRhombus = function( size, position, angle, opt_addCenterPolygon
     }
 */
 
-    if (fillColor !== undefined) {
-        this.fillColor = fillColor;
-    } else {
-        this.fillColor = girihCanvasHandler.drawProperties.penroseRhombusFillColor;
-    }
-
     this.imageProperties = {
 	source: { x:      2/500.0,
 		  y:      8/460.0,
@@ -72,15 +80,12 @@ IKRS.Tile.PenroseRhombus = function( size, position, angle, opt_addCenterPolygon
 	destination: { xOffset: 0.0,
 		       yOffset: 0.0
 		     }
-    };
-
-
-    this._buildInnerPolygons( opt_addCenterPolygon );
-    this._buildOuterPolygons( opt_addCenterPolygon );
+    }
+    }
 };
 
 
-IKRS.Tile.PenroseRhombus.getFaces = function() {
+PenroseRhombus.getFaces = function() {
     var faces = [];
     var radialShort = Math.sin( 1* piTenths);
     var radialLong = Math.cos( 1* piTenths);
@@ -104,7 +109,7 @@ IKRS.Tile.PenroseRhombus.getFaces = function() {
 }
 
 
-IKRS.Tile.PenroseRhombus.prototype._buildInnerPolygons = function( addCenterPolygon ) {
+PenroseRhombus.prototype._buildInnerPolygons = function( addCenterPolygon ) {
     const shortSegmentLength = 0.163 * this.size;
     const mediumSegmentLength = 0.2625 * this.size;
     const longSegmentLength = 0.587 * this.size;
@@ -191,7 +196,7 @@ FancyPenroseRhombusStrapping = function(tile) {
 };
 
 
-IKRS.Tile.PenroseRhombus.prototype._buildInnerPolygonsOld = function( addCenterPolygon ) {
+PenroseRhombus.prototype._buildInnerPolygonsOld = function( addCenterPolygon ) {
     var indices              = [ 0, 2 ];
     var innerPointIndexLeft  = -1;
     var innerPointIndexRight = -1;
@@ -227,7 +232,7 @@ IKRS.Tile.PenroseRhombus.prototype._buildInnerPolygonsOld = function( addCenterP
 };
 
 
-IKRS.Tile.PenroseRhombus.prototype._buildOuterPolygons = function( addCenterPolygon ) {
+PenroseRhombus.prototype._buildOuterPolygons = function( addCenterPolygon ) {
     const shortSegmentLength = 0.163 * this.size;
     const mediumSegmentLength = 0.2625 * this.size;
     const longSegmentLength = 0.587 * this.size;
@@ -298,7 +303,7 @@ IKRS.Tile.PenroseRhombus.prototype._buildOuterPolygons = function( addCenterPoly
     this.outerTilePolygons.push( topTile );
 
 }
-IKRS.Tile.PenroseRhombus.prototype._buildOuterPolygonsOld = function( centerPolygonExists ) {
+PenroseRhombus.prototype._buildOuterPolygonsOld = function( centerPolygonExists ) {
 
     // Add left and right 'spikes'.
     var indices = [ 0, 2 ];
@@ -347,12 +352,13 @@ IKRS.Tile.PenroseRhombus.prototype._buildOuterPolygonsOld = function( centerPoly
  * If you want the center polygon not to be drawn the canvas handler needs to
  * know the respective polygon index (inside the this.innerTilePolygons array).
  **/
-IKRS.Tile.PenroseRhombus.prototype.getCenterPolygonIndex = function() {
+PenroseRhombus.prototype.getCenterPolygonIndex = function() {
     return 2;
 }
 
 
-IKRS.GirihCanvasHandler.prototype.drawFancyPenroseRhombusStrapping = function(tile) {
+/*
+PenroseRhombus.prototype.drawFancyStrapping = function(tile) {
 //inputs: size, position, angle, context
     // each segment in this function is its own path/segment
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
@@ -400,7 +406,7 @@ IKRS.GirihCanvasHandler.prototype.drawFancyPenroseRhombusStrapping = function(ti
 }
 
 
-IKRS.GirihCanvasHandler.prototype.getSVGforFancyPenroseRhombusStrapping = function(tile) {
+PenroseRhombus.prototype.getSVGforFancyStrapping = function(tile) {
 //inputs: size, position, angle, context
     // each segment in this function is its own path/segment
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
@@ -464,23 +470,172 @@ IKRS.GirihCanvasHandler.prototype.getSVGforFancyPenroseRhombusStrapping = functi
     }
     return svgStrings.join("");
 }
+*/
+
+
+PenroseRhombus.prototype.getSVGforFancyStrapping = function( options) {
+    this._drawFancyStrapping (undefined, true, options);
+}
+
+
+PenroseRhombus.prototype.drawFancyStrapping = function( canvasContext, options) {
+    this._drawFancyStrapping (canvasContext, false, options);
+}
+
+
+PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
+//inputs: size, position, angle, canvas context
+    // each segment in this function is its own path/segment
+    // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
+
+    turtle = new Turtle();
+    var shortSegmentLength = 0.163 * this.size;
+    var mediumSegmentLength = 0.2625 * this.size;
+    var longSegmentLength = 0.587 * this.size;
+    var capGap = options.capGap;
+    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+
+    // do all of the straps
+    for( var i = 0; i<2; i++) {
+        turtle.toXY( this.position.x, this.position.y); // center of decagon
+        turtle.toAD( this.angle + faces[0 +i*2].centralAngle, faces[0 +i*2].radialCoefficient * this.size); //vertex of decagon
+        turtle.toaD( Math.PI - faces[0 +i*2].angleToCenter + faces[0 +i*2].angleToNextVertex, this.size/2); //at midpoint
+
+        turtle.toaD( 3* piTenths, 0); // ready for strapping
+
+        var chainNumber = this.connectors[ 0 +i*2].CWchainID
+        if (chainNumber === undefined) {
+            console.log("bad chain number for tile")
+        }
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+        if (chainColor === undefined) {
+            console.log( "chain fill color not defined")
+        }
+
+	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:i} , ["strap"]))
+	strapOptions = { turtle: turtle,
+                         distance: shortSegmentLength,
+                         spacing: options.strappingWidth,
+                         startAngle: 7* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: false,
+                         fillStyle: chainColor,
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( 0 +i*2, chainNumber)
+                       };
+        if (svg) {
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+        } else {
+            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+        }
+        //endGroup
+
+        turtle.toaD( 2 * piTenths, 0) // do the bend
+
+	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:i} , ["strap"]))
+	strapOptions = { turtle: turtle,
+                         distance: shortSegmentLength - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 4* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: true,
+                         fillStyle: chainColor,
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( 0 +i*2, chainNumber)
+                       };
+        if (svg) {
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+        } else {
+            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+        }
+        //endGroup
+        turtle.toaD( 0, capGap); // to edge
+        turtle.toaD( 6 * piTenths, 0) // ready for next strap
+
+        var chainNumber = this.connectors[ 1 +i*2].CWchainID
+        if (chainNumber === undefined) {
+            console.log("bad chain number for tile")
+        }
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+        if (chainColor === undefined) {
+            console.log( "chain fill color not defined")
+        }
+
+	strapOptions = { turtle: turtle,
+                         distance: mediumSegmentLength - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 7* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: false,
+                         fillStyle: chainColor,
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( 1+ i*2, chainNumber)
+                       };
+        if (svg) {
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+        } else {
+            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+        }
+	turtle.toaD( 0, 2* capGap); // cross over long segment
+
+	strapOptions = { turtle: turtle,
+                         distance: longSegmentLength - mediumSegmentLength - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 6* piTenths,
+                         endAngle: 7* piTenths,
+                         startCap: true,
+                         endCap: false,
+                         fillStyle: chainColor,
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( 1+ i*2, chainNumber)
+                       };
+        if (svg) {
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+        } else {
+            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+        }
+
+	turtle.toaD( -4* piTenths, 0); // do the bend
+
+	strapOptions = { turtle: turtle,
+                         distance: longSegmentLength - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 7* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: true,
+                         fillStyle: chainColor,
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( 1+ i*2, chainNumber)
+                       };
+        if (svg) {
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+        } else {
+            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+        }
+	//endGroup()
+    }
+}
 
 
 // This is totally shitty. Why object inheritance when I still
 // have to inherit object methods manually??!
-IKRS.Tile.PenroseRhombus.prototype.buildPolygon            = IKRS.Tile.prototype.buildPolygon;
-IKRS.Tile.PenroseRhombus.prototype.computeBounds           = IKRS.Tile.prototype.computeBounds;
-IKRS.Tile.PenroseRhombus.prototype.evaluatePoint           = IKRS.Tile.prototype.evaluatePoint; //kirk
-IKRS.Tile.PenroseRhombus.prototype._addVertex              = IKRS.Tile.prototype._addVertex;
-IKRS.Tile.PenroseRhombus.prototype._translateVertex        = IKRS.Tile.prototype._translateVertex;
-IKRS.Tile.PenroseRhombus.prototype._polygonToSVG           = IKRS.Tile.prototype._polygonToSVG;
-IKRS.Tile.PenroseRhombus.prototype.getInnerTilePolygonAt   = IKRS.Tile.prototype.getInnerTilePolygonAt;
-IKRS.Tile.PenroseRhombus.prototype.getOuterTilePolygonAt   = IKRS.Tile.prototype.getOuterTilePolygonAt;
-IKRS.Tile.PenroseRhombus.prototype.getTranslatedVertex     = IKRS.Tile.prototype.getTranslatedVertex;
-IKRS.Tile.PenroseRhombus.prototype.containsPoint           = IKRS.Tile.prototype.containsPoint;
-IKRS.Tile.PenroseRhombus.prototype.locateEdgeAtPoint       = IKRS.Tile.prototype.locateEdgeAtPoint;
-IKRS.Tile.PenroseRhombus.prototype.locateAdjacentEdge      = IKRS.Tile.prototype.locateAdjacentEdge;
-IKRS.Tile.PenroseRhombus.prototype.getVertexAt             = IKRS.Tile.prototype.getVertexAt;
-IKRS.Tile.PenroseRhombus.prototype.toSVG                   = IKRS.Tile.prototype.toSVG;
+//IKRS.Tile.PenroseRhombus.prototype.buildPolygon            = IKRS.Tile.prototype.buildPolygon;
+//IKRS.Tile.PenroseRhombus.prototype.computeBounds           = IKRS.Tile.prototype.computeBounds;
+//IKRS.Tile.PenroseRhombus.prototype.evaluatePoint           = IKRS.Tile.prototype.evaluatePoint; //kirk
+//IKRS.Tile.PenroseRhombus.prototype._addVertex              = IKRS.Tile.prototype._addVertex;
+//IKRS.Tile.PenroseRhombus.prototype._translateVertex        = IKRS.Tile.prototype._translateVertex;
+//IKRS.Tile.PenroseRhombus.prototype._polygonToSVG           = IKRS.Tile.prototype._polygonToSVG;
+//IKRS.Tile.PenroseRhombus.prototype.getInnerTilePolygonAt   = IKRS.Tile.prototype.getInnerTilePolygonAt;
+//IKRS.Tile.PenroseRhombus.prototype.getOuterTilePolygonAt   = IKRS.Tile.prototype.getOuterTilePolygonAt;
+//IKRS.Tile.PenroseRhombus.prototype.getTranslatedVertex     = IKRS.Tile.prototype.getTranslatedVertex;
+//IKRS.Tile.PenroseRhombus.prototype.containsPoint           = IKRS.Tile.prototype.containsPoint;
+//IKRS.Tile.PenroseRhombus.prototype.locateEdgeAtPoint       = IKRS.Tile.prototype.locateEdgeAtPoint;
+//IKRS.Tile.PenroseRhombus.prototype.locateAdjacentEdge      = IKRS.Tile.prototype.locateAdjacentEdge;
+//IKRS.Tile.PenroseRhombus.prototype.getVertexAt             = IKRS.Tile.prototype.getVertexAt;
+//IKRS.Tile.PenroseRhombus.prototype.toSVG                   = IKRS.Tile.prototype.toSVG;
 
-IKRS.Tile.PenroseRhombus.prototype.constructor             = IKRS.Tile.PenroseRhombus;
+//IKRS.Tile.PenroseRhombus.prototype.constructor             = IKRS.Tile.PenroseRhombus;

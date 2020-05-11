@@ -250,21 +250,31 @@ IKRS.GirihCanvasHandler.prototype.mouseMoveHandler = function( e ) {
 							    hoverTile.size/2.0 * this.girihCanvasHandler.zoomFactor
 							  );
 
-    if (hoverTileIndex == undefined) { console.log( "hooverTileIndex is undefined") };
-    if (highlightedEdgeIndex == undefined) { console.log( "highlightedEdgeIndex is undefined") };
-    if (hoverTile.position == undefined) { console.log( "hoverTile.position is undefined")};
-    if (hoverTile.connectors[highlightedEdgeIndex] == undefined) { console.log( "hoverTile.connectors{ highlightedEdge] is undefined")};
-    DEBUG( "[mouseMoved] hoverTileIndex=" + hoverTileIndex +
-           ", highlightedEdgeIndex=" + highlightedEdgeIndex +
-           ", hoverTile.position=" + hoverTile.position.toString() +
-           ", connector.position=" + hoverTile.connectors[ highlightedEdgeIndex].point.toString()
-//           ", hoverTile.angle=" + _angle2constant(hoverTile.angle)
-         );
+    if (highlightedEdgeIndex >= 0) {
+        if (hoverTileIndex == undefined) {
+            console.log( "hooverTileIndex is undefined");
+        };
+        if (highlightedEdgeIndex == undefined) {
+            console.log( "highlightedEdgeIndex is undefined");
+        };
+        if (hoverTile.position == undefined) {
+            console.log( "hoverTile.position is undefined");
+        };
+        if (hoverTile.connectors[highlightedEdgeIndex] == undefined) {
+            console.log( "hoverTile.connectors{ highlightedEdge] is undefined");
+        };
+        DEBUG( "[mouseMoved] hoverTileIndex=" + hoverTileIndex +
+               ", highlightedEdgeIndex=" + highlightedEdgeIndex +
+               ", hoverTile.position=" + hoverTile.position.toString() +
+               ", connector.position=" + hoverTile.connectors[ highlightedEdgeIndex].point.toString()
+    //           ", hoverTile.angle=" + _angle2constant(hoverTile.angle)
+             );
 
-    hoverTile._props.highlightedEdgeIndex = highlightedEdgeIndex;
-    // Were there any changes at all?
-    if( oldHoverTileIndex != hoverTileIndex || oldHighlightedEdgeIndex != highlightedEdgeIndex ) {
-	this.girihCanvasHandler.redraw();
+        hoverTile._props.highlightedEdgeIndex = highlightedEdgeIndex;
+        // Were there any changes at all?
+        if( oldHoverTileIndex != hoverTileIndex || oldHighlightedEdgeIndex != highlightedEdgeIndex ) {
+	    this.girihCanvasHandler.redraw();
+        }
     }
 };
 
@@ -480,22 +490,22 @@ IKRS.GirihCanvasHandler.prototype._resolveCurrentAdjacentTilePreset = function( 
     //create the new tile
     switch( proposedPosition.tileType ) {
     case IKRS.Girih.TILE_TYPE_DECAGON:
-	var proposedTile = new IKRS.Tile.Decagon(          currentTile.size, proposedCenter, proposedTileAngle);
+	var proposedTile = new Decagon(          currentTile.size, proposedCenter, proposedTileAngle);
 	break;
     case IKRS.Girih.TILE_TYPE_PENTAGON:
-	var proposedTile = new IKRS.Tile.Pentagon(         currentTile.size, proposedCenter, proposedTileAngle);
+	var proposedTile = new Pentagon(         currentTile.size, proposedCenter, proposedTileAngle);
 	break;
     case IKRS.Girih.TILE_TYPE_IRREGULAR_HEXAGON:
-	var proposedTile = new IKRS.Tile.IrregularHexagon( currentTile.size, proposedCenter, proposedTileAngle);
+	var proposedTile = new IrregularHexagon( currentTile.size, proposedCenter, proposedTileAngle);
 	break;
     case IKRS.Girih.TILE_TYPE_RHOMBUS:
-	var proposedTile = new IKRS.Tile.Rhombus(          currentTile.size, proposedCenter, proposedTileAngle);
+	var proposedTile = new RS.Tile.Rhombus(          currentTile.size, proposedCenter, proposedTileAngle);
 	break;
     case IKRS.Girih.TILE_TYPE_BOW_TIE:
-	var proposedTile = new IKRS.Tile.BowTie(           currentTile.size, proposedCenter, proposedTileAngle);
+	var proposedTile = new BowTie(           currentTile.size, proposedCenter, proposedTileAngle);
 	break;
     case IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS:
-	var proposedTile = new IKRS.Tile.PenroseRhombus(   currentTile.size, proposedCenter, proposedTileAngle);
+	var proposedTile = new PenroseRhombus(   currentTile.size, proposedCenter, proposedTileAngle);
 	break;
     default:
 	throw "Cannot create tiles from unknown tile types (" + tileType + ").";
@@ -692,6 +702,16 @@ IKRS.GirihCanvasHandler.prototype._drawStrapping = function( tile ) {
     if( this.drawProperties.drawStrapping) {
 	if( (this.drawProperties.drawStrappingType === "fancy" ||
 	     this.drawProperties.drawStrappingType === "random")) {
+
+            tile.drawFancyStrapping( this.context, {
+                     capGap: this.capGap(),
+                     strappingWidth: this.drawProperties.strappingWidth,
+                     strappingStrokeWidth: this.drawProperties.strappingStrokeWidth,
+                     strappingStrokeColor: this.drawProperties.strappingStrokeColor,
+                     strappingFillColor: this.drawProperties.strappingFillColor,
+                                  });
+
+/*
 	    switch(tile.tileType) {
 	    //The following functions are in their respective module
 	    case IKRS.Girih.TILE_TYPE_PENTAGON:
@@ -716,6 +736,7 @@ IKRS.GirihCanvasHandler.prototype._drawStrapping = function( tile ) {
 		this._drawSimpleStrapping( tile);
 		break;
 	    }
+*/
 	} else {
 	    this._drawSimpleStrapping( tile);
 	}
@@ -947,6 +968,245 @@ IKRS.GirihCanvasHandler.prototype.capGap = function () {
 
 
 /**************************************************************************
+ *  findStrapSegmentPoints -- find the points for a double girih strap segment
+ *
+ *  parameters: (parameters are named and can be in any order)
+ *    distance is the nominal length of the line in pixels (required)
+ *    spacing is the distance between twin line centers in pixels
+ *    startAngle is the cut angle at the start of the line with respect to the turtle
+ *    endAngle is the cut angle at the end of the line with respect to the turtle
+ *    startCap is true when a start cap is desired
+ *    endCap is true when an end cap is desired
+ *    fillStyle is optional style parameter used to fill shape
+ *    fillOpacity is optional style parameter used to fill shape
+ *    turtle is a turtle object and is required
+ *        turtle.position is the start point
+ *        turtle.angle is the segment angle
+ *
+ *  returns:
+ *    an array of 6 points
+ *    turtle.position is the end point
+ *    turtle.angle is the segment angle
+ *************************************************************************/
+_findStrapSegmentPoints = function( {
+        //distance,
+        spacing = 4,
+        startAngle = Math.PI/2,
+        endAngle = Math.PI/2,
+        startCap = true,
+        endCap = true,
+        fillStyle = this.drawProperties.strappingFillColor,
+        fillOpacity = 1,
+    }) {
+    // compute the real distances and angles needed
+    var options = arguments[0];
+    var startRightDist = options.spacing / 2 / Math.tan( -options.startAngle);
+    var endRightDist = options.spacing / 2 / Math.tan( -options.endAngle);
+    var startLeftDist = -startRightDist;
+    var endLeftDist = -endRightDist;
+    var startDiag = Math.abs( options.spacing / Math.sin( options.startAngle));
+    var endDiag = Math.abs( options.spacing / Math.sin( -options.endAngle));
+    var points = [];
+
+    points.push( turtle.position); //start point
+    points.push( turtle.toaD( options.startAngle, startDiag/2).position); //half of start cap
+    points.push( turtle.toaD( -options.startAngle,
+                     options.distance + startRightDist + endRightDist).position); // left side
+    points.push( turtle.toaD( -options.endAngle, endDiag).position); // end cap
+    points.push( turtle.toaD( options.endAngle + 10* piTenths,
+                     options.distance + startLeftDist + endLeftDist).position); // right side
+    points.push( turtle.toaD( options.startAngle - 10* piTenths,
+                     startDiag/2).position); // other half of start cap
+    //points.push( turtle.toaD( -options.startAngle, 0).position); // restore angle
+
+    points.push( turtle.toaD( -options.startAngle, options.distance).position); // end of segment
+
+    return points;
+}
+
+
+/**************************************************************************
+ *  drawStrapSegment -- draw a double girih strap segment with slanted ends
+ *  This uses normal coordinates and distance and tranlated them to a canvas
+ *  which may pan and zoom.
+ *
+ *  parameters: (parameters are named and can be in any order)
+ *    canvasContext is the canvas to be drawn upon
+ *    options is a dictionary with the following:
+ *      distance is the nominal length of the line in pixels (required)
+ *      spacing is the distance between twin line centers in pixels
+ *      startAngle is the cut angle at the start of the line with respect to the turtle
+ *      endAngle is the cut angle at the end of the line with respect to the turtle
+ *      startCap is true when a start cap is desired
+ *      endCap is true when an end cap is desired
+ *      fillStyle is optional style parameter used to fill shape
+ *      fillOpacity is optional style parameter used to fill shape
+ *      strokeStroke is optional style of the stroked line
+ *      strokeOpacity is optional opacity of the stroked line (0..1)
+ *      strokeWidth is optional width of the stroked line in pixels
+ *      turtle is a turtle object and is required
+ *          turtle.position is the start point
+ *          turtle.angle is the segment angle
+ *
+ *  returns:
+ *    turtle.position is the end point
+ *    turtle.angle is the segment angle
+ *************************************************************************/
+IKRS.GirihCanvasHandler.prototype.drawStrapSegment = function( canvasContext, {
+        //distance,
+        spacing = 4,
+        startAngle = Math.PI/2,
+        endAngle = Math.PI/2,
+        startCap = true,
+        endCap = true,
+        fillStyle = this.drawProperties.strappingFillColor,
+        fillOpacity = 1,
+        strokeStyle = this.drawProperties.strappingStrokeColor,
+        strokeLineWidth = this.drawProperties.strappingStrokeWidth,
+    }) {
+    var options = arguments[1];
+    var points = _findStrapSegmentPoints( options);
+
+    var zoomFactor = this.zoomFactor;
+    var drawOffset = this.drawOffset;
+    canvasContext.lineToPoint = function ( point) {
+        canvasContext.lineTo( point.x * zoomFactor + drawOffset.x,
+                              point.y * zoomFactor + drawOffset.y)
+    }
+
+    canvasContext.moveToPoint = function ( point) {
+        canvasContext.moveTo( point.x * zoomFactor + drawOffset.x,
+                              point.y * zoomFactor + drawOffset.y)
+    }
+
+    canvasContext.beginPath();
+    canvasContext.lineToPoint( points [1]); //half of start cap
+    canvasContext.lineToPoint( points [2]); // left side
+    canvasContext.lineToPoint( points [3]); // end cap
+    canvasContext.lineToPoint( points [4]); // right side
+    canvasContext.lineToPoint( points [0]); // other half of start cap
+    canvasContext.fillStyle = options.fillStyle;
+    canvasContext.fillOpacity = 1;
+    canvasContext.closePath();
+    canvasContext.fill();
+
+    // stroke the segment for the lines
+    canvasContext.beginPath();
+    if (startCap) {
+        canvasContext.lineToPoint( points [0]); //half of start cap, should not be necessary
+        canvasContext.lineToPoint( points [1]); //half of start cap
+    } else {
+        canvasContext.moveToPoint( points [1]); //half of start cap
+    }
+    canvasContext.lineToPoint( points [2]); // left side
+    if( endCap) {
+        canvasContext.lineToPoint( points [3]); // end cap
+    } else {
+        canvasContext.moveToPoint( points [3]); // end cap
+    }
+    canvasContext.lineToPoint( points [4]); // right side
+    if ( startCap) {
+        canvasContext.lineToPoint( points [0]); // restore angle
+    } else {
+        canvasContext.moveToPoint( points [0]); // restore angle
+    }
+    canvasContext.strokeStyle = options.strokeStyle;
+    //this.context.fillStyle = "";
+    canvasContext.lineWidth = options.strokeLineWidth;
+    canvasContext.stroke();
+}
+
+
+const IKRS_SVG_DECIMALS = 3;
+
+function _round (number, decimals = IKRS_SVG_DECIMALS) {
+    var rounder = Math.pow( 10, decimals);
+    return Math.round(number * rounder) / rounder;
+}
+
+function svgPointString( point) {
+   return _round( point.x) +' '+ _round( point.y);
+}
+
+
+/**************************************************************************
+ *  getStrapSegmentSVG -- get the SVG for a girih strap segment
+ *
+ *  parameters: (parameters are named and can be in any order)
+ *    distance is the nominal length of the line in pixels (required)
+ *    spacing is the distance between twin line centers in pixels
+ *    startAngle is the cut angle at the start of the line with respect to the turtle
+ *    endAngle is the cut angle at the end of the line with respect to the turtle
+ *    startCap is true when a start cap is desired
+ *    endCap is true when an end cap is desired
+ *    fillStyle is optional style parameter used to fill shape
+ *    fillOpacity is optional style parameter used to fill shape
+ *    strokeStroke is optional style of the stroked line
+ *    strokeOpacity is optional opacity of the stroked line (0..1)
+ *    strokeWidth is optional width of the stroked line in pixels
+ *    segmentClass is a string naming the segment
+ *    turtle is a turtle object and is required
+ *        turtle.position is the start point
+ *        turtle.angle is the segment angle
+ *
+ *  returns:
+ *    turtle.position is the end point
+ *    turtle.angle is the segment angle
+ *************************************************************************/
+IKRS.GirihCanvasHandler.prototype.getStrapSegmentSVG = function( {
+        //distance,
+        spacing = 4,
+        startAngle = Math.PI/2,
+        endAngle = Math.PI/2,
+        startCap = true,
+        endCap = true,
+        fillStyle = this.drawProperties.strappingFillColor,
+        fillOpacity = 1,
+        strokeStyle = this.drawProperties.strappingStrokeColor,
+        strokeLineWidth = this.drawProperties.strappingStrokeWidth,
+        segmentClass = ""
+    }) {
+    var points = _findStrapSegmentPoints( arguments);
+    var strings = [];
+
+    SVGstring = '<path class="gfill '+ segmentClass +'" d="';
+    // ...handle individual style for this segment
+    SVGstring += 'M' + svgPointString( points[0]); // start point
+    SVGstring += 'M' + svgPointString( points[1]); // half start cap
+    SVGstring += 'M' + svgPointString( points[2]); // left side
+    SVGstring += 'M' + svgPointString( points[3]); // end cap
+    SVGstring += 'M' + svgPointString( points[4]); // right side
+    SVGstring += 'M' + svgPointString( points[0]); // other half start cap
+    SVGstring = '"\n';
+    strings.push [SVGstring];
+
+    // stroke the segment for the lines
+    SVGstring = '<path class="gstroke '+ segmentClass +'" d="';
+    // ...handle individual style for this segment
+    if (startCap) {
+        svgString += 'M' + svgPointString( points [0]); //half of start cap
+        svgString += 'L' + svgPointString( points [1]); //half of start cap
+    } else {
+        svgString += 'M' + svgPointString( points [1]); //start of left side
+    }
+    svgString += 'L' + svgPointString( points [2]); // left side
+    if( endCap) {
+        svgString += 'L' + svgPointString( points [3]); // end cap
+    } else {
+        svgString += 'M' + svgPointString( points [3]); // end cap
+    }
+    svgString += 'L' + svgPointString( points [4]); // right side
+    if ( startCap) {
+        svgString += 'L' + svgPointString( points [0]); // other half of start cap
+    }
+    SVGstring = '"\n';
+    strings.push [SVGstring];
+
+    return strings
+}
+
+
+/**************************************************************************
  *  gline -- draw a double girih line with slanted ends
  *  This uses normal coordinates and distance and tranlated them to a canvas
  *  which may pan and zoom.
@@ -991,7 +1251,7 @@ IKRS.GirihCanvasHandler.prototype.gline = function( distance, spacing, startAngl
     this.context.closePath();
     this.context.fill();
 
-    // stroke the segment for real
+    // stroke the segment for the lines
 //color( saveColor) // to force a new segment in SVG...
 //svgAttribute ( 'class="gstroke"')
     this.context.beginPath();
@@ -1473,17 +1733,17 @@ IKRS.GirihCanvasHandler.prototype._drawTiles = function() {
     }
 
     // find all chains
-    if( this.drawProperties.drawStrapping &&
-	   (this.drawProperties.drawStrappingType === "fancy" ||
-	    this.drawProperties.drawStrappingType === "random")) {
+//    if( this.drawProperties.drawStrapping &&
+//	   (this.drawProperties.drawStrappingType === "fancy" ||
+//	    this.drawProperties.drawStrappingType === "random")) {
 	if (this.lastTileCount !== this.girih.tiles.length ||
 	    this.lastDrawStrappingType !== this.drawProperties.drawStrappingType) { // when tile added or deleted
-	    this.girih.buildConnectors( this.girih.tiles);
+	    this.girih.buildAllConnectors( this.girih.tiles);
 	    this.girih.findConnections( this.girih.tiles);
 	    this.girih.findAllChains( this.girih.tiles);
 	    this.lastTileCount = this.girih.tiles.length;
 	}
-    }
+//    }
     this.lastDrawStrappingType = this.drawProperties.drawStrappingType;
 
     // draw the strapping
@@ -2018,7 +2278,7 @@ IKRS.GirihCanvasHandler.prototype.toSVG = function( options,
 	    this.drawProperties.drawStrappingType === "random")) {
 	if (this.lastTileCount !== this.girih.tiles.length ||
 	    this.lastDrawStrappingType !== this.drawProperties.drawStrappingType) { // when tile added or deleted
-	    this.girih.buildConnectors( this.girih.tiles);
+	    this.girih.buildAllConnectors( this.girih.tiles);
 	    this.girih.findConnections( this.girih.tiles);
 	    this.girih.findAllChains( this.girih.tiles);
 	    this.lastTileCount = this.girih.tiles.length;

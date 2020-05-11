@@ -115,7 +115,7 @@ IKRS.Girih.prototype.setTilesJSON = function( jsonFile) {
 }
 
 
-IKRS.Girih.prototype.buildConnectors = function( tiles) {
+IKRS.Girih.prototype.buildAllConnectors = function( tiles) {
     console.log ('build the connectors');
     console.log("Number of tiles:"+ tiles.length)
     for (var i=0; i<tiles.length; i++) { // all tiles
@@ -386,12 +386,12 @@ IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS    = 5;
 //IKRS.Girih.TILE_TYPE_OCTAGON            = 6;
 
 IKRS.Girih.TILE_FACES                   = Array(6);
-IKRS.Girih.TILE_FACES [ IKRS.Girih.TILE_TYPE_DECAGON] =         IKRS.Tile.Decagon.getFaces();
-IKRS.Girih.TILE_FACES [ IKRS.Girih.TILE_TYPE_PENTAGON] =        IKRS.Tile.Pentagon.getFaces();
-IKRS.Girih.TILE_FACES [ IKRS.Girih.TILE_TYPE_GIRIH_HEXAGON] =   IKRS.Tile.IrregularHexagon.getFaces();
-IKRS.Girih.TILE_FACES [ IKRS.Girih.TILE_TYPE_RHOMBUS] =         IKRS.Tile.Rhombus.getFaces();
-IKRS.Girih.TILE_FACES [ IKRS.Girih.TILE_TYPE_BOW_TIE] =         IKRS.Tile.BowTie.getFaces();
-IKRS.Girih.TILE_FACES [ IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS] = IKRS.Tile.PenroseRhombus.getFaces();
+IKRS.Girih.TILE_FACES [ IKRS.Girih.TILE_TYPE_DECAGON] =         Decagon.getFaces();
+IKRS.Girih.TILE_FACES [ IKRS.Girih.TILE_TYPE_PENTAGON] =        Pentagon.getFaces();
+IKRS.Girih.TILE_FACES [ IKRS.Girih.TILE_TYPE_GIRIH_HEXAGON] =   IrregularHexagon.getFaces();
+IKRS.Girih.TILE_FACES [ IKRS.Girih.TILE_TYPE_RHOMBUS] =         Rhombus.getFaces();
+IKRS.Girih.TILE_FACES [ IKRS.Girih.TILE_TYPE_BOW_TIE] =         BowTie.getFaces();
+IKRS.Girih.TILE_FACES [ IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS] = PenroseRhombus.getFaces();
 
 //const svgBackground = "";
 

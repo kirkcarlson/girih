@@ -7,11 +7,24 @@
  **/
 
 
-IKRS.Tile.IrregularHexagon = function( size, position, angle, fillColor ) {
+//IKRS.Tile.IrregularHexagon = function( size, position, angle, fillColor ) {
 
-    IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_IRREGULAR_HEXAGON );
+//    IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_IRREGULAR_HEXAGON );
+class IrregularHexagon extends Tile {
+    constructor ( size, position, angle, fillColor) {
+        if (fillColor !== undefined) {
+            fillColor = fillColor;
+        } else {
+            fillColor = girihCanvasHandler.drawProperties.irregularHexagonFillColor;
+        }
 
-    this.buildPolygon();
+        super( size, position, angle, IKRS.Girih.TILE_TYPE_IRREGULAR_HEXAGON, fillColor );
+        // in theory type should not be needed.
+
+        this.buildPolygon();
+        this._buildInnerPolygons( size );
+        this._buildOuterPolygons();       // Only call AFTER the inner polygons were created!
+        this.buildConnectors();
 
 /*
     //window.alert( "[IrregularHexagon.init()] size=" + size + ", position=" + position.toString() + ", angle=" + angle );
@@ -59,12 +72,6 @@ IKRS.Tile.IrregularHexagon = function( size, position, angle, fillColor ) {
     }
 */
 
-    if (fillColor !== undefined) {
-        this.fillColor = fillColor;
-    } else {
-        this.fillColor = girihCanvasHandler.drawProperties.hexagonFillColor;
-    }
-
     this.imageProperties = {
 	source: { x:      77/500.0, // 75,
 		  y:      11/460.0,
@@ -74,14 +81,12 @@ IKRS.Tile.IrregularHexagon = function( size, position, angle, fillColor ) {
 	destination: { xOffset: 0.0,
 		       yOffset: 0.0
 		     }
-    };
-
-    this._buildInnerPolygons();
-    this._buildOuterPolygons();   // Only call AFTER the inner polygons were created!
+    }
+    }
 };
 
 
-IKRS.Tile.IrregularHexagon.getFaces = function() {
+IrregularHexagon.getFaces = function() {
     var faces = [];
     var halfNarrowWidth = Math.sin( 2* piTenths); // assuming size = 1
     //var radialShort = Math.sqrt( halfNarrowWidth*halfNarrowWidth + 1/4);
@@ -115,8 +120,8 @@ IKRS.Tile.IrregularHexagon.getFaces = function() {
     return faces;
 }
 
-
-IKRS.GirihCanvasHandler.prototype.drawFancyGirihHexagonStrapping = function(tile) {
+/*
+IrregularHexagon.prototype.drawFancyGirihStrapping = function(tile) {
 //inputs: size, position, angle, context
     // each segment in this function is its own path/segment
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
@@ -160,7 +165,7 @@ IKRS.GirihCanvasHandler.prototype.drawFancyGirihHexagonStrapping = function(tile
 }
 
 
-IKRS.GirihCanvasHandler.prototype.getSVGforFancyGirihHexagonStrapping = function(tile) {
+IrregularHexagon.prototype.getSVGforFancyGirihStrapping = function(tile) {
 //inputs: size, position, angle, context
 //returns SVG string
     // each segment in this function is its own path/segment
@@ -225,9 +230,122 @@ console.log("HexStart")
 console.log("HexEND")
     return svgStrings.join("")
 }
+*/
 
 
-IKRS.Tile.IrregularHexagon.prototype._buildInnerPolygons = function() {
+IrregularHexagon.prototype.getSVGforFancyStrapping = function( options) {
+    this._drawFancyStrapping (undefined, true, options);
+}
+
+
+IrregularHexagon.prototype.drawFancyStrapping = function( canvasContext, options) {
+    this._drawFancyStrapping (canvasContext, false, options);
+}
+
+
+IrregularHexagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
+//inputs: size, position, angle, canvas context
+    // each segment in this function is its own path/segment
+    // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
+
+    turtle = new Turtle();
+    var strapLength = 0.587 * this.size // overall length of each strap
+    var capGap = options.capGap;
+    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+
+    // do all of the straps
+    for( var i = 0; i<2; i++) {
+        turtle.toXY( this.position.x, this.position.y); // center of hexagon
+        turtle.toAD( this.angle + faces[0 +i*3].centralAngle, faces[0 +i*3].radialCoefficient * this.size); //vertex of hexagon
+        turtle.toaD( Math.PI - faces[0 +i*3].angleToCenter + faces[0 +i*3].angleToNextVertex, this.size/2); //at midpoint
+
+        turtle.toaD( 3* piTenths, 0); // ready for strapping
+
+        var chainNumber = this.connectors[ 0 +i*3].CWchainID
+        if (chainNumber === undefined) {
+            console.log("bad chain number for tile")
+        }
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+        if (chainColor === undefined) {
+            console.log( "chain fill color not defined")
+        }
+
+	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:i} , ["strap"]))
+	strapOptions = { turtle: turtle,
+                         distance: strapLength - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 7* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: true,
+                         fillStyle: chainColor,
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( i, chainNumber)
+                       };
+        if (svg) {
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+        } else {
+            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+        }
+	turtle.toaD( 0, capGap); // gap on each side of strap
+	turtle.toaD( 6* piTenths, 0); // ready for next strap
+
+        for( var j=0; j<2; j++) {
+            var chainNumber = this.connectors[ j+1 +i*3].CWchainID
+            if (chainNumber === undefined) {
+                console.log("bad chain number for tile")
+            }
+            var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+            if (chainColor === undefined) {
+                console.log( "chain fill color not defined")
+            }
+
+	    //beginGroup()
+	    strapOptions = { turtle: turtle,
+                             distance: strapLength,
+                             spacing: options.strappingWidth,
+                             startAngle: 7* piTenths,
+                             endAngle: 7* piTenths,
+                             startCap: false,
+                             endCap: false,
+                             fillStyle: chainColor,
+                             fillOpacity: 1,
+                             segmentClass: this.getSegmentClass( j+1 +i*3, chainNumber)
+                           };
+            if (svg) {
+                girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+            } else {
+            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+            }
+	    //endGroup()
+	    turtle.toaD( -4* piTenths, 0); //do the bend
+
+	    //beginGroup()
+	    strapOptions = { turtle: turtle,
+                             distance: strapLength - capGap,
+                             spacing: options.strappingWidth,
+                             startAngle: 7* piTenths,
+                             endAngle: 4* piTenths,
+                             startCap: false,
+                             endCap: true,
+                             fillStyle: chainColor,
+                             fillOpacity: 1,
+                             segmentClass: this.getSegmentClass( j+1 +i*3, chainNumber)
+                           };
+            if (svg) {
+                girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+            } else {
+            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+            }
+	    turtle.toaD( 0, capGap); // back to edge
+	    turtle.toaD( 6* piTenths, 0); // ready for next strap
+	    //endGroup()
+        }
+    }
+}
+
+
+IrregularHexagon.prototype._buildInnerPolygons = function() {
     var innerTile = new IKRS.Polygon(); // [];
     var faces = IKRS.Girih.TILE_FACES [this.tileType];
 
@@ -281,7 +399,7 @@ IKRS.Tile.IrregularHexagon.prototype._buildInnerPolygons = function() {
 }
 
 
-IKRS.Tile.IrregularHexagon.prototype._buildInnerPolygonsOld = function() {
+IrregularHexagon.prototype._buildInnerPolygonsOld = function() {
 
     // Connect all edges half-the-way
     var innerTile = new IKRS.Polygon(); // []
@@ -376,7 +494,7 @@ IKRS.Tile.IrregularHexagon.prototype._buildInnerPolygonsOld = function() {
 };
 
 
-IKRS.Tile.IrregularHexagon.prototype._buildOuterPolygons = function() {
+IrregularHexagon.prototype._buildOuterPolygons = function() {
 
     // First add the two triangles at the 'ends' of the shape.
     var indicesA = [ 0, 3 ];  //  6:2
@@ -413,18 +531,18 @@ IKRS.Tile.IrregularHexagon.prototype._buildOuterPolygons = function() {
 
 // This is totally shitty. Why object inheritance when I still
 // have to inherit object methods manually??!
-IKRS.Tile.IrregularHexagon.prototype.computeBounds           = IKRS.Tile.prototype.computeBounds;
-IKRS.Tile.IrregularHexagon.prototype._addVertex              = IKRS.Tile.prototype._addVertex;
-IKRS.Tile.IrregularHexagon.prototype._translateVertex        = IKRS.Tile.prototype._translateVertex;
-IKRS.Tile.IrregularHexagon.prototype._polygonToSVG           = IKRS.Tile.prototype._polygonToSVG;
-IKRS.Tile.IrregularHexagon.prototype.buildPolygon            = IKRS.Tile.prototype.buildPolygon;
-IKRS.Tile.IrregularHexagon.prototype.getInnerTilePolygonAt   = IKRS.Tile.prototype.getInnerTilePolygonAt;
-IKRS.Tile.IrregularHexagon.prototype.getOuterTilePolygonAt   = IKRS.Tile.prototype.getOuterTilePolygonAt;
-IKRS.Tile.IrregularHexagon.prototype.getTranslatedVertex     = IKRS.Tile.prototype.getTranslatedVertex;
-IKRS.Tile.IrregularHexagon.prototype.containsPoint           = IKRS.Tile.prototype.containsPoint;
-IKRS.Tile.IrregularHexagon.prototype.locateEdgeAtPoint       = IKRS.Tile.prototype.locateEdgeAtPoint;
-IKRS.Tile.IrregularHexagon.prototype.locateAdjacentEdge      = IKRS.Tile.prototype.locateAdjacentEdge;
-IKRS.Tile.IrregularHexagon.prototype.getVertexAt             = IKRS.Tile.prototype.getVertexAt;
-IKRS.Tile.IrregularHexagon.prototype.toSVG                   = IKRS.Tile.prototype.toSVG;
+//IKRS.Tile.IrregularHexagon.prototype.computeBounds           = IKRS.Tile.prototype.computeBounds;
+//IKRS.Tile.IrregularHexagon.prototype._addVertex              = IKRS.Tile.prototype._addVertex;
+//IKRS.Tile.IrregularHexagon.prototype._translateVertex        = IKRS.Tile.prototype._translateVertex;
+//IKRS.Tile.IrregularHexagon.prototype._polygonToSVG           = IKRS.Tile.prototype._polygonToSVG;
+//IKRS.Tile.IrregularHexagon.prototype.buildPolygon            = IKRS.Tile.prototype.buildPolygon;
+//IKRS.Tile.IrregularHexagon.prototype.getInnerTilePolygonAt   = IKRS.Tile.prototype.getInnerTilePolygonAt;
+//IKRS.Tile.IrregularHexagon.prototype.getOuterTilePolygonAt   = IKRS.Tile.prototype.getOuterTilePolygonAt;
+//IKRS.Tile.IrregularHexagon.prototype.getTranslatedVertex     = IKRS.Tile.prototype.getTranslatedVertex;
+//IKRS.Tile.IrregularHexagon.prototype.containsPoint           = IKRS.Tile.prototype.containsPoint;
+//IKRS.Tile.IrregularHexagon.prototype.locateEdgeAtPoint       = IKRS.Tile.prototype.locateEdgeAtPoint;
+//IKRS.Tile.IrregularHexagon.prototype.locateAdjacentEdge      = IKRS.Tile.prototype.locateAdjacentEdge;
+//IKRS.Tile.IrregularHexagon.prototype.getVertexAt             = IKRS.Tile.prototype.getVertexAt;
+//IKRS.Tile.IrregularHexagon.prototype.toSVG                   = IKRS.Tile.prototype.toSVG;
 
-IKRS.Tile.IrregularHexagon.prototype.constructor             = IKRS.Tile.IrregularHexagon;
+//IKRS.Tile.IrregularHexagon.prototype.constructor             = IKRS.Tile.IrregularHexagon;

@@ -110,20 +110,22 @@ function _angle2constant( angle ) {
 
 function _makeTest_Decagon( tileSize ) {
     // Make a test decagon
-    var deca = new IKRS.Tile.Decagon( tileSize, 
-				      new IKRS.Point2(300,300),  // position
-				      0.0
-				    );
+    //var deca = new IKRS.Tile.Decagon( tileSize, 
+    var deca = new Decagon( tileSize, 
+			    new IKRS.Point2(300,300),  // position
+			    0.0
+			  );
     girihCanvasHandler.addTile( deca );
 }
 
 
 function _makeTest_BowTie( tileSize ) {
     // Make a test bow-tie
-    var tie = new IKRS.Tile.BowTie( tileSize,
-				    new IKRS.Point2(57.7319, 110.9594),  // position
-				    0.0 // IKRS.Girih.MINIMAL_ANGLE*6
-				  );
+    //var tie = new IKRS.Tile.BowTie( tileSize,
+    var tie = new BowTie( tileSize,
+			  new IKRS.Point2(57.7319, 110.9594),  // position
+			  0.0 // IKRS.Girih.MINIMAL_ANGLE*6
+			);
     girihCanvasHandler.addTile( tie );
 }
 
@@ -131,21 +133,22 @@ function _makeTest_BowTie( tileSize ) {
 function _makeTest_Pentagon( tileSize ) {
 console.log("_makeTest_Pentagon");
     // Make a test pentagon
-    var penta = new IKRS.Tile.Pentagon( tileSize,
-					new IKRS.Point2(479, 52),   // position
-					0.0
-				      );
+    var penta = new Pentagon( tileSize,
+			      new IKRS.Point2(479, 52),   // position
+			      0.0
+			    );
     girihCanvasHandler.addTile( penta );
 }
 
 
 function _makeTest_IrregularHexagon( tileSize ) {
-console.log("_makeTest_Hextagon");
+console.log("_makeTest_Hexagon");
     // Make a test pentagon
-    var hexa = new IKRS.Tile.IrregularHexagon( tileSize,
-						new IKRS.Point2(151.577, -33.4546 ), //161.1, -32.2),   // position
-						0.0
-					      );
+    //var hexa = new IKRS.Tile.IrregularHexagon( tileSize,
+    var hexa = new IrregularHexagon( tileSize,
+				     new IKRS.Point2(151.577, -33.4546 ), //161.1, -32.2),   // position
+				     0.0
+				   );
     girihCanvasHandler.addTile( hexa );
 }
 
@@ -153,19 +156,21 @@ console.log("_makeTest_Hextagon");
 function _makeTest_Rhombus( tileSize ) {
 console.log("_makeTest_Rhombus");
     // Make a test pentagon
-    var rhomb = new IKRS.Tile.Rhombus( tileSize,
-					new IKRS.Point2(18.2, 328),   // position
-					0.0
-				      );
+    //var rhomb = new IKRS.Tile.Rhombus( tileSize,
+    var rhomb = new Rhombus( tileSize,
+			     new IKRS.Point2(18.2, 328),   // position
+			     0.0
+			   );
     girihCanvasHandler.addTile( rhomb );
 }
 
 
 function _makeTest_PenroseRhombus( tileSize ) {
-	var penrose = new IKRS.Tile.PenroseRhombus( tileSize,
-						    new IKRS.Point2(276.5385,49.2873), 
-						    0.0
-					  );
+	//var penrose = new IKRS.Tile.PenroseRhombus( tileSize,
+	var penrose = new PenroseRhombus( tileSize,
+					  new IKRS.Point2(276.5385,49.2873), 
+					  0.0
+					);
 	girihCanvasHandler.addTile( penrose );
 }
 

@@ -7,11 +7,27 @@
  **/
 
 
-IKRS.Tile.Decagon = function( size, position, angle, fillColor ) {
+//IKRS.Tile.Decagon = function( size, position, angle, fillColor ) {
 
-    IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_DECAGON );
+    //IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_DECAGON );
+
+class Decagon extends Tile {
+    constructor ( size, position, angle, fillColor) {
+        if (fillColor !== undefined) {
+            fillColor = fillColor;
+        } else {
+            fillColor = girihCanvasHandler.drawProperties.decagonFillColor;
+        }
+
+        super( size, position, angle, IKRS.Girih.TILE_TYPE_DECAGON, fillColor );
+        // in theory type should not be needed.
+
+        this.buildPolygon();
+        this._buildInnerPolygons( size );
+        this._buildOuterPolygons();       // Only call AFTER the inner polygons were created!
+        this.buildConnectors();
+
 console.log( "Decagon:"+ position +" angle:" + angle *180/Math.PI)
-    this.buildPolygon()
 /*
     // Init the actual decahedron shape with the passed size
     var pointA = new IKRS.Point2(0,0);
@@ -41,12 +57,6 @@ console.log( "Decagon:"+ position +" angle:" + angle *180/Math.PI)
     }
 */
 
-    if (fillColor !== undefined) {
-        this.fillColor = fillColor;
-    } else {
-        this.fillColor = girihCanvasHandler.drawProperties.decagonFillColor;
-    }
-
     this.imageProperties = { // for textures...
 	source: { x:      169/500.0,
 		  y:      140/460.0,
@@ -56,15 +66,12 @@ console.log( "Decagon:"+ position +" angle:" + angle *180/Math.PI)
 	destination: { xOffset: 0.0,
 		       yOffset: 0.0
 		     }
-    };
-
-
-    this._buildInnerPolygons( size );
-    this._buildOuterPolygons();       // Important: call AFTER inner polygons were created!
+    }
+    }
 };
 
 
-IKRS.Tile.Decagon.getFaces = function() {
+Decagon.getFaces = function() {
     var faces = [];
     for (var i=0; i<10; i++) {
         faces.push( new IKRS.Face(
@@ -80,7 +87,8 @@ IKRS.Tile.Decagon.getFaces = function() {
 }
 
 
-IKRS.GirihCanvasHandler.prototype.drawFancyDecagonStrapping = function(tile) {
+/*
+Decagon.prototype.drawFancyStrappingOld = function(tile) {
 //inputs: size, position, angle, context
     // each segment in this function is its own path/segment
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
@@ -147,9 +155,106 @@ if (chainColor === undefined) {
 	lineNumber = lineNumber + 2
     }
 }
+*/
+
+Decagon.prototype.getSVGforFancyStrapping = function( options) {
+    this._drawFancyStrapping (undefined, true, options);
+}
 
 
-IKRS.Tile.Decagon.prototype._buildInnerPolygons = function( edgeLength ) {
+Decagon.prototype.drawFancyStrapping = function( canvasContext, options) {
+    this._drawFancyStrapping (canvasContext, false, options);
+}
+
+
+Decagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
+//inputs: size, position, angle, canvas context
+    // each segment in this function is its own path/segment
+    // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
+
+    turtle = new Turtle();
+    var strapLength = 0.95 * this.size // overall length of each strap
+    var startBrokenStrap = 0.589 * this.size
+    var endBrokenStrap = strapLength - startBrokenStrap // end part of strap
+    var capGap = options.capGap;
+    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+
+    // do all of the straps
+    for( var i = 0; i<10; i++) {
+        turtle.toXY( this.position.x, this.position.y); // center of decagon
+        turtle.toAD( this.angle + faces[i].centralAngle, faces[i].radialCoefficient * this.size); //vertex of decagon
+        turtle.toaD( Math.PI - faces[i].angleToCenter + faces[i].angleToNextVertex, this.size/2); //at midpoint
+
+        turtle.toaD( 3* piTenths, 0); // ready for strapping
+
+        var chainNumber = this.connectors[ i].CWchainID
+        if (chainNumber === undefined) {
+            console.log("bad chain number for tile")
+        }
+        var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+        if (chainColor === undefined) {
+            console.log( "chain fill color not defined")
+        }
+
+	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:i} , ["strap"]))
+	strapOptions = { turtle: turtle,
+                         distance: startBrokenStrap - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 7* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: true,
+                         fillStyle: chainColor,
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( i, chainNumber)
+                       };
+        if (svg) {
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+        } else {
+            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+        }
+	turtle.toaD( 0, capGap * 2); // gap on each side of strap
+
+	strapOptions = { turtle: turtle,
+                         distance: endBrokenStrap - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 6* piTenths,
+                         endAngle: 6* piTenths,
+                         startCap: true,
+                         endCap: false,
+                         fillStyle: chainColor,
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( i, chainNumber)
+                       };
+        if (svg) {
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+        } else {
+            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+        }
+	turtle.toaD( -2* piTenths, 0);
+
+	strapOptions = { turtle: turtle,
+                         distance: strapLength - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 6* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: true,
+                         fillStyle: chainColor,
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( i, chainNumber)
+                       };
+        if (svg) {
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+        } else {
+            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+        }
+	//endGroup()
+    }
+}
+
+
+Decagon.prototype._buildInnerPolygons = function( edgeLength ) {
 
     var centralStar = new IKRS.Polygon();
     for( var i = 0; i < 10; i++ ) {
@@ -184,7 +289,7 @@ IKRS.Tile.Decagon.prototype._buildInnerPolygons = function( edgeLength ) {
 };
 
 
-IKRS.Tile.Decagon.prototype._buildOuterPolygons = function( edgeLength ) {
+Decagon.prototype._buildOuterPolygons = function( edgeLength ) {
 
     // DON'T include the inner star here!
     for( var i = 0; i < 10; i++ ) {
@@ -205,7 +310,8 @@ IKRS.Tile.Decagon.prototype._buildOuterPolygons = function( edgeLength ) {
 };
 
 
-IKRS.GirihCanvasHandler.prototype.getSVGforFancyDecagonStrapping = function(tile) {
+/*
+Decagon.prototype.getSVGforFancyDecagonStrappingOld = function(tile) {
 //inputs: size, position, angle, context
     // each segment in this function is its own path/segment
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
@@ -325,29 +431,30 @@ if (chainColor === undefined) {
     }
     return svgStrings.join("")
 }
+*/
 
 
 // This is totally shitty. Why object inheritance when I still
 // have to inherit object methods manually??!
-IKRS.Tile.Decagon.prototype.posToXY              = IKRS.GirihCanvasHandler.prototype.posToXY;
-IKRS.Tile.Decagon.prototype.posToAD              = IKRS.GirihCanvasHandler.prototype.posToAD;
-IKRS.Tile.Decagon.prototype.posToaD              = IKRS.GirihCanvasHandler.prototype.posToaD;
-IKRS.Tile.Decagon.prototype.moveToXY              = IKRS.GirihCanvasHandler.prototype.moveToXY;
-IKRS.Tile.Decagon.prototype.moveToAD              = IKRS.GirihCanvasHandler.prototype.moveToAD;
-IKRS.Tile.Decagon.prototype.moveToaD              = IKRS.GirihCanvasHandler.prototype.moveToaD;
-IKRS.Tile.Decagon.prototype.gline                 = IKRS.GirihCanvasHandler.prototype.gline;
-IKRS.Tile.Decagon.prototype.buildPolygon          = IKRS.Tile.prototype.buildPolygon;
-IKRS.Tile.Decagon.prototype.computeBounds         = IKRS.Tile.prototype.computeBounds;
-IKRS.Tile.Decagon.prototype._addVertex            = IKRS.Tile.prototype._addVertex;
-IKRS.Tile.Decagon.prototype._translateVertex      = IKRS.Tile.prototype._translateVertex;
-IKRS.Tile.Decagon.prototype._polygonToSVG         = IKRS.Tile.prototype._polygonToSVG;
-IKRS.Tile.Decagon.prototype.getInnerTilePolygonAt = IKRS.Tile.prototype.getInnerTilePolygonAt;
-IKRS.Tile.Decagon.prototype.getOuterTilePolygonAt = IKRS.Tile.prototype.getOuterTilePolygonAt;
-IKRS.Tile.Decagon.prototype.getTranslatedVertex   = IKRS.Tile.prototype.getTranslatedVertex;
-IKRS.Tile.Decagon.prototype.containsPoint         = IKRS.Tile.prototype.containsPoint;
-IKRS.Tile.Decagon.prototype.locateEdgeAtPoint     = IKRS.Tile.prototype.locateEdgeAtPoint;
-IKRS.Tile.Decagon.prototype.locateAdjacentEdge    = IKRS.Tile.prototype.locateAdjacentEdge;
-IKRS.Tile.Decagon.prototype.getVertexAt           = IKRS.Tile.prototype.getVertexAt;
-IKRS.Tile.Decagon.prototype.toSVG                 = IKRS.Tile.prototype.toSVG;
+//IKRS.Tile.Decagon.prototype.posToXY              = IKRS.GirihCanvasHandler.prototype.posToXY;
+//IKRS.Tile.Decagon.prototype.posToAD              = IKRS.GirihCanvasHandler.prototype.posToAD;
+//IKRS.Tile.Decagon.prototype.posToaD              = IKRS.GirihCanvasHandler.prototype.posToaD;
+//IKRS.Tile.Decagon.prototype.moveToXY              = IKRS.GirihCanvasHandler.prototype.moveToXY;
+//IKRS.Tile.Decagon.prototype.moveToAD              = IKRS.GirihCanvasHandler.prototype.moveToAD;
+//IKRS.Tile.Decagon.prototype.moveToaD              = IKRS.GirihCanvasHandler.prototype.moveToaD;
+//IKRS.Tile.Decagon.prototype.gline                 = IKRS.GirihCanvasHandler.prototype.gline;
+//IKRS.Tile.Decagon.prototype.buildPolygon          = IKRS.Tile.prototype.buildPolygon;
+//IKRS.Tile.Decagon.prototype.computeBounds         = IKRS.Tile.prototype.computeBounds;
+//IKRS.Tile.Decagon.prototype._addVertex            = IKRS.Tile.prototype._addVertex;
+//IKRS.Tile.Decagon.prototype._translateVertex      = IKRS.Tile.prototype._translateVertex;
+//IKRS.Tile.Decagon.prototype._polygonToSVG         = IKRS.Tile.prototype._polygonToSVG;
+//IKRS.Tile.Decagon.prototype.getInnerTilePolygonAt = IKRS.Tile.prototype.getInnerTilePolygonAt;
+//IKRS.Tile.Decagon.prototype.getOuterTilePolygonAt = IKRS.Tile.prototype.getOuterTilePolygonAt;
+//IKRS.Tile.Decagon.prototype.getTranslatedVertex   = IKRS.Tile.prototype.getTranslatedVertex;
+//IKRS.Tile.Decagon.prototype.containsPoint         = IKRS.Tile.prototype.containsPoint;
+//IKRS.Tile.Decagon.prototype.locateEdgeAtPoint     = IKRS.Tile.prototype.locateEdgeAtPoint;
+//IKRS.Tile.Decagon.prototype.locateAdjacentEdge    = IKRS.Tile.prototype.locateAdjacentEdge;
+//IKRS.Tile.Decagon.prototype.getVertexAt           = IKRS.Tile.prototype.getVertexAt;
+//IKRS.Tile.Decagon.prototype.toSVG                 = IKRS.Tile.prototype.toSVG;
 
-IKRS.Tile.Decagon.prototype.constructor           = IKRS.Tile.Decagon;
+//IKRS.Tile.Decagon.prototype.constructor           = IKRS.Tile.Decagon;

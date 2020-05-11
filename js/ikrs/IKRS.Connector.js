@@ -31,6 +31,7 @@ IKRS.Connector = function( index, connectorPoint ) {
     this.CCWchainID = undefined;
 };
 
+
 IKRS.Connector.prototype.getInternalLink = function( CW, polygonType) {
     // returns the connectorIndex of the internal link
     var index;

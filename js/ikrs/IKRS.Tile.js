@@ -18,23 +18,28 @@
  * @param angle    number  The rotation angle.
  * @param tileType integer One of IKRS.Girih.TILE_TYPE_*.
  **/
-IKRS.Tile = function( size,
-		      position,
-		      angle,
-		      tileType
-		    ) {
+class Tile {
+    constructor( size,
+		 position,
+		 angle = 0.0,
+		 tileType = IKRS.Girih.TILE_TYPE_UNKNOWN,
+		 fillColor
+		) {
 
-    IKRS.Object.call( this );
+//try    IKRS.Object.call( this );
 
-    if( typeof angle == "undefined" )
-	angle = 0.0;
-    if( typeof tileType == "unknown" )
-	tileType = IKRS.Girih.TILE_TYPE_UNKNOWN;
+//    if( typeof angle == "undefined" )
+//	angle = 0.0;
+//    if( typeof tileType == "unknown" )
+//	tileType = IKRS.Girih.TILE_TYPE_UNKNOWN;
 
     this.size                 = size;
     this.position             = position;
     this.angle                = angle % (2* Math.PI);
-    //this.vertices            = [];
+    this.tileType             = tileType;
+    this.fillColor            = fillColor;
+
+    //this.vertices           = [];
     this.polygon              = new IKRS.Polygon(); // Empty vertice array
 
     // An array of polygons.
@@ -54,11 +59,11 @@ IKRS.Tile = function( size,
     this.connectors           = [];
     this.imageProperties      = null;
 
-    this.tileType             = tileType;
+    }
 };
 
 
-IKRS.Tile.prototype.buildPolygon = function( ) {
+Tile.prototype.buildPolygon = function( ) {
     var faces = IKRS.Girih.TILE_FACES [this.tileType];
     var face = faces[0];
 
@@ -75,10 +80,23 @@ IKRS.Tile.prototype.buildPolygon = function( ) {
 }
 
 
+Tile.prototype.buildConnectors = function() {
+    // build the connectors for this tile
+    this.connectors = []; // clear any existing connectors, this is somewhat wasteful
+    for (var i=0; i < this.polygon.vertices.length;  i++) { // all sides of each tile
+        var edge = this.polygon.getEdgeAt( i);
+        var midpoint = new IKRS.Point2 ((edge.pointA.x + edge.pointB.x)/2,
+                                        (edge.pointA.y + edge.pointB.y)/2);
+        var connector = new IKRS.Connector( i, midpoint);
+        this.connectors.push( connector);
+    }
+}
+
+
 /**
  * This function applies MOD to the index.
  **/
-IKRS.Tile.prototype.getInnerTilePolygonAt = function( index ) {
+Tile.prototype.getInnerTilePolygonAt = function( index ) {
     if( index < 0 )
 	return this.innerTilePolygons[ this.innerTilePolygons.length - (Math.abs(index)%this.innerTilePolygons.length) ];
     else
@@ -88,7 +106,7 @@ IKRS.Tile.prototype.getInnerTilePolygonAt = function( index ) {
 /**
  * This function applies MOD to the index.
  **/
-IKRS.Tile.prototype.getOuterTilePolygonAt = function( index ) {
+Tile.prototype.getOuterTilePolygonAt = function( index ) {
     if( index < 0 )
 	return this.outerTilePolygons[ this.outerTilePolygons.length - (Math.abs(index)%this.outerTilePolygons.length) ];
     else
@@ -96,7 +114,7 @@ IKRS.Tile.prototype.getOuterTilePolygonAt = function( index ) {
 };
 
 
-IKRS.Tile.prototype.getTranslatedVertex = function( index ) {
+Tile.prototype.getTranslatedVertex = function( index ) {
     // Rotate around the absolut center!
     // (the position is applied later)
     //var vertex = this.polygon.getVertexAt( index ); // this.getVertexAt( index );
@@ -115,7 +133,7 @@ IKRS.Tile.prototype.getTranslatedVertex = function( index ) {
  *
  * So this function always returns a point for any index.
  **/
-IKRS.Tile.prototype.getVertexAt = function( index ) {
+Tile.prototype.getVertexAt = function( index ) {
     /*
     if( index < 0 )
 	return this.vertices[ this.vertices.length - (Math.abs(index)%this.vertices.length) ];
@@ -131,7 +149,7 @@ IKRS.Tile.prototype.getVertexAt = function( index ) {
  * @param point The point to be checked.
  * @retrn true|false
  **/
-IKRS.Tile.prototype.containsPoint = function( point ) {
+Tile.prototype.containsPoint = function( point ) {
     // Thanks to
     // http://stackoverflow.com/questions/2212604/javascript-check-mouse-clicked-inside-the-circle-or-polygon/2212851#2212851
     var i, j = 0;
@@ -163,7 +181,7 @@ vertJ = this.getVertexAt(j)
  * @return the edge index (index of the start vertice) or -1 if not
  *         found.
  **/
-IKRS.Tile.prototype.locateEdgeAtPoint = function( point,
+Tile.prototype.locateEdgeAtPoint = function( point,
 						  tolerance
 						) {
     if( this.polygon.vertices.length == 0 )
@@ -214,7 +232,7 @@ IKRS.Tile.prototype.locateEdgeAtPoint = function( point,
  *
  * @pre tolerance >= 0
  **/
-IKRS.Tile.prototype.locateAdjacentEdge = function( pointA,
+Tile.prototype.locateAdjacentEdge = function( pointA,
 						   pointB,
 						   tolerance
 						 ) {
@@ -249,7 +267,7 @@ IKRS.Tile.prototype.locateAdjacentEdge = function( pointA,
 
 };
 
-IKRS.Tile.prototype.toSVG = function( options,
+Tile.prototype.toSVG = function( options,
 				      polygonStyle,
 				      buffer,
 				      boundingBox
@@ -378,6 +396,9 @@ IKRS.Tile.prototype.toSVG = function( options,
 	    girihCanvasHandler.drawProperties.drawStrappingType == "random")) {
 	buffer.push( girihCanvasHandler.indent +'<g class="strapping">'+ girihCanvasHandler.eol);
 	girihCanvasHandler.indentInc();
+
+	this.getSVGforFancyStrapping();
+/*
 	switch (this.tileType) {
 	case IKRS.Girih.TILE_TYPE_BOW_TIE:
 	    buffer.push( girihCanvasHandler.getSVGforFancyBowTieStrapping( this));
@@ -400,6 +421,7 @@ IKRS.Tile.prototype.toSVG = function( options,
 	default:
 	    break;
 	}
+*/
 	girihCanvasHandler.indentDec();
 	buffer.push( girihCanvasHandler.indent + '</g>' + girihCanvasHandler.eol);
     }
@@ -413,7 +435,7 @@ IKRS.Tile.prototype.toSVG = function( options,
 };
 
 
-IKRS.Tile.prototype._polygonToSVG = function( polygon, // an array of vertices
+Tile.prototype._polygonToSVG = function( polygon, // an array of vertices
 					      polygonStyle, // for color, etc.
 					      boundingBox // for limits of drawing
 					      ) {
@@ -441,19 +463,23 @@ IKRS.Tile.prototype._polygonToSVG = function( polygon, // an array of vertices
 }
 
 
+Tile.prototype.getSegmentClass = function( linkNumber, chainNumber) {
+    chain = girihCanvasHandler.girih.chains[ chainNumber];
+    return "link_"+ linkNumber +" chain_"+ chainNumber
+           +" chain_length_"+ chain.links.length
+           + (chain.isLoop ? "L loop" : "")
+}
 
 
-IKRS.Tile.prototype.computeBounds = function() {
+Tile.prototype.computeBounds = function() {
     return IKRS.BoundingBox2.computeFromPoints( this.polygon.vertices );
 };
 
-IKRS.Tile.prototype._translateVertex = function( vertex ) {
+Tile.prototype._translateVertex = function( vertex ) {
     //return vertex.clone().rotate( IKRS.Point2.ZERO_POINT, this.angle ).add( this.position );
     return vertex.clone().rotate( IKRS.Point2.ZERO_POINT, this.angle );
 };
 
-IKRS.Tile.prototype._addVertex = function( vertex ) {
+Tile.prototype._addVertex = function( vertex ) {
     this.polygon.vertices.push( vertex );
 };
-
-IKRS.Tile.prototype.constructor = IKRS.Tile;
