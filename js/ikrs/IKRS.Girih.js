@@ -383,7 +383,15 @@ IKRS.Girih.TILE_TYPE_RHOMBUS            = 3;
 IKRS.Girih.TILE_TYPE_BOW_TIE            = 4;
 // This is not part of the actual girih tile set!
 IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS    = 5;
-//IKRS.Girih.TILE_TYPE_OCTAGON            = 6;
+
+
+IKRS.Girih.TILE_NAMES = Array (6);
+IKRS.Girih.TILE_NAMES [ IKRS.Girih.TILE_TYPE_DECAGON] =         "decagon";
+IKRS.Girih.TILE_NAMES [ IKRS.Girih.TILE_TYPE_PENTAGON] =        "pentagon";
+IKRS.Girih.TILE_NAMES [ IKRS.Girih.TILE_TYPE_GIRIH_HEXAGON] =   "irregularHexagon";
+IKRS.Girih.TILE_NAMES [ IKRS.Girih.TILE_TYPE_RHOMBUS] =         "rhombus";
+IKRS.Girih.TILE_NAMES [ IKRS.Girih.TILE_TYPE_BOW_TIE] =         "bowTie";
+IKRS.Girih.TILE_NAMES [ IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS] = "penroseRhombus";
 
 IKRS.Girih.TILE_FACES                   = Array(6);
 IKRS.Girih.TILE_FACES [ IKRS.Girih.TILE_TYPE_DECAGON] =         Decagon.getFaces();

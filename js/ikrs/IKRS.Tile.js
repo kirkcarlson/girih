@@ -8,6 +8,7 @@
  * @date 2013-11-27
  * @date 2014-04-05 Ikaros Kappler (member array outerTilePolygons added).
  * @date 2015-03-19 Ikaros Kappler (added toSVG()).
+ * @date 2020-05-11 Kirk Carlson (converted to use ECMA6 class).
  * @version 1.0.2
  **/
 
@@ -26,55 +27,44 @@ class Tile {
 		 fillColor
 		) {
 
-//try    IKRS.Object.call( this );
+        this.size                 = size;
+        this.position             = position;
+        this.angle                = angle % (2* Math.PI);
+        this.tileType             = tileType;
+        this.fillColor            = fillColor;
 
-//    if( typeof angle == "undefined" )
-//	angle = 0.0;
-//    if( typeof tileType == "unknown" )
-//	tileType = IKRS.Girih.TILE_TYPE_UNKNOWN;
+        this.polygon              = new IKRS.Polygon(); // Empty vertice array
 
-    this.size                 = size;
-    this.position             = position;
-    this.angle                = angle % (2* Math.PI);
-    this.tileType             = tileType;
-    this.fillColor            = fillColor;
+        // The inner tile polygons are those that do not share edges with the outer
+        // tile bounds (vertices are OK).
+        this.innerTilePolygons    = [];
 
-    //this.vertices           = [];
-    this.polygon              = new IKRS.Polygon(); // Empty vertice array
+        // The outer tile polygons are those that make up the tile edges. The
+        // whole tile area is covered by the union of the outer tile polygons and
+        // the inner tile polygons. The intersection is empty.
+        this.outerTilePolygons    = [];
 
-    // An array of polygons.
-    // The inner tile polygons are those that do not share edges with the outer
-    // tile bounds (vertices are OK).
-    this.innerTilePolygons    = [];
-
-    // A second array of polygons.
-    // The outer tile polygons are those that make up the whole tile area
-    // _together with the inner tile polygons (!)_; the union of the
-    // inner tile polygons and the outer tile polygons covers exactly
-    // the whole tile polygon.
-    // The intersection of both sets is empty.
-    // Outer tile polygon share at least one (partial) edge with the complete
-    // tile polygon (length > 0).
-    this.outerTilePolygons    = [];
-    this.connectors           = [];
-    this.imageProperties      = null;
-
+        // the connectors are used to find the chains that go through the girih
+        // strapping links.
+        this.connectors           = [];
+        this.imageProperties      = null;
     }
 };
 
 
-Tile.prototype.buildPolygon = function( ) {
+Tile.prototype.buildTile = function( ) {
+    var turtle = new Turtle();
     var faces = IKRS.Girih.TILE_FACES [this.tileType];
     var face = faces[0];
 
-    girihCanvasHandler.posToXY( this.position.x, this.position.y)
-    girihCanvasHandler.posToAD( this.angle + face.centralAngle, face.radialCoefficient * this.size)
-    girihCanvasHandler.posToaD( Math.PI - face.angleToCenter, 0)
+    turtle.toXY( this.position.x, this.position.y)
+    turtle.toAD( this.angle + face.centralAngle, face.radialCoefficient * this.size)
+    turtle.toaD( Math.PI - face.angleToCenter, 0)
     for (var i = 0; i< faces.length; i++) {
-	this.polygon.vertices[i] = girihCanvasHandler.turtlePosition.clone(); // save vertex
+	this.polygon.vertices[i] = turtle.position; // save vertex
 
 	face = faces[ i];
-	girihCanvasHandler.posToaD( face.angleToNextVertex,
+	turtle.toaD( face.angleToNextVertex,
 		this.size * face.lengthCoefficient)
     }
 }
@@ -93,9 +83,6 @@ Tile.prototype.buildConnectors = function() {
 }
 
 
-/**
- * This function applies MOD to the index.
- **/
 Tile.prototype.getInnerTilePolygonAt = function( index ) {
     if( index < 0 )
 	return this.innerTilePolygons[ this.innerTilePolygons.length - (Math.abs(index)%this.innerTilePolygons.length) ];
@@ -103,9 +90,7 @@ Tile.prototype.getInnerTilePolygonAt = function( index ) {
 	return this.innerTilePolygons[ index % this.innerTilePolygons.length ];
 };
 
-/**
- * This function applies MOD to the index.
- **/
+
 Tile.prototype.getOuterTilePolygonAt = function( index ) {
     if( index < 0 )
 	return this.outerTilePolygons[ this.outerTilePolygons.length - (Math.abs(index)%this.outerTilePolygons.length) ];
@@ -115,10 +100,6 @@ Tile.prototype.getOuterTilePolygonAt = function( index ) {
 
 
 Tile.prototype.getTranslatedVertex = function( index ) {
-    // Rotate around the absolut center!
-    // (the position is applied later)
-    //var vertex = this.polygon.getVertexAt( index ); // this.getVertexAt( index );
-    //return vertex.clone().rotate( IKRS.Point2.ZERO_POINT, this.angle ).add( this.position );
     return this._translateVertex( this.polygon.getVertexAt(index));
 };
 
@@ -143,6 +124,7 @@ Tile.prototype.getVertexAt = function( index ) {
     return this.polygon.getVertexAt( index );
 }
 
+
 /**
  * This function checks if the passed point is within this tile's polygon.
  *
@@ -155,18 +137,17 @@ Tile.prototype.containsPoint = function( point ) {
     var i, j = 0;
     var c = false;
     for (i = 0, j = this.polygon.vertices.length-1; i < this.polygon.vertices.length; j = i++) {
-//	vertI = this.getTranslatedVertex( i );
-//console.log("containsPoint: "+ i +" :"+ vertI)
-//	vertJ = this.getTranslatedVertex( j );
-vertI = this.getVertexAt(i)
-vertJ = this.getVertexAt(j)
-    	if ( ((vertI.y>point.y) != (vertJ.y>point.y)) &&
-    	     (point.x < (vertJ.x-vertI.x) * (point.y-vertI.y) / (vertJ.y-vertI.y) + vertI.x) )
-    	    c = !c;
+        vertI = this.getVertexAt(i)
+        vertJ = this.getVertexAt(j)
+    	if ( ((vertI.y > point.y) != (vertJ.y > point.y)) &&
+    	    (point.x < (vertJ.x - vertI.x) * (point.y - vertI.y) /
+                (vertJ.y - vertI.y) + vertI.x) ) {
+    	        c = !c;
+        }
     }
     return c;
-
 }
+
 
 /**
  * This function locates the closest tile edge (polygon edge)
@@ -187,7 +168,6 @@ Tile.prototype.locateEdgeAtPoint = function( point,
     if( this.polygon.vertices.length == 0 )
 	return -1;
 
-
     //var middle         = new IKRS.Point2( 0, 0 );
     var middle         = this.position.clone();
     var tmpDistance    = 0;
@@ -195,8 +175,6 @@ Tile.prototype.locateEdgeAtPoint = function( point,
     var resultIndex    = -1;
     for( var i = 0; i < this.polygon.vertices.length; i++ ) {
 
-	//var vertI = this.getTranslatedVertex( i );
-	//var vertJ = this.getTranslatedVertex( i+1 ); // (i+1 < this.vertices.length ? i+1 : 0) );
 	var vertI = this.getVertexAt( i );
 	var vertJ = this.getVertexAt( i+1 ); // (i+1 < this.vertices.length ? i+1 : 0) );
 
@@ -208,7 +186,6 @@ Tile.prototype.locateEdgeAtPoint = function( point,
 	    resultDistance = tmpDistance;
 	    resultIndex    = i;
 	}
-
     }
 
     return resultIndex;
@@ -262,10 +239,16 @@ Tile.prototype.locateAdjacentEdge = function( pointA,
 	}
     }
 
-
     return result;
-
 };
+
+
+function randomColor () {
+    return 'rgb(' + Math.round( Math.random()*255 ) + ',' +
+                    Math.round( Math.random()*255 ) + ',' +
+                    Math.round( Math.random()*255 ) + ')';
+}
+
 
 Tile.prototype.toSVG = function( options,
 				      polygonStyle,
@@ -282,51 +265,29 @@ Tile.prototype.toSVG = function( options,
     // Export outer shape?
 // idStr should be of the form: "tile_xx"
 // classStr should be of the form: "decagon"
-	idStr = "tile_";
-        switch (this.tileType) {
-	case IKRS.Girih.TILE_TYPE_DECAGON:
-	    classStr = "polygon decagon";
-	    break;
-	case IKRS.Girih.TILE_TYPE_GIRIH_HEXAGON:
-	    classStr = "polygon hexagon";
-	    break;
-	case IKRS.Girih.TILE_TYPE_PENTAGON:
-	    classStr = "polygon pentagon";
-	    break;
-	case IKRS.Girih.TILE_TYPE_RHOMBUS:
-	    classStr = "polygon rhombus";
-	    break;
-	case IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS:
-	    classStr = "polygon penrose_rhombus";
-	    break;
-	case IKRS.Girih.TILE_TYPE_BOW_TIE:
-	    classStr = "polygon bow_tie";
-	    break;
-	default:
-	    classStr = "polygon unknown";
-	    break;
-	}
+    idStr = "tile_";
+    classStr = "polygon " + IKRS.Girih.TILE_TYPE_NAME[ this.tileType];
 
-	var styleStr = "";
-	if (girihCanvasHandler.drawProperties.drawOutlines) {
-	    styleStr = 'style="stroke:black;';
-//	} else {
-//	    styleStr = 'style="stroke:transparent;';
-	}
+    var styleStr = "";
+    if (girihCanvasHandler.drawProperties.drawOutlines) {
+        styleStr = 'style="stroke:black;';
         // don't set stroke to transparent here because hard to override with css
-	if (girihCanvasHandler.drawProperties.drawPolygonColor &&
+//    } else {
+//        styleStr = 'style="stroke:transparent;';
+    }
+    if (girihCanvasHandler.drawProperties.drawPolygonColor &&
             girihCanvasHandler.drawProperties.polygonColorType === "random") {
-	    styleStr += ' fill:rgb(' + Math.round( Math.random()*255 ) + ',' +
-				       Math.round( Math.random()*255 ) + ',' +
-				       Math.round( Math.random()*255 ) + ');';
-	}
+        styleStr += ' fill:'+ randomColor() +';';
         // don't set fill to transparent here because hard to override with css
-	if (styleStr != "") {
-	    styleStr += '"';
-	}
-	buffer.push( girihCanvasHandler.indent + 
-		girihCanvasHandler.getSVGPolygonFromFaces ( this, idStr, classStr, styleStr, boundingBox) +
-		        girihCanvasHandler.eol);
+//    } else {
+//        styleStr += ' fill:transparent;';
+    }
+    if (styleStr != "") {
+        styleStr += '"';
+    }
+    buffer.push( girihCanvasHandler.indent + 
+	    girihCanvasHandler.getSVGTileFromFaces ( this, idStr, classStr, styleStr, boundingBox) +
+	            girihCanvasHandler.eol);
 
     // Export inner polygons?
     if( girihCanvasHandler.drawProperties.drawInnerPolygons) {
@@ -344,10 +305,7 @@ Tile.prototype.toSVG = function( options,
 	    }
 	    if( girihCanvasHandler.drawProperties.drawInnerPolygons &&
 	        girihCanvasHandler.drawProperties.innerRandomColorFill) {
-		polygonStyle += ' fill:rgb(' +
-			Math.round( Math.random()*255 ) + ',' +
-			Math.round( Math.random()*255 ) + ',' +
-			Math.round( Math.random()*255 ) + ');';
+	        polygonStyle += ' fill:'+ randomColor() +';';
 //	    } else {
 //		polygonStyle += ' fill:transparent;';
         // don't set fill to transparent here because hard to override with css
@@ -374,10 +332,7 @@ Tile.prototype.toSVG = function( options,
 	    var polygonStyle = 'style="';
 	    if( girihCanvasHandler.drawProperties.drawInnerPolygons &&
 	        girihCanvasHandler.drawProperties.outerRandomColorFill) {
-		polygonStyle += ' fill:rgb(' +
-			Math.round( Math.random()*255 ) + ',' +
-			Math.round( Math.random()*255 ) + ',' +
-			Math.round( Math.random()*255 ) + ')';
+	        polygonStyle += ' fill:'+ randomColor() +';';
 	    }
 	    polygonStyle += '"';
 	    buffer.push( girihCanvasHandler.indent +
@@ -398,35 +353,10 @@ Tile.prototype.toSVG = function( options,
 	girihCanvasHandler.indentInc();
 
 	this.getSVGforFancyStrapping();
-/*
-	switch (this.tileType) {
-	case IKRS.Girih.TILE_TYPE_BOW_TIE:
-	    buffer.push( girihCanvasHandler.getSVGforFancyBowTieStrapping( this));
-	    break;
-	case IKRS.Girih.TILE_TYPE_DECAGON:
-	    buffer.push( girihCanvasHandler.getSVGforFancyDecagonStrapping( this));
-	    break;
-	case IKRS.Girih.TILE_TYPE_GIRIH_HEXAGON:
-	    buffer.push( girihCanvasHandler.getSVGforFancyGirihHexagonStrapping( this));
-	    break;
-	case IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS:
-	    buffer.push( girihCanvasHandler.getSVGforFancyPenroseRhombusStrapping( this));
-	    break;
-	case IKRS.Girih.TILE_TYPE_PENTAGON:
-	    buffer.push( girihCanvasHandler.getSVGforFancyPentagonStrapping( this));
-	    break;
-	case IKRS.Girih.TILE_TYPE_RHOMBUS:
-	    buffer.push( girihCanvasHandler.getSVGforFancyRhombusStrapping( this));
-	    break;
-	default:
-	    break;
-	}
-*/
+
 	girihCanvasHandler.indentDec();
 	buffer.push( girihCanvasHandler.indent + '</g>' + girihCanvasHandler.eol);
     }
-    
-//console.log("Tile.toSVG end")
     if( returnBuffer ) {
 	return buffer;
     } else {
@@ -436,30 +366,30 @@ Tile.prototype.toSVG = function( options,
 
 
 Tile.prototype._polygonToSVG = function( polygon, // an array of vertices
-					      polygonStyle, // for color, etc.
+					      polygonStyleString, // for color, etc.
 					      boundingBox // for limits of drawing
 					      ) {
 // return a SVG string
     var vertex;
-    var polyStr = '<polygon';
+    var svgStr = '<polygon';
 
-    if( typeof polygonStyle != "undefined" && polygonStyle != "") {
-	polyStr += ' '+ polygonStyle;
+    if( typeof polygonStyleString != "undefined" && polygonStyleString != "") {
+	svgStr += ' '+ polygonStyleString;
     }
 
-    polyStr += ' points="';
+    svgStr += ' points="';
     var preamble = '';
     for( var i = 0; i < polygon.vertices.length; i++ ) {
 	vertex = polygon.getVertexAt(i);
-	polyStr += preamble +
+	svgStr += preamble +
 		   IKRS.round(vertex.x, girihCanvasHandler.SVG_PRECISION ) +
 		   ','+
 		   IKRS.round(vertex.y, girihCanvasHandler.SVG_PRECISION );
 	boundingBox.evaluatePoint( vertex.x, vertex.y)
 	preamble = ' ';
     }
-    polyStr += '"/>';
-    return polyStr
+    svgStr += '"/>';
+    return svgStr
 }
 
 

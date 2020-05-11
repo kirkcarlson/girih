@@ -31,6 +31,7 @@ IKRS.GirihCanvasHandler = function( imageObject ) {
     this.canvasCenter              = new IKRS.Point2( this.canvasWidth/2, this.canvasHeight/2);
     // Make a back-reference for event handling
     this.canvas.girihCanvasHandler = this;
+
     this.context                   = this.canvas.getContext( "2d" );
 
     this.drawOffset                = this.canvasCenter.clone();
@@ -432,59 +433,25 @@ IKRS.GirihCanvasHandler.prototype._resolveCurrentAdjacentTilePreset = function( 
     var optionIndex = (this.adjacentTileOptionPointer + possiblePositions.length) % possiblePositions.length;
     var proposedPosition    = possiblePositions[ optionIndex];
 
-/*
     //find the position of the hovered tile vertex
     var face = IKRS.Girih.TILE_FACES [currentTile.tileType][highlightedEdgeIndex];
-    var vertexAngle = face.centralAngle + currentTile.angle;
-    var vertexPosition = new IKRS.Point2 (
-	    currentTile.position.x + face.radialCoefficient * currentTile.size * Math.cos( vertexAngle),
-	    currentTile.position.y + face.radialCoefficient * currentTile.size * Math.sin( vertexAngle));
+    var turtle = new Turtle();
 
-    //find the angle of the selected edge
-    var edgeAngle = vertexAngle - face.angleToCenter + face.angleToNextVertex - Math.PI;
-
-    //advance along edge the length of the proposed tile edge
-    var proposedFace = IKRS.Girih.TILE_FACES [proposedPosition.tileType][proposedPosition.startVertex];
-    var vertexPosition2 = new IKRS.Point2 (
-	    vertexPosition.x + proposedFace.lengthCoefficient * currentTile.size * Math.cos( edgeAngle),
-	    vertexPosition.y + proposedFace.lengthCoefficient * currentTile.size * Math.sin( edgeAngle));
-
-    //find the proposed tile center from current location
-    var proposedAngleToCenter = (Math.PI + edgeAngle - proposedFace.angleToNextVertex + proposedFace.angleToCenter);
-    var proposedCenter = new IKRS.Point2 (
-	    vertexPosition2.x + proposedFace.radialCoefficient * currentTile.size * Math.cos( proposedAngleToCenter),
-	    vertexPosition2.y + proposedFace.radialCoefficient * currentTile.size * Math.sin( proposedAngleToCenter));
-
-    //find the new tile angle
-    var proposedTileAngle = proposedAngleToCenter - proposedFace.centralAngle + Math.PI;
-*/
-//begin new code
-    //find the position of the hovered tile vertex
-    var face = IKRS.Girih.TILE_FACES [currentTile.tileType][highlightedEdgeIndex];
-
-    this.posToXY( currentTile.position.x, currentTile.position.y) // at currrent center
-    this.posToAD( currentTile.angle + face.centralAngle,
+    turtle.toXY( currentTile.position.x, currentTile.position.y) // at currrent center
+    turtle.toAD( currentTile.angle + face.centralAngle,
 		  currentTile.size * face.radialCoefficient) // at highlighted edge vertex
-    this.posToaD( Math.PI + face.angleToNextVertex - face.angleToCenter,
+    turtle.toaD( Math.PI + face.angleToNextVertex - face.angleToCenter,
 		  currentTile.size * face.lengthCoefficient); // at next vertex
 
-    var proposedFace = IKRS.Girih.TILE_FACES [proposedPosition.tileType][proposedPosition.startVertex];
-    this.posToaD( Math.PI - proposedFace.angleToNextVertex + proposedFace.angleToCenter,
+    var proposedFace = IKRS.Girih.TILE_FACES [proposedPosition.tileType]
+                                             [proposedPosition.startVertex];
+    turtle.toaD( Math.PI - proposedFace.angleToNextVertex + proposedFace.angleToCenter,
               currentTile.size * proposedFace.radialCoefficient) // at adjacent center
-    proposedCenter = this.turtlePosition.clone();
+    proposedCenter = turtle.position;
 
 
-    //find the new tile angle
-    //var proposedTileAngle = proposedFace.centralAngle;
-//console.log("turtleAngle: " + this.turtleAngle * 180/Math.PI)
-
-    var proposedTileAngle = (this.turtleAngle - proposedFace.centralAngle +
+    var proposedTileAngle = (turtle.angle - proposedFace.centralAngle +
                              Math.PI) % (2* Math.PI);
-    //normalize the tile angle from the get go
-// normalizing doesn't work for shape with radialAngles: hexagon and bowtie
-//    proposedTileAngle = Math.round( proposedTileAngle/Math.PI*10) * Math.PI
-//console.log("proposedTileAngle: " + proposedTileAngle * 180/Math.PI)
-//end new code
 
 
     //create the new tile
@@ -656,18 +623,18 @@ IKRS.GirihCanvasHandler.prototype._drawTile = function( tile ) {
     // draw the polygon
     //if( this.drawProperties.drawOutlines || this.drawProperties.drawTextures) 
     if( this.drawProperties.drawOutlines) {
-	this._drawPolygonFromFaces(tile, this.drawProperties.polygonStrokeColor)
+	this._drawTileFromFaces(tile, this.drawProperties.polygonStrokeColor)
     } else {
-	this._drawPolygonFromFaces(tile, "transparent");
+	this._drawTileFromFaces(tile, "transparent");
     }
 
-    // the following relys on polygon context set from _drawPolygonFromFaces above
+    // the following relys on polygon context set from _drawTileFromFaces above
     if( this.drawProperties.drawTextures) {
        this._drawTextures( tile, this.imageObject, tileBounds)
     };
 
 
-    // the following relys on polygon context set from _drawPolygonFromFaces above
+    // the following relys on polygon context set from _drawTileFromFaces above
     if( this.drawProperties.drawPolygonColor) {
         if (this.drawProperties.polygonColorType === "default") {
 	    var tileColor = tile.fillColor;
@@ -711,32 +678,6 @@ IKRS.GirihCanvasHandler.prototype._drawStrapping = function( tile ) {
                      strappingFillColor: this.drawProperties.strappingFillColor,
                                   });
 
-/*
-	    switch(tile.tileType) {
-	    //The following functions are in their respective module
-	    case IKRS.Girih.TILE_TYPE_PENTAGON:
-		this.drawFancyPentagonStrapping( tile);
-		break;
-	    case IKRS.Girih.TILE_TYPE_DECAGON:
-		this.drawFancyDecagonStrapping( tile);
-		break;
-	    case IKRS.Girih.TILE_TYPE_IRREGULAR_HEXAGON:
-		this.drawFancyGirihHexagonStrapping( tile);
-		break;
-	    case IKRS.Girih.TILE_TYPE_RHOMBUS:
-		this.drawFancyRhombusStrapping( tile);
-		break;
-	    case IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS:
-		this.drawFancyPenroseRhombusStrapping( tile);
-		break;
-	    case IKRS.Girih.TILE_TYPE_BOW_TIE:
-		this.drawFancyBowTieStrapping( tile);
-		break;
-	    default:
-		this._drawSimpleStrapping( tile);
-		break;
-	    }
-*/
 	} else {
 	    this._drawSimpleStrapping( tile);
 	}
@@ -745,7 +686,7 @@ IKRS.GirihCanvasHandler.prototype._drawStrapping = function( tile ) {
 
 
 //**** VECTOR MOVEMENT METHODS FOR CANVAS OR SVG ************************************
-
+/*
 IKRS.GirihCanvasHandler.prototype.posToXY = function ( x, y) {
     this.turtlePosition.x = x;
     this.turtlePosition.y = y;
@@ -775,7 +716,7 @@ IKRS.GirihCanvasHandler.prototype.getTurtleAngle = function () {
     return this.turtleAngle;
 }
 
-
+*/
 //**** VECTOR DRAWING METHODS FOR CANVAS  ************************************
 
 /*************************************************************************
@@ -791,6 +732,7 @@ IKRS.GirihCanvasHandler.prototype.getTurtleAngle = function () {
  *  Returns:
  *      None
 *************************************************************************/
+/*
 IKRS.GirihCanvasHandler.prototype.moveToXY = function (newX, newY) {
     this.posToXY( newX, newY);
     this.context.moveTo( (this.turtlePosition.x + this.drawOffset.x) * this.zoomFactor,
@@ -812,6 +754,7 @@ IKRS.GirihCanvasHandler.prototype.moveToXY = function (newX, newY) {
  *  Returns:
  *      None
 *************************************************************************/
+/*
 IKRS.GirihCanvasHandler.prototype.lineToXY = function (newX, newY) {
     this.posToXY( newX, newY);
     this.context.lineTo(this.turtlePosition.x * this.zoomFactor + this.drawOffset.x,
@@ -833,6 +776,7 @@ IKRS.GirihCanvasHandler.prototype.lineToXY = function (newX, newY) {
  *  Returns:
  *      None
 *************************************************************************/
+/*
 IKRS.GirihCanvasHandler.prototype.lineToAD = function ( angle, length) {
     this.posToAD( angle, length);
     this.context.lineTo(this.turtlePosition.x * this.zoomFactor + this.drawOffset.x,
@@ -854,6 +798,7 @@ IKRS.GirihCanvasHandler.prototype.lineToAD = function ( angle, length) {
  *  Returns:
  *      None
 *************************************************************************/
+/*
 IKRS.GirihCanvasHandler.prototype.lineToaD = function ( angle, length) {
     this.posToaD( angle, length);
     this.context.lineTo(this.turtlePosition.x * this.zoomFactor + this.drawOffset.x,
@@ -875,6 +820,7 @@ IKRS.GirihCanvasHandler.prototype.lineToaD = function ( angle, length) {
  *  Returns:
  *      None
 *************************************************************************/
+/*
 IKRS.GirihCanvasHandler.prototype.moveToAD = function ( angle, length) {
     this.posToAD( angle, length);
     this.context.moveTo(this.turtlePosition.x * this.zoomFactor + this.drawOffset.x,
@@ -896,6 +842,7 @@ IKRS.GirihCanvasHandler.prototype.moveToAD = function ( angle, length) {
  *  Returns:
  *      None
 *************************************************************************/
+/*
 IKRS.GirihCanvasHandler.prototype.moveToaD = function ( angle, length) {
     this.posToaD( angle, length);
     this.context.moveTo(this.turtlePosition.x * this.zoomFactor + this.drawOffset.x,
@@ -945,7 +892,7 @@ IKRS.GirihCanvasHandler.prototype.svgLineToaD = function ( angle, length) {
     return ' L'+ IKRS.round( this.turtlePosition.x, this.SVG_PRECISION) +' '+
 		 IKRS.round( this.turtlePosition.y, this.SVG_PRECISION)
 };
-
+*/
 
 //**** CANVAS DRAWING METHODS ************************************
 
@@ -1428,17 +1375,28 @@ IKRS.GirihCanvasHandler.prototype._drawPolygonFromPoints = function( points,
 };
 
 
-IKRS.GirihCanvasHandler.prototype._drawPolygonFromFaces = function( tile, strokeColor) {
+
+
+IKRS.GirihCanvasHandler.prototype._drawTileFromFaces = function( tile, strokeColor) {
+    var turtle = new Turtle();
     var faces = IKRS.Girih.TILE_FACES [tile.tileType];
     var face = faces[0];
+
+
     this.context.beginPath();
-    this.moveToXY( tile.position.x, tile.position.y)
-    this.moveToAD( tile.angle + face.centralAngle, face.radialCoefficient * tile.size)
-    this.moveToaD( Math.PI - face.angleToCenter, 0)
+    turtle.toXY( tile.position.x, tile.position.y);
+    turtle.toAD( tile.angle + face.centralAngle,
+                              face.radialCoefficient * tile.size);
+    this.context.moveTo( turtle.position.x * this.zoomFactor + this.drawOffset.x,
+                         turtle.position.y * this.zoomFactor + this.drawOffset.y)
+
+    turtle.toaD( Math.PI - face.angleToCenter, 0);
     for (var i = 0; i< faces.length; i++) {
 	//face = faces[ i % faces.length]
 	face = faces[ i]
-	this.lineToaD( face.angleToNextVertex, tile.size * face.lengthCoefficient)
+	turtle.toaD( face.angleToNextVertex, tile.size * face.lengthCoefficient);
+        this.context.lineTo( turtle.position.x * this.zoomFactor + this.drawOffset.x,
+                             turtle.position.y * this.zoomFactor + this.drawOffset.y)
     }
     this.context.strokeStyle = strokeColor,
     this.context.lineWidth = "1pt";
@@ -1834,11 +1792,12 @@ console.log("redraw triggered")
 
 //**** SVG DRAWING METHODS ****
 
-IKRS.GirihCanvasHandler.prototype.getSVGPolygonFromFaces = function( tile, idStr, classStr, styleStr, boundingBox) {
+IKRS.GirihCanvasHandler.prototype.getSVGTileFromFaces = function( tile, idStr, classStr, styleStr, boundingBox) {
 // idStr is short string to uniquely identify polygon (may be "")
 // classStr is short string to identify class or classes used by polygon (may be "")
 // styleStr is string to apply style or other attributes to the polygon (may be "") (must include attribute name and enclose attribute in double quotes
 // returns an SVG string
+    var turtle = new Turtle();
     var faces = IKRS.Girih.TILE_FACES [tile.tileType];
     var face = faces[0];
  // <polygon points="0,100 50,25 50,75 100,0" />
@@ -1855,18 +1814,18 @@ IKRS.GirihCanvasHandler.prototype.getSVGPolygonFromFaces = function( tile, idStr
     polygon += ' points="';
     //var polygon = this.indent + '<polygon id="'+ idStr +'" class="'+ classStr +' '+ styleStr +'" points="';
     // this uses the SVG primitives to move the current positon without using the return value
-    this.posToXY( tile.position.x, tile.position.y);
+    turtle.toXY( tile.position.x, tile.position.y);
 
-    this.posToAD( tile.angle + face.centralAngle, face.radialCoefficient * tile.size);
-    this.posToaD( Math.PI - face.angleToCenter, 0)
+    turtle.toAD( tile.angle + face.centralAngle, face.radialCoefficient * tile.size);
+    turtle.toaD( Math.PI - face.angleToCenter, 0)
     var preemble = ''
     for (var i = 0; i< faces.length; i++) {
 	polygon += preemble +
-		   IKRS.round( this.turtlePosition.x, this.SVG_PRECISION) +','+ 
-		   IKRS.round( this.turtlePosition.y, this.SVG_PRECISION)
-        boundingBox.evaluatePoint( this.turtlePosition.x, this.turtlePosition.y);// important to use translated vertices
+		   IKRS.round( turtle.position.x, this.SVG_PRECISION) +','+ 
+		   IKRS.round( turtle.position.y, this.SVG_PRECISION)
+        boundingBox.evaluatePoint( turtle.position.x, turtle.position.y);// important to use translated vertices
 	face = faces[ i];
-	this.posToaD( face.angleToNextVertex, tile.size * face.lengthCoefficient);
+	turtle.toaD( face.angleToNextVertex, tile.size * face.lengthCoefficient);
 	preemble = ' '
     }
     polygon += '"/>' + this.eol;
