@@ -499,7 +499,7 @@ IKRS.GirihCanvasHandler.prototype._resolveCurrentAdjacentTilePreset = function( 
 	var proposedTile = new IrregularHexagon( currentTile.size, proposedCenter, proposedTileAngle);
 	break;
     case IKRS.Girih.TILE_TYPE_RHOMBUS:
-	var proposedTile = new RS.Tile.Rhombus(          currentTile.size, proposedCenter, proposedTileAngle);
+	var proposedTile = new Rhombus(          currentTile.size, proposedCenter, proposedTileAngle);
 	break;
     case IKRS.Girih.TILE_TYPE_BOW_TIE:
 	var proposedTile = new BowTie(           currentTile.size, proposedCenter, proposedTileAngle);
