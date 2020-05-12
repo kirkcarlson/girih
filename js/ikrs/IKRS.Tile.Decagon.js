@@ -144,9 +144,9 @@ Decagon.prototype._drawFancyStrapping = function(canvasContext, svg, options, bu
                          segmentClass: this.getSegmentClass( i, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
+            this.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
-            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+            this.drawStrapSegment ( canvasContext, strapOptions);
         }
         turtle.toaD( 0, capGap * 2); // gap on each side of strap
 
@@ -162,9 +162,9 @@ Decagon.prototype._drawFancyStrapping = function(canvasContext, svg, options, bu
                          segmentClass: this.getSegmentClass( i, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
+            this.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
-            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+            this.drawStrapSegment ( canvasContext, strapOptions);
         }
         turtle.toaD( -2* piTenths, 0);
 
@@ -180,9 +180,9 @@ Decagon.prototype._drawFancyStrapping = function(canvasContext, svg, options, bu
                          segmentClass: this.getSegmentClass( i, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
+            this.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
-            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+            this.drawStrapSegment ( canvasContext, strapOptions);
         }
     }
 }

@@ -193,9 +193,9 @@ BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options, buf
                          segmentClass: this.getSegmentClass( 0 +i*3, chainNumber),
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
+            this.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
-            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+            this.drawStrapSegment ( canvasContext, strapOptions);
         }
         turtle.toaD( 0, capGap); // gap at end of strap
         turtle.toaD( 6*piTenths, 0); // to start of strap
@@ -220,9 +220,9 @@ BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options, buf
                          segmentClass: this.getSegmentClass( 1 +i*3, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
+            this.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
-            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+            this.drawStrapSegment ( canvasContext, strapOptions);
         }
 
         turtle.toaD( 0, capGap); // to start of next segment
@@ -247,9 +247,9 @@ BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options, buf
                          segmentClass: this.getSegmentClass( 2 +i*3, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
+            this.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
-            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+            this.drawStrapSegment ( canvasContext, strapOptions);
         }
 
         turtle.toaD( 2* piTenths, 0); // middle of bend
@@ -265,9 +265,9 @@ BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options, buf
                          segmentClass: this.getSegmentClass( 2 +i*3, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
+            this.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
-            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+            this.drawStrapSegment ( canvasContext, strapOptions);
         }
     }
 }

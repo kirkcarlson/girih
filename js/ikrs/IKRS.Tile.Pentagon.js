@@ -142,9 +142,9 @@ Pentagon.prototype._drawFancyStrapping = function(canvasContext, svg, options, b
                          segmentClass: this.getSegmentClass( i, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
+            this.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
-            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+            this.drawStrapSegment ( canvasContext, strapOptions);
         }
 
         turtle.toaD( -2* piTenths, 0); // do the bend
@@ -160,9 +160,9 @@ Pentagon.prototype._drawFancyStrapping = function(canvasContext, svg, options, b
                          segmentClass: this.getSegmentClass( i, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
+            this.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
-            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+            this.drawStrapSegment ( canvasContext, strapOptions);
         }
         turtle.toaD( 0, capGap);
         turtle.toaD( 3* piTenths, 0);

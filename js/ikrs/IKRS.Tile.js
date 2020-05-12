@@ -391,6 +391,234 @@ Tile.prototype._polygonToSVG = function( polygon, // an array of vertices
 }
 
 
+/**************************************************************************
+ *  _findStrapSegmentPoints -- find the points for a double girih strap segment
+ *
+ *  parameters:
+ *    options (sub parameters are named and can be in any order)
+ *      distance is the nominal length of the line in pixels (required)
+ *      spacing is the distance between twin line centers in pixels
+ *      startAngle is the cut angle at the start of the line with respect to the turtle
+ *      endAngle is the cut angle at the end of the line with respect to the turtle
+ *      startCap is true when a start cap is desired
+ *      endCap is true when an end cap is desired
+ *      fillStyle is optional style parameter used to fill shape
+ *      fillOpacity is optional style parameter used to fill shape
+ *
+ *      turtle is a turtle object and is required
+ *          turtle.position is the start point
+ *          turtle.angle is the segment angle
+ *
+ *  returns:
+ *    an array of 7 points:
+ *       1               2
+ *       0,5             6
+ *       4               3
+ *    turtle.position is the end point
+ *    turtle.angle is the segment angle
+ *************************************************************************/
+_findStrapSegmentPoints = function( {
+                                      //distance,
+                                      spacing = 4,
+                                      startAngle = Math.PI/2,
+                                      endAngle = Math.PI/2,
+                                      startCap = true,
+                                      endCap = true,
+                                      fillStyle = this.drawProperties.strappingFillColor,
+                                      fillOpacity = 1,
+                                    }) {
+    // compute the real distances and angles needed
+    var options = arguments[0];
+    var startRightDist = options.spacing / 2 / Math.tan( -options.startAngle);
+    var endRightDist = options.spacing / 2 / Math.tan( -options.endAngle);
+    var startLeftDist = -startRightDist;
+    var endLeftDist = -endRightDist;
+    var startDiag = Math.abs( options.spacing / Math.sin( options.startAngle));
+    var endDiag = Math.abs( options.spacing / Math.sin( -options.endAngle));
+    var points = [];
+
+    // just exactly which turtle is this routine using? it is working OK
+    points.push( turtle.position); //start point 0
+    points.push( turtle.toaD( options.startAngle, startDiag/2).position); //half of start cap 1
+    points.push( turtle.toaD( -options.startAngle,
+                     options.distance + startRightDist + endRightDist).position); // left side 2
+    points.push( turtle.toaD( -options.endAngle, endDiag).position); // end cap 3
+    points.push( turtle.toaD( options.endAngle + 10* piTenths,
+                     options.distance + startLeftDist + endLeftDist).position); // right side 4
+    points.push( turtle.toaD( options.startAngle - 10* piTenths,
+                     startDiag/2).position); // other half of start cap 5
+    points.push( turtle.toaD( -options.startAngle, options.distance).position); // end of segment 6
+
+    return points;
+}
+
+
+/**************************************************************************
+ *  drawStrapSegment -- draw a double girih strap segment with slanted ends
+ *  This uses normal coordinates and distance and tranlated them to a canvas
+ *  which may pan and zoom.
+ *
+ *  parameters: (parameters are named and can be in any order)
+ *    canvasContext is the canvas to be drawn upon
+ *    options is a dictionary with the following:
+ *      distance is the nominal length of the line in pixels (required)
+ *      spacing is the distance between twin line centers in pixels
+ *      startAngle is the cut angle at the start of the line with respect to the turtle
+ *      endAngle is the cut angle at the end of the line with respect to the turtle
+ *      startCap is true when a start cap is desired
+ *      endCap is true when an end cap is desired
+ *      fillStyle is optional style parameter used to fill shape
+ *      fillOpacity is optional style parameter used to fill shape
+ *      strokeStroke is optional style of the stroked line
+ *      strokeOpacity is optional opacity of the stroked line (0..1)
+ *      strokeWidth is optional width of the stroked line in pixels
+ *      turtle is a turtle object and is required
+ *          turtle.position is the start point
+ *          turtle.angle is the segment angle
+ *
+ *  returns:
+ *    turtle.position is the end point
+ *    turtle.angle is the segment angle
+ *************************************************************************/
+Tile.prototype.drawStrapSegment = function( canvasContext, {
+        //distance,
+        spacing = 4,
+        startAngle = Math.PI/2,
+        endAngle = Math.PI/2,
+        startCap = true,
+        endCap = true,
+        fillOpacity = 1,
+    }) {
+    var options = arguments[1];
+    var points = _findStrapSegmentPoints( options); // uses the turtle
+
+    var zoomFactor = girihCanvasHandler.zoomFactor;
+    var drawOffset = girihCanvasHandler.drawOffset;
+    canvasContext.lineToPoint = function ( point) {
+        canvasContext.lineTo( point.x * zoomFactor + drawOffset.x,
+                              point.y * zoomFactor + drawOffset.y)
+    }
+
+    canvasContext.moveToPoint = function ( point) {
+        canvasContext.moveTo( point.x * zoomFactor + drawOffset.x,
+                              point.y * zoomFactor + drawOffset.y)
+    }
+
+    canvasContext.beginPath();
+    canvasContext.moveToPoint( points [4]); //start
+    canvasContext.lineToPoint( points [1]); // start cap
+    canvasContext.lineToPoint( points [2]); // left side
+    canvasContext.lineToPoint( points [3]); // end cap
+    canvasContext.lineToPoint( points [4]); // right side
+    //canvasContext.lineWidth = 0;
+    canvasContext.fillStyle = options.fillStyle;
+    canvasContext.fillOpacity = 1;
+    canvasContext.closePath();
+    canvasContext.fill();
+
+    // stroke the segment for the lines
+    canvasContext.beginPath();
+
+    if (startCap) {
+        canvasContext.moveToPoint( points [4]); //half of start cap, should not be necessary
+        canvasContext.lineToPoint( points [1]); //half of start cap
+    } else {
+        canvasContext.moveToPoint( points [1]); //half of start cap
+    }
+    canvasContext.lineToPoint( points [2]); // left side
+    if( endCap) {
+        canvasContext.lineToPoint( points [3]); // end cap
+    } else {
+        canvasContext.moveToPoint( points [3]); // no end cap
+    }
+    canvasContext.lineToPoint( points [4]); // right side
+    canvasContext.strokeStyle = girihCanvasHandler.drawProperties.strappingStrokeColor;
+    //this.context.fillStyle = "";
+    canvasContext.lineWidth = girihCanvasHandler.drawProperties.strappingStrokeWidth;
+    canvasContext.stroke();
+}
+
+
+const IKRS_SVG_DECIMALS = 3;
+
+function _round (number, decimals = IKRS_SVG_DECIMALS) {
+    var rounder = Math.pow( 10, decimals);
+    return Math.round(number * rounder) / rounder;
+}
+
+function svgPointString( point) {
+   return _round( point.x) +' '+ _round( point.y);
+}
+
+
+/**************************************************************************
+ *  getStrapSegmentSVG -- get the SVG for a girih strap segment
+ *
+ *  parameters:
+ *    options (parameters are named and can be in any order)
+ *      distance is the nominal length of the line in pixels (required)
+ *      spacing is the distance between twin line centers in pixels
+ *      startAngle is the cut angle at the start of the line with respect to the turtle
+ *      endAngle is the cut angle at the end of the line with respect to the turtle
+ *      startCap is true when a start cap is desired
+ *      endCap is true when an end cap is desired
+ *      fillStyle is optional style parameter used to fill shape
+ *      fillOpacity is optional style parameter used to fill shape
+ *      strokeStroke is optional style of the stroked line
+ *      strokeOpacity is optional opacity of the stroked line (0..1)
+ *      strokeWidth is optional width of the stroked line in pixels
+ *      segmentClass is a string naming the segment
+ *      turtle is a turtle object and is required
+ *        turtle.position is the start point
+ *        turtle.angle is the segment angle
+ *    buffer to hold the SVG strings produced
+ *    indent object to access indentation
+ *
+ *  returns:
+ *    turtle.position is the end point
+ *    turtle.angle is the segment angle
+ *************************************************************************/
+Tile.prototype.getStrapSegmentSVG = function(  options, buffer, indent) {
+    var points = _findStrapSegmentPoints( options); // uses the turtle
+    var svgLine = [] ;
+
+    svgLine.push( svgString = indent.now + '<path class="gfill '+ options.segmentClass +'" d="');
+    svgLine.push( 'M' + svgPointString( points[0])); // start point
+    svgLine.push( 'M' + svgPointString( points[1])); // half start cap
+    svgLine.push( 'M' + svgPointString( points[2])); // left side
+    svgLine.push( 'M' + svgPointString( points[3])); // end cap
+    svgLine.push( 'M' + svgPointString( points[4])); // right side
+    svgLine.push( 'M' + svgPointString( points[0])); // other half start cap
+    svgLine.push( '"/>' + indent.eol);
+    buffer.push( svgLine.join( ""));
+
+    // stroke the segment for the lines
+    var svgLine = [] ;
+    svgLine.push( indent.now + '<path class="gstroke '+ options.segmentClass +'" d="');
+    // ...handle individual style for this segment
+    if (options.startCap) {
+        svgLine.push( 'M' + svgPointString( points [0])); //half of start cap
+        svgLine.push( 'L' + svgPointString( points [1])); //half of start cap
+    } else {
+        svgLine.push( 'M' + svgPointString( points [1])); //start of left side
+    }
+    svgLine.push( 'L' + svgPointString( points [2])); // left side
+    if( options.endCap) {
+        svgLine.push( 'L' + svgPointString( points [3])); // end cap
+    } else {
+        svgLine.push( 'M' + svgPointString( points [3])); // end cap
+    }
+    svgLine.push( 'L' + svgPointString( points [4])); // right side
+    if ( options.startCap) {
+        svgLine.push( 'L' + svgPointString( points [0])); // other half of start cap
+    }
+    svgLine.push( '"/>' + indent.eol);
+    buffer.push( svgLine.join( ""));
+
+    return
+}
+
+
 Tile.prototype.getSegmentClass = function( linkNumber, chainNumber) {
     chain = girihCanvasHandler.girih.chains[ chainNumber];
     return "link_"+ linkNumber +" chain_"+ chainNumber

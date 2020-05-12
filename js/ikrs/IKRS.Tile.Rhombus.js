@@ -191,9 +191,9 @@ Rhombus.prototype._drawFancyStrapping = function(canvasContext, svg, options, bu
                          segmentClass: this.getSegmentClass( 0 +i*2, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
+            this.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
-            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+            this.drawStrapSegment ( canvasContext, strapOptions);
         }
         turtle.toaD( 0, capGap); // to edgue
         turtle.toaD( 6 * piTenths, 0) // ready for next strap
@@ -219,9 +219,9 @@ Rhombus.prototype._drawFancyStrapping = function(canvasContext, svg, options, bu
                          segmentClass: this.getSegmentClass( 1+ i*2, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
+            this.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
-            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+            this.drawStrapSegment ( canvasContext, strapOptions);
         }
         turtle.toaD( -2* piTenths, 0); //do the bend
 
@@ -237,9 +237,9 @@ Rhombus.prototype._drawFancyStrapping = function(canvasContext, svg, options, bu
                          segmentClass: this.getSegmentClass( 1+ i*2, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
+            this.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
-            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+            this.drawStrapSegment ( canvasContext, strapOptions);
         }
     }
 }

@@ -245,9 +245,9 @@ PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, opti
                          segmentClass: this.getSegmentClass( 0 +i*2, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
+            this.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
-            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+            this.drawStrapSegment ( canvasContext, strapOptions);
         }
 
         turtle.toaD( 2 * piTenths, 0) // do the bend
@@ -264,9 +264,9 @@ PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, opti
                          segmentClass: this.getSegmentClass( 0 +i*2, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
+            this.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
-            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+            this.drawStrapSegment ( canvasContext, strapOptions);
         }
         turtle.toaD( 0, capGap); // to edge
         turtle.toaD( 6 * piTenths, 0) // ready for next strap
@@ -292,9 +292,9 @@ PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, opti
                          segmentClass: this.getSegmentClass( 1+ i*2, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
+            this.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
-            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+            this.drawStrapSegment ( canvasContext, strapOptions);
         }
         turtle.toaD( 0, 2* capGap); // cross over long segment
 
@@ -310,9 +310,9 @@ PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, opti
                          segmentClass: this.getSegmentClass( 1+ i*2, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
+            this.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
-            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+            this.drawStrapSegment ( canvasContext, strapOptions);
         }
 
         turtle.toaD( -4* piTenths, 0); // do the bend
@@ -329,9 +329,9 @@ PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, opti
                          segmentClass: this.getSegmentClass( 1+ i*2, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
+            this.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
-            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+            this.drawStrapSegment ( canvasContext, strapOptions);
         }
     }
 }

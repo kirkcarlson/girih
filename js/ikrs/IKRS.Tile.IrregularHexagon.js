@@ -187,9 +187,9 @@ IrregularHexagon.prototype._drawFancyStrapping = function(canvasContext, svg, op
                          segmentClass: this.getSegmentClass( i, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
+            this.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
-            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+            this.drawStrapSegment ( canvasContext, strapOptions);
         }
         turtle.toaD( 0, capGap); // gap on each side of strap
         turtle.toaD( 6* piTenths, 0); // ready for next strap
@@ -216,9 +216,9 @@ IrregularHexagon.prototype._drawFancyStrapping = function(canvasContext, svg, op
                              segmentClass: this.getSegmentClass( j+1 +i*3, chainNumber)
                            };
             if (svg) {
-                girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
+                this.getStrapSegmentSVG ( strapOptions, buffer, indent);
             } else {
-                girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+                this.drawStrapSegment ( canvasContext, strapOptions);
             }
             turtle.toaD( -4* piTenths, 0); //do the bend
 
@@ -234,9 +234,9 @@ IrregularHexagon.prototype._drawFancyStrapping = function(canvasContext, svg, op
                              segmentClass: this.getSegmentClass( j+1 +i*3, chainNumber)
                            };
             if (svg) {
-                girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
+                this.getStrapSegmentSVG ( strapOptions, buffer, indent);
             } else {
-                girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+                this.drawStrapSegment ( canvasContext, strapOptions);
             }
             turtle.toaD( 0, capGap); // back to edge
             turtle.toaD( 6* piTenths, 0); // ready for next strap
