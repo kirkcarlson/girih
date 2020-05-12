@@ -94,7 +94,7 @@ Pentagon.prototype._buildOuterPolygons = function() {
 
 
 Pentagon.prototype.getSVGforFancyStrapping = function( options) {
-    this._drawFancyStrapping (undefined, true, options);
+    return this._drawFancyStrapping (undefined, true, options);
 }
 
 
@@ -112,6 +112,7 @@ Pentagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
     var strapLength = 0.425 * this.size // overall length of each strap
     var capGap = options.capGap;
     var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var svgStrings = [];
 
     turtle.toXY( this.position.x, this.position.y); // center of decagon
     turtle.toAD( this.angle + faces[0].centralAngle, faces[0].radialCoefficient * this.size); //corner of decagon
@@ -143,7 +144,8 @@ Pentagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( i, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+            svgStrings = svgStrings.concat(
+                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
@@ -161,11 +163,13 @@ Pentagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( i, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+            svgStrings = svgStrings.concat(
+                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
 	turtle.toaD( 0, capGap);
 	turtle.toaD( 3* piTenths, 0);
     }
+    return svgStrings;
 }

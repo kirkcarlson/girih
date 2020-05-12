@@ -37,8 +37,8 @@ IKRS.GirihCanvasHandler = function( imageObject ) {
     this.drawOffset                = this.canvasCenter.clone();
     this.zoomFactor                = 1.0;
 
-    this.turtlePosition            = new IKRS.Point2( 0,0); // position of image cursor
-    this.turtleAngle               = 0;                     // angle of image cursor
+//    this.turtlePosition            = new IKRS.Point2( 0,0); // position of image cursor
+//    this.turtleAngle               = 0;                     // angle of image cursor
 
     this.girih                     = new IKRS.Girih(); // describes a set of tiles
 
@@ -1100,54 +1100,43 @@ function svgPointString( point) {
  *    turtle.position is the end point
  *    turtle.angle is the segment angle
  *************************************************************************/
-IKRS.GirihCanvasHandler.prototype.getStrapSegmentSVG = function( {
-        //distance,
-        spacing = 4,
-        startAngle = Math.PI/2,
-        endAngle = Math.PI/2,
-        startCap = true,
-        endCap = true,
-        fillStyle = this.drawProperties.strappingFillColor,
-        fillOpacity = 1,
-        strokeStyle = this.drawProperties.strappingStrokeColor,
-        strokeLineWidth = this.drawProperties.strappingStrokeWidth,
-        segmentClass = ""
-    }) {
-    var points = _findStrapSegmentPoints( arguments);
+IKRS.GirihCanvasHandler.prototype.getStrapSegmentSVG = function(  options) {
+    var points = _findStrapSegmentPoints( options); // uses the turtle
     var strings = [];
+    var svgString;
 
-    SVGstring = '<path class="gfill '+ segmentClass +'" d="';
+    svgString = '<path class="gfill '+ options.segmentClass +'" d="';
     // ...handle individual style for this segment
-    SVGstring += 'M' + svgPointString( points[0]); // start point
-    SVGstring += 'M' + svgPointString( points[1]); // half start cap
-    SVGstring += 'M' + svgPointString( points[2]); // left side
-    SVGstring += 'M' + svgPointString( points[3]); // end cap
-    SVGstring += 'M' + svgPointString( points[4]); // right side
-    SVGstring += 'M' + svgPointString( points[0]); // other half start cap
-    SVGstring = '"\n';
-    strings.push [SVGstring];
+    svgString += 'M' + svgPointString( points[0]); // start point
+    svgString += 'M' + svgPointString( points[1]); // half start cap
+    svgString += 'M' + svgPointString( points[2]); // left side
+    svgString += 'M' + svgPointString( points[3]); // end cap
+    svgString += 'M' + svgPointString( points[4]); // right side
+    svgString += 'M' + svgPointString( points[0]); // other half start cap
+    svgString += '"/>';
+    strings.push( svgString);
 
     // stroke the segment for the lines
-    SVGstring = '<path class="gstroke '+ segmentClass +'" d="';
+    svgString = '<path class="gstroke '+ options.segmentClass +'" d="';
     // ...handle individual style for this segment
-    if (startCap) {
+    if (options.startCap) {
         svgString += 'M' + svgPointString( points [0]); //half of start cap
         svgString += 'L' + svgPointString( points [1]); //half of start cap
     } else {
         svgString += 'M' + svgPointString( points [1]); //start of left side
     }
     svgString += 'L' + svgPointString( points [2]); // left side
-    if( endCap) {
+    if( options.endCap) {
         svgString += 'L' + svgPointString( points [3]); // end cap
     } else {
         svgString += 'M' + svgPointString( points [3]); // end cap
     }
     svgString += 'L' + svgPointString( points [4]); // right side
-    if ( startCap) {
+    if ( options.startCap) {
         svgString += 'L' + svgPointString( points [0]); // other half of start cap
     }
-    SVGstring = '"\n';
-    strings.push [SVGstring];
+    svgString += '"/>';
+    strings.push( svgString);
 
     return strings
 }
@@ -1169,6 +1158,7 @@ IKRS.GirihCanvasHandler.prototype.getStrapSegmentSVG = function( {
  *
  *  returns:
  *************************************************************************/
+/*
 IKRS.GirihCanvasHandler.prototype.gline = function( distance, spacing, startAngle, endAngle, startCap, endCap, fill) {
     var startRightDist = spacing / 2 / Math.tan( -startAngle)
     var endRightDist = spacing / 2 / Math.tan( -endAngle)
@@ -1241,7 +1231,7 @@ IKRS.GirihCanvasHandler.prototype.gline = function( distance, spacing, startAngl
     // move to the end of the segment
     this.moveToaD( -startAngle, distance);
 }
-
+*/
 
 /**
  * The 'colors' object may contain:
@@ -1851,6 +1841,7 @@ IKRS.GirihCanvasHandler.prototype.getSVGTileFromFaces = function( tile, idStr, c
  *  returns:
  *     SVG string
  *************************************************************************/
+/*
 IKRS.GirihCanvasHandler.prototype.getGlineSVG = function( distance, spacing, startAngle, endAngle, startCap, endCap, fill) {
     var startRightDist = spacing / 2 / Math.tan( -startAngle)
     var endRightDist = spacing / 2 / Math.tan( -endAngle)
@@ -1927,7 +1918,7 @@ IKRS.GirihCanvasHandler.prototype.getGlineSVG = function( distance, spacing, sta
 //console.log("svgGline path:"+ path);
     return path.join("")
 }
-
+*/
 
 IKRS.GirihCanvasHandler.prototype.getSVG = function( options,
 						     polygonStyle
@@ -1935,7 +1926,7 @@ IKRS.GirihCanvasHandler.prototype.getSVG = function( options,
 
     var buffer  = [];
     if( typeof options == "undefined" ) {
-	options = {};
+	options = this.drawProperties;
     }
 
     if( typeof options.indent == "undefined" ) {
@@ -2206,6 +2197,7 @@ IKRS.GirihCanvasHandler.prototype.toSVG = function( options,
 				     ) {
 
 //console.log("gCH.toSVG: start");
+    var indent = new Indent( "    ", "\n");
     var returnBuffer = false;
     if( typeof buffer == "undefined" || !buffer ) {
 	buffer = [];
@@ -2246,21 +2238,18 @@ IKRS.GirihCanvasHandler.prototype.toSVG = function( options,
 
     var highWater = new IKRS.BoundingBox3();
 
-    var oldIndent = options.indent;
     for( var i = 0; i < this.girih.tiles.length; i++ ) {
 	var boundingBox = new IKRS.BoundingBox3()
-	buffer.push( this.indent + '<g id="Tile_'+ i +'">\n');
-	this.indentInc();
-	this.girih.tiles[i].toSVG( options, "", buffer, boundingBox );
-	this.indentDec();
-	buffer.push( this.indent + '</g>\n');
+	buffer.push( indent.now + '<g id="Tile_'+ i +'">' + indent.eol);
+	indent.inc();
+	this.girih.tiles[i].toSVG( options, "", buffer, boundingBox, indent );
+	indent.dec();
+	buffer.push( indent.now + '</g>'+ indent.eol);
 
 	highWater.evaluatePoint(boundingBox)
 //console.log("gCH.toSVG: check " + buffer.length);
     }
 //console.log("gCH.toSVG: mid");
-
-    options.indent = oldIndent;
 
 
     svgPreamble = this.getSVGForeword( highWater);
@@ -2274,6 +2263,7 @@ IKRS.GirihCanvasHandler.prototype.toSVG = function( options,
 }
 
 
+/*
 const INDENT_INCREMENT = "    ";
 const NL_STRING = "\n";
 
@@ -2290,6 +2280,7 @@ IKRS.GirihCanvasHandler.prototype.indentInc = function() {
 IKRS.GirihCanvasHandler.prototype.indentDec = function() {
     this.indent = this.indent.slice( INDENT_INCREMENT.length);
 }
+*/
 
 // ### BEGIN DRAW METHOD TESTING ##############################################
 

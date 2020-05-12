@@ -251,11 +251,15 @@ function randomColor () {
 
 
 Tile.prototype.toSVG = function( options,
-				      polygonStyle,
-				      buffer,
-				      boundingBox
-				    ) {
+				 polygonStyle,
+				 buffer,
+				 boundingBox,
+				 indent,
+			       ) {
 //console.log("Tile.toSVG start")
+    // external (global?) stuff
+    var drawProperties = girihCanvasHandler.drawProperties;
+
     var returnBuffer = false;
     if( typeof buffer == "undefined" || !buffer ) {
 	buffer = [];
@@ -263,20 +267,18 @@ Tile.prototype.toSVG = function( options,
     }
 
     // Export outer shape?
-// idStr should be of the form: "tile_xx"
-// classStr should be of the form: "decagon"
-    idStr = "tile_";
-    classStr = "polygon " + IKRS.Girih.TILE_TYPE_NAME[ this.tileType];
+    classStr = "polygon " + IKRS.Girih.TILE_TYPE_NAMES[ this.tileType];
 
+    var idStr = "";
     var styleStr = "";
-    if (girihCanvasHandler.drawProperties.drawOutlines) {
+    if (drawProperties.drawOutlines) {
         styleStr = 'style="stroke:black;';
         // don't set stroke to transparent here because hard to override with css
 //    } else {
 //        styleStr = 'style="stroke:transparent;';
     }
-    if (girihCanvasHandler.drawProperties.drawPolygonColor &&
-            girihCanvasHandler.drawProperties.polygonColorType === "random") {
+    if (drawProperties.drawPolygonColor &&
+            drawProperties.polygonColorType === "random") {
         styleStr += ' fill:'+ randomColor() +';';
         // don't set fill to transparent here because hard to override with css
 //    } else {
@@ -285,77 +287,86 @@ Tile.prototype.toSVG = function( options,
     if (styleStr != "") {
         styleStr += '"';
     }
-    buffer.push( girihCanvasHandler.indent + 
-	    girihCanvasHandler.getSVGTileFromFaces ( this, idStr, classStr, styleStr, boundingBox) +
-	            girihCanvasHandler.eol);
+    buffer.push( indent.now + girihCanvasHandler.getSVGTileFromFaces (
+                 this, idStr, classStr, styleStr, boundingBox) + indent.eol);
 
     // Export inner polygons?
-    if( girihCanvasHandler.drawProperties.drawInnerPolygons) {
-	buffer.push( girihCanvasHandler.indent + '<g class="inner">' +
-		 girihCanvasHandler.eol);
-	girihCanvasHandler.indentInc();
+    if( drawProperties.drawInnerPolygons) {
+	buffer.push( indent.now + '<g class="inner">' +
+		 indent.eol);
+	indent.inc();
 	for( var i = 0; i < this.innerTilePolygons.length; i++ ) {
-	    if( girihCanvasHandler.drawProperties.drawStrapping &&
-		girihCanvasHandler.drawProperties.drawStrappingType === "basic") {
+	    if( drawProperties.drawStrapping &&
+		drawProperties.drawStrappingType === "basic") {
 		var polygonStyle = 'style="stroke:black;';
 	    } else {
         // don't set stroke to transparent here because hard to override with css
 //		var polygonStyle = 'style="stroke:transparent;';
 		var polygonStyle = 'style="';
 	    }
-	    if( girihCanvasHandler.drawProperties.drawInnerPolygons &&
-	        girihCanvasHandler.drawProperties.innerRandomColorFill) {
+	    if( drawProperties.drawInnerPolygons &&
+	        drawProperties.innerRandomColorFill) {
 	        polygonStyle += ' fill:'+ randomColor() +';';
 //	    } else {
 //		polygonStyle += ' fill:transparent;';
         // don't set fill to transparent here because hard to override with css
 	    }
 	    polygonStyle += '"';
-	    buffer.push( girihCanvasHandler.indent +
+	    buffer.push( indent.now +
 			 this._polygonToSVG( this.innerTilePolygons[i],
 					     polygonStyle,
 					     boundingBox) +
-			 girihCanvasHandler.eol);
+			 indent.eol);
 	}
-	girihCanvasHandler.indentDec();
-	buffer.push( girihCanvasHandler.indent + '</g>' + girihCanvasHandler.eol);
+	indent.dec();
+	buffer.push( indent.now + '</g>' + indent.eol);
     }
 //console.log("Tile.toSVG mid1")
 
     // Export outer polygons?
-    if( girihCanvasHandler.drawProperties.drawInnerPolygons) {
-	buffer.push( girihCanvasHandler.indent + '<g class="outer">' +
-		     girihCanvasHandler.eol);
-	girihCanvasHandler.indentInc();
+    if( drawProperties.drawInnerPolygons) {
+	buffer.push( indent.now + '<g class="outer">' +
+		     indent.eol);
+	indent.inc();
 	for( var i = 0; i < this.outerTilePolygons.length; i++ ) {
 //	    var polygonStyle = 'style="stroke:transparent;';
 	    var polygonStyle = 'style="';
-	    if( girihCanvasHandler.drawProperties.drawInnerPolygons &&
-	        girihCanvasHandler.drawProperties.outerRandomColorFill) {
+	    if( drawProperties.drawInnerPolygons &&
+	        drawProperties.outerRandomColorFill) {
 	        polygonStyle += ' fill:'+ randomColor() +';';
 	    }
 	    polygonStyle += '"';
-	    buffer.push( girihCanvasHandler.indent +
+	    buffer.push( indent.now +
 			 this._polygonToSVG( this.outerTilePolygons[i],
 				polygonStyle,
 				boundingBox) +
-			 girihCanvasHandler.eol);
+			 indent.eol);
 	}
-	girihCanvasHandler.indentDec();
-	buffer.push( girihCanvasHandler.indent + '</g>' + girihCanvasHandler.eol);
+	indent.dec();
+	buffer.push( indent.now + '</g>' + indent.eol);
     }
 //console.log("Tile.toSVG mid2")
 
-    if( girihCanvasHandler.drawProperties.drawStrapping && (
-	    girihCanvasHandler.drawProperties.drawStrappingType == "fancy" ||
-	    girihCanvasHandler.drawProperties.drawStrappingType == "random")) {
-	buffer.push( girihCanvasHandler.indent +'<g class="strapping">'+ girihCanvasHandler.eol);
-	girihCanvasHandler.indentInc();
+    if( drawProperties.drawStrapping && (
+	    drawProperties.drawStrappingType == "fancy" ||
+	    drawProperties.drawStrappingType == "random")) {
+	buffer.push( indent.now +'<g class="strapping">'+ indent.eol);
+	indent.inc();
 
-	this.getSVGforFancyStrapping();
+	var strapSVGs = ( this.getSVGforFancyStrapping( {
+                     capGap: girihCanvasHandler.capGap(),
+                     strappingWidth: drawProperties.strappingWidth,
+                     strappingStrokeWidth: drawProperties.strappingStrokeWidth,
+                     strappingStrokeColor: drawProperties.strappingStrokeColor,
+                     strappingFillColor: drawProperties.strappingFillColor,
+                                  }));
+	for( var i in strapSVGs) {
+	    buffer.push( indent.now + strapSVGs [i] + indent.eol);
+	}
 
-	girihCanvasHandler.indentDec();
-	buffer.push( girihCanvasHandler.indent + '</g>' + girihCanvasHandler.eol);
+
+	indent.dec();
+	buffer.push( indent.now + '</g>' + indent.eol);
     }
     if( returnBuffer ) {
 	return buffer;

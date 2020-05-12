@@ -76,7 +76,7 @@ IrregularHexagon.getFaces = function() {
 
 
 IrregularHexagon.prototype.getSVGforFancyStrapping = function( options) {
-    this._drawFancyStrapping (undefined, true, options);
+    return this._drawFancyStrapping (undefined, true, options);
 }
 
 
@@ -94,6 +94,7 @@ IrregularHexagon.prototype._drawFancyStrapping = function(canvasContext, svg, op
     var strapLength = 0.587 * this.size // overall length of each strap
     var capGap = options.capGap;
     var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var svgStrings = [];
 
     // do all of the straps
     for( var i = 0; i<2; i++) {
@@ -125,7 +126,8 @@ IrregularHexagon.prototype._drawFancyStrapping = function(canvasContext, svg, op
                          segmentClass: this.getSegmentClass( i, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+            svgStrings = svgStrings.concat(
+                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
@@ -155,9 +157,10 @@ IrregularHexagon.prototype._drawFancyStrapping = function(canvasContext, svg, op
                              segmentClass: this.getSegmentClass( j+1 +i*3, chainNumber)
                            };
             if (svg) {
-                girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+                svgStrings = svgStrings.concat(
+                        girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
             } else {
-            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+                girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
             }
 	    //endGroup()
 	    turtle.toaD( -4* piTenths, 0); //do the bend
@@ -175,15 +178,17 @@ IrregularHexagon.prototype._drawFancyStrapping = function(canvasContext, svg, op
                              segmentClass: this.getSegmentClass( j+1 +i*3, chainNumber)
                            };
             if (svg) {
-                girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+                svgStrings = svgStrings.concat(
+                        girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
             } else {
-            girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
+                girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
             }
 	    turtle.toaD( 0, capGap); // back to edge
 	    turtle.toaD( 6* piTenths, 0); // ready for next strap
 	    //endGroup()
         }
     }
+    return svgStrings;
 }
 
 

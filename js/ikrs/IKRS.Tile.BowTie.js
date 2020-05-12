@@ -152,7 +152,7 @@ BowTie.prototype._buildOuterPolygons = function() {
 
 
 BowTie.prototype.getSVGforFancyStrapping = function( options) {
-    this._drawFancyStrapping (undefined, true, options);
+    return this._drawFancyStrapping (undefined, true, options);
 }
 
 BowTie.prototype.drawFancyStrapping = function( canvasContext, options) {
@@ -171,6 +171,7 @@ BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
     var lineNumber = 0
     var capGap = options.capGap;
     var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var svgStrings = [];
 
 
     // do all of the straps in two passes
@@ -202,10 +203,11 @@ BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          endCap: true,
                          fillStyle: chainColor,
                          fillOpacity: 1,
-                         segmentClass: this.getSegmentClass( 0 +i*3, chainNumber)
+                         segmentClass: this.getSegmentClass( 0 +i*3, chainNumber),
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+            svgStrings = svgStrings.concat(
+                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
@@ -232,7 +234,8 @@ BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( 1 +i*3, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+            svgStrings = svgStrings.concat(
+                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
@@ -259,7 +262,8 @@ BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( 2 +i*3, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+            svgStrings = svgStrings.concat(
+                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
@@ -278,10 +282,12 @@ BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( 2 +i*3, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+            svgStrings = svgStrings.concat(
+                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
 	//endGroup()
     }
+    return svgStrings;
 }

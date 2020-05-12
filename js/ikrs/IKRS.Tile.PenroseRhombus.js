@@ -197,7 +197,7 @@ PenroseRhombus.prototype._buildOuterPolygons = function( addCenterPolygon ) {
 
 
 PenroseRhombus.prototype.getSVGforFancyStrapping = function( options) {
-    this._drawFancyStrapping (undefined, true, options);
+    return this._drawFancyStrapping (undefined, true, options);
 }
 
 
@@ -213,6 +213,7 @@ PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, opti
     var longSegmentLength = 0.587 * this.size;
     var capGap = options.capGap;
     var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var svgStrings = [];
 
     // do all of the straps
     for( var i = 0; i<2; i++) {
@@ -244,7 +245,8 @@ PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, opti
                          segmentClass: this.getSegmentClass( 0 +i*2, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+            svgStrings = svgStrings.concat(
+                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
@@ -265,7 +267,8 @@ PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, opti
                          segmentClass: this.getSegmentClass( 0 +i*2, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+            svgStrings = svgStrings.concat(
+                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
@@ -294,7 +297,8 @@ PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, opti
                          segmentClass: this.getSegmentClass( 1+ i*2, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+            svgStrings = svgStrings.concat(
+                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
@@ -312,7 +316,8 @@ PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, opti
                          segmentClass: this.getSegmentClass( 1+ i*2, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+            svgStrings = svgStrings.concat(
+                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
@@ -331,10 +336,12 @@ PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, opti
                          segmentClass: this.getSegmentClass( 1+ i*2, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+            svgStrings = svgStrings.concat(
+                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
 	//endGroup()
     }
+    return svgStrings;
 }

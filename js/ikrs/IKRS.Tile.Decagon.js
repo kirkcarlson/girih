@@ -55,7 +55,7 @@ Decagon.getFaces = function() {
 
 
 Decagon.prototype.getSVGforFancyStrapping = function( options) {
-    this._drawFancyStrapping (undefined, true, options);
+    return this._drawFancyStrapping (undefined, true, options);
 }
 
 
@@ -71,6 +71,7 @@ Decagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
     var endBrokenStrap = strapLength - startBrokenStrap // end part of strap
     var capGap = options.capGap;
     var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var svgStrings = [];
 
     // do all of the straps
     for( var i = 0; i<10; i++) {
@@ -104,7 +105,8 @@ Decagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( i, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+            svgStrings = svgStrings.concat(
+                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
@@ -122,7 +124,8 @@ Decagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( i, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+            svgStrings = svgStrings.concat(
+                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
@@ -140,12 +143,14 @@ Decagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( i, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+            svgStrings = svgStrings.concat(
+                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
 	//endGroup()
     }
+    return svgStrings;
 }
 
 

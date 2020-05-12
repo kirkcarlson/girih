@@ -142,7 +142,7 @@ Rhombus.prototype._buildOuterPolygons = function() {
 
 
 Rhombus.prototype.getSVGforFancyStrapping = function( options) {
-    this._drawFancyStrapping (undefined, true, options);
+    return this._drawFancyStrapping (undefined, true, options);
 }
 
 
@@ -161,6 +161,7 @@ Rhombus.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
     var directSegmentLength = 0.587 * this.size // direct cross segment
     var capGap = options.capGap;
     var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var svgStrings = [];
 
     // do all of the straps
     for( var i = 0; i<2; i++) {
@@ -192,7 +193,8 @@ Rhombus.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( 0 +i*2, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+            svgStrings = svgStrings.concat(
+                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
@@ -221,7 +223,8 @@ Rhombus.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( 1+ i*2, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+            svgStrings = svgStrings.concat(
+                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
@@ -239,10 +242,12 @@ Rhombus.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( 1+ i*2, chainNumber)
                        };
         if (svg) {
-            girihCanvasHandler.getStrapSegmentSVG ( strapOptions);
+            svgStrings = svgStrings.concat(
+                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
 	//endGroup()
     }
+    return svgStrings
 }
