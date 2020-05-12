@@ -82,27 +82,33 @@ IKRS.Girih.prototype.setTilesJSON = function( jsonFile) {
 	switch (tileType) {
 	case (IKRS.Girih.TILE_TYPE_DECAGON):
 	    //console.log("Decagon( size:" + size + " x:" + position.x + " y:" + position.y, " angle:" + angle)
-	    tile = new IKRS.Tile.Decagon( size, position, angle) // fills polygon methods
+	    //tile = new IKRS.Tile.Decagon( size, position, angle) // fills polygon methods
+	    tile = new Decagon( size, position, angle) // fills polygon methods
 	    break;
 	case (IKRS.Girih.TILE_TYPE_IRREGULAR_HEXAGON):
 	    //console.log("IrregularHexagon( size:" + size + " x:" + position.x + " y:" + position.y, " angle:" + angle)
-	    tile = new IKRS.Tile.IrregularHexagon( size, position, angle) // fills polygon methods
+	    //tile = new IKRS.Tile.IrregularHexagon( size, position, angle) // fills polygon methods
+	    tile = new IrregularHexagon( size, position, angle) // fills polygon methods
 	    break;
 	case (IKRS.Girih.TILE_TYPE_PENTAGON):
 	    //console.log("Pentagon( size:" + size + " x:" + position.x + " y:" + position.y, " angle:" + angle)
-	    tile = new IKRS.Tile.Pentagon( size, position, angle) // fills polygon methods
+	    //tile = new IKRS.Tile.Pentagon( size, position, angle) // fills polygon methods
+	    tile = new Pentagon( size, position, angle) // fills polygon methods
 	    break;
 	case (IKRS.Girih.TILE_TYPE_RHOMBUS):
 	    //console.log("Rhombus( size:" + size + " x:" + position.x + " y:" + position.y, " angle:" + angle)
-	    tile = new IKRS.Tile.Rhombus( size, position, angle) // fills polygon methods
+	    //tile = new IKRS.Tile.Rhombus( size, position, angle) // fills polygon methods
+	    tile = new Rhombus( size, position, angle) // fills polygon methods
 	    break;
 	case (IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS):
 	    //console.log("Penrose Rhombus( size:" + size + " x:" + position.x + " y:" + position.y, " angle:" + angle)
-	    tile = new IKRS.Tile.PenroseRhombus( size, position, angle) // fills polygon methods
+	    //tile = new IKRS.Tile.PenroseRhombus( size, position, angle) // fills polygon methods
+	    tile = new PenroseRhombus( size, position, angle) // fills polygon methods
 	    break;
 	case (IKRS.Girih.TILE_TYPE_BOW_TIE):
 	    //console.log("Bow Tie( size:" + size + " x:" + position.x + " y:" + position.y, " angle:" + angle)
-	    tile = new IKRS.Tile.BowTie( size, position, angle) // fills polygon methods
+	    //tile = new IKRS.Tile.BowTie( size, position, angle) // fills polygon methods
+	    tile = new BowTie( size, position, angle) // fills polygon methods
 	    break;
 	default:
 	    console.log("unexpected tile type")
@@ -122,10 +128,8 @@ IKRS.Girih.prototype.buildAllConnectors = function( tiles) {
 	tiles[i].connectors = []; // clear any existing connectors
 	for (var j=0; j<tiles[i].polygon.vertices.length; j++) { // all sides of each tile
 	    var edge = tiles[i].polygon.getEdgeAt( j);
-	    var midpoint = new IKRS.Point2 ((edge.pointA.x + edge.pointB.x)/2, (edge.pointA.y + edge.pointB.y)/2);
-console.log ("connector "+ j + ": "+ edge.pointA +" -- "+ edge.pointB +" == "+ midpoint)
-	    // ignoring pan, zoom and overall rotation for the midpoints
-	    //midpoint.rotate( IKRS.Point2.ZERO_POINT, tiles[i].angle ).addXY( tiles[i].position.x, tiles[i].position.y);
+	    var midpoint = new IKRS.Point2 ((edge.pointA.x + edge.pointB.x)/2,
+                                            (edge.pointA.y + edge.pointB.y)/2);
 	    var connector = new IKRS.Connector( j, midpoint);
 	    tiles[i].connectors.push( connector);
 	}
@@ -177,22 +181,7 @@ IKRS.Girih.prototype.findConnections = function( tiles, chains) {
                     tileK.position.y > lowY && tileK.position.y < highY) {
 
 		    for (var l=startL; l<tileK.connectors.length; l++) {
-/*
-console.log("x,y:"+
-IKRS.round( point.x, IKRS.Girih.SVG_PRECISION) + "," +
-IKRS.round( point.y, IKRS.Girih.SVG_PRECISION) + " polyA:" + i + "-"+ j + " polyB:" + k + "-" + l +"x,y:" +
-IKRS.round( tiles[k].connectors[l].point.x, IKRS.Girih.SVG_PRECISION)  + "," +
-IKRS.round( tiles[k].connectors[l].point.y, IKRS.Girih.SVG_PRECISION));
-*/
 		        if (point.inRange( tileK.connectors[l].point, IKRS.Girih.EPSILON)) {
-/*
-			console.log("Match x,y:"+
-IKRS.round( point.x, IKRS.Girih.SVG_PRECISION) + "," +
-IKRS.round( point.y, IKRS.Girih.SVG_PRECISION) + " " +
-IKRS.round( tiles[k].connectors[l].point.x, IKRS.Girih.SVG_PRECISION) + "," +
-IKRS.round( tiles[k].connectors[l].point.y, IKRS.Girih.SVG_PRECISION) + " " + " polyA:" + i + "-"+ j + " polyB:" + k + "-" + l);
-*/
-			    console.log("common connectors: "+ + i + ","+ j + " " + k + "," + l);
 			    // ensure that a third connector is not shared
 			    if (connectors[j].isShared()) {
 			        throw " connector is already shared: "+ i +","+ j +" "+ k +","+ l;
@@ -227,10 +216,10 @@ IKRS.Girih.prototype.walkChain = function( tiles, tileIndex, connectorIndex, sta
     while (connector.isShared() && !looping) { //
 	// add link to chain
 	connector.setChainID( !CW, chainNumber);
-console.log( "set loop end ChainID connector:" + tileIndex + "," + connector.connectorIndex + " direction:" + (!CW?"CW":"CCW") + " chain:"+chainNumber)
+//console.log( "set loop end ChainID connector:" + tileIndex + "," + connector.connectorIndex + " direction:" + (!CW?"CW":"CCW") + " chain:"+chainNumber)
 	var link = new IKRS.Link( tileIndex, connector.headLink( CW, tile.tileType));
 	chain.addLink( link);
-console.log ("addLink chain:"+ chainNumber + " link:" + link.toString())
+//console.log ("addLink chain:"+ chainNumber + " link:" + link.toString())
 	// move to the adjacent polygon and connector
 	tileIndex = connector.sharedConnectorLink.polygonIndex;
 	tile = girihCanvasHandler.girih.tiles[ tileIndex]
@@ -247,7 +236,7 @@ console.log ("addLink chain:"+ chainNumber + " link:" + link.toString())
 	    }
 	} else {
 	    connector.setChainID( CW, chainNumber);
-console.log( "set loop begin ChainID connector:" + tileIndex + "," + connector.connectorIndex + " direction:" + (CW?"CW":"CCW") + " chain:"+chainNumber)
+//console.log( "set loop begin ChainID connector:" + tileIndex + "," + connector.connectorIndex + " direction:" + (CW?"CW":"CCW") + " chain:"+chainNumber)
 	    connector = tile.connectors[ connector.getInternalLink( CW, tile.tileType)]; // (head)
 	}
     }
@@ -345,7 +334,7 @@ IKRS.Girih.prototype.findAllChains = function( tiles) {
 	}
     }
 
-    var DEBUG = true;
+    var DEBUG = false;
     if (DEBUG) {
 	for (var i=0; i<girihCanvasHandler.girih.chains.length; i++) {
 	    var chain = girihCanvasHandler.girih.chains[i];

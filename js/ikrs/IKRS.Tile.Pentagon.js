@@ -25,14 +25,14 @@ class Pentagon extends Tile {
         this.buildConnectors();
 
         this.imageProperties = {
-	    source: {	x:      7/500.0,
-			    y:      (303-15)/460.0, // -16
-			    width:  157/500.0,
-			    height: (150+15)/460.0  // +16
-		    },
-	    destination: { xOffset: 0.0,
-		           yOffset: -18/460.0 // -16
-		         }
+            source: { x:      7/500.0,
+                      y:      (303-15)/460.0, // -16
+                      width:  157/500.0,
+                      height: (150+15)/460.0  // +16
+                    },
+            destination: { xOffset: 0.0,
+                           yOffset: -18/460.0 // -16
+                         }
         }
     }
 };
@@ -65,11 +65,11 @@ Pentagon.prototype._buildInnerPolygons = function( edgeLength ) {
     turtle.toaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex,
                                0.5 * this.size); //midpoint of side 0
     for( var i = 0; i<5; i++) {
-	innerTile.addVertex( turtle.position); //mid point
-	turtle.toaD(  3* piTenths, 0.425 * this.size);
-	innerTile.addVertex( turtle.position); //bend point
-	turtle.toaD( -2* piTenths, 0.425 * this.size);
-	turtle.toaD( 3* piTenths, 0); // at next vertice
+        innerTile.addVertex( turtle.position); //mid point
+        turtle.toaD(  3* piTenths, 0.425 * this.size);
+        innerTile.addVertex( turtle.position); //bend point
+        turtle.toaD( -2* piTenths, 0.425 * this.size);
+        turtle.toaD( 3* piTenths, 0); // at next vertice
     }
     this.innerTilePolygons.push( innerTile );
 }
@@ -79,22 +79,22 @@ Pentagon.prototype._buildOuterPolygons = function() {
 
     for( var i = 0; i < this.polygon.vertices.length; i++ ) {
 
-	var indexA     = i; //indicesA[i];
-	var indexB     = i*2; // indicesB[i];
-	// The triangle
-	var outerTileX = new IKRS.Polygon();
-	outerTileX.addVertex( this.getVertexAt(indexA+1).clone() );
-	outerTileX.addVertex( this.innerTilePolygons[0].getVertexAt(indexB).clone() );
-	outerTileX.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+1).clone() );
-	outerTileX.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+2).clone() );
-	this.outerTilePolygons.push( outerTileX );
+        var indexA     = i; //indicesA[i];
+        var indexB     = i*2; // indicesB[i];
+        // The triangle
+        var outerTileX = new IKRS.Polygon();
+        outerTileX.addVertex( this.getVertexAt(indexA+1).clone() );
+        outerTileX.addVertex( this.innerTilePolygons[0].getVertexAt(indexB).clone() );
+        outerTileX.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+1).clone() );
+        outerTileX.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+2).clone() );
+        this.outerTilePolygons.push( outerTileX );
 
     }
 };
 
 
-Pentagon.prototype.getSVGforFancyStrapping = function( options) {
-    return this._drawFancyStrapping (undefined, true, options);
+Pentagon.prototype.getSVGforFancyStrapping = function( options, buffer, indent) {
+    this._drawFancyStrapping (undefined, true, options, buffer, indent);
 }
 
 
@@ -103,7 +103,7 @@ Pentagon.prototype.drawFancyStrapping = function( canvasContext, options) {
 }
 
 
-Pentagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
+Pentagon.prototype._drawFancyStrapping = function(canvasContext, svg, options, buffer, indent) {
 //inputs: size, position, angle, canvas context
     // each segment in this function is its own path/segment
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
@@ -112,7 +112,6 @@ Pentagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
     var strapLength = 0.425 * this.size // overall length of each strap
     var capGap = options.capGap;
     var faces = IKRS.Girih.TILE_FACES [this.tileType];
-    var svgStrings = [];
 
     turtle.toXY( this.position.x, this.position.y); // center of decagon
     turtle.toAD( this.angle + faces[0].centralAngle, faces[0].radialCoefficient * this.size); //corner of decagon
@@ -130,9 +129,8 @@ Pentagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
             console.log( "chain fill color not defined")
         }
 
-	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:i} , ["strap"]))
         turtle.toaD( 3* piTenths, 0); // ready for strapping
-	strapOptions = { turtle: turtle,
+        strapOptions = { turtle: turtle,
                          distance: strapLength,
                          spacing: options.strappingWidth,
                          startAngle: 7* piTenths,
@@ -144,14 +142,13 @@ Pentagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( i, chainNumber)
                        };
         if (svg) {
-            svgStrings = svgStrings.concat(
-                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
 
-	turtle.toaD( -2* piTenths, 0); // do the bend
-	strapOptions = { turtle: turtle,
+        turtle.toaD( -2* piTenths, 0); // do the bend
+        strapOptions = { turtle: turtle,
                          distance: strapLength - capGap,
                          spacing: options.strappingWidth,
                          startAngle: 6* piTenths,
@@ -163,13 +160,11 @@ Pentagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( i, chainNumber)
                        };
         if (svg) {
-            svgStrings = svgStrings.concat(
-                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
-	turtle.toaD( 0, capGap);
-	turtle.toaD( 3* piTenths, 0);
+        turtle.toaD( 0, capGap);
+        turtle.toaD( 3* piTenths, 0);
     }
-    return svgStrings;
 }

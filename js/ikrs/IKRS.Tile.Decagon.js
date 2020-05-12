@@ -25,14 +25,14 @@ class Decagon extends Tile {
         this.buildConnectors();
 
         this.imageProperties = { // for textures...
-	    source: { x:      169/500.0,
-		      y:      140/460.0,
-		      width:  313/500.0,
-		      height: 297/460.0
-		    },
-	    destination: { xOffset: 0.0,
-		           yOffset: 0.0
-		         }
+            source: { x:      169/500.0,
+                      y:      140/460.0,
+                      width:  313/500.0,
+                      height: 297/460.0
+                    },
+            destination: { xOffset: 0.0,
+                           yOffset: 0.0
+                         }
         }
     }
 };
@@ -54,8 +54,49 @@ Decagon.getFaces = function() {
 }
 
 
-Decagon.prototype.getSVGforFancyStrapping = function( options) {
-    return this._drawFancyStrapping (undefined, true, options);
+Decagon.prototype._buildInnerPolygons = function( edgeLength ) {
+    var centralStar = new IKRS.Polygon();
+    for( var i = 0; i < 10; i++ ) {
+        var innerTile = new IKRS.Polygon(); // [];
+        // Make polygon
+        var center = this.position;
+        var topPoint    = this.getVertexAt( i ).clone().scaleTowards( this.getVertexAt(i+1), 0.5 );
+        var bottomPoint = topPoint.clone().scaleTowards( center, 0.385 );
+        var leftPoint   = this.getVertexAt( i ).clone().scaleTowards( center, 0.31 );
+        var rightPoint  = this.getVertexAt( i+1 ).clone().scaleTowards( center, 0.31 );
+
+        innerTile.addVertex( topPoint );
+        innerTile.addVertex( rightPoint );
+        innerTile.addVertex( bottomPoint );
+        innerTile.addVertex( leftPoint );
+
+        this.innerTilePolygons.push( innerTile );
+
+        centralStar.addVertex( leftPoint.clone() );
+        centralStar.addVertex( bottomPoint.clone() );
+    }
+
+    this.innerTilePolygons.push( centralStar );
+};
+
+
+Decagon.prototype._buildOuterPolygons = function( edgeLength ) {
+
+    // DON'T include the inner star here!
+    for( var i = 0; i < 10; i++ ) {
+        var outerTile = new IKRS.Polygon();
+        outerTile.addVertex( this.getVertexAt(i).clone() );
+        outerTile.addVertex( this.innerTilePolygons[i].getVertexAt(0).clone() );
+        outerTile.addVertex( this.innerTilePolygons[i].getVertexAt(3).clone() );
+        outerTile.addVertex( this.getInnerTilePolygonAt( i==0 ? 9 : i-1 ).getVertexAt(0).clone() );
+
+        this.outerTilePolygons.push( outerTile );
+    }
+};
+
+
+Decagon.prototype.getSVGforFancyStrapping = function( options, buffer, indent) {
+    this._drawFancyStrapping (undefined, true, options, buffer, indent);
 }
 
 
@@ -64,14 +105,13 @@ Decagon.prototype.drawFancyStrapping = function( canvasContext, options) {
 }
 
 
-Decagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
+Decagon.prototype._drawFancyStrapping = function(canvasContext, svg, options, buffer, indent) {
     turtle = new Turtle();
     var strapLength = 0.95 * this.size // overall length of each strap
     var startBrokenStrap = 0.589 * this.size
     var endBrokenStrap = strapLength - startBrokenStrap // end part of strap
     var capGap = options.capGap;
     var faces = IKRS.Girih.TILE_FACES [this.tileType];
-    var svgStrings = [];
 
     // do all of the straps
     for( var i = 0; i<10; i++) {
@@ -92,8 +132,7 @@ Decagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
             console.log( "chain fill color not defined")
         }
 
-	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:i} , ["strap"]))
-	strapOptions = { turtle: turtle,
+        strapOptions = { turtle: turtle,
                          distance: startBrokenStrap - capGap,
                          spacing: options.strappingWidth,
                          startAngle: 7* piTenths,
@@ -105,14 +144,13 @@ Decagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( i, chainNumber)
                        };
         if (svg) {
-            svgStrings = svgStrings.concat(
-                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
-	turtle.toaD( 0, capGap * 2); // gap on each side of strap
+        turtle.toaD( 0, capGap * 2); // gap on each side of strap
 
-	strapOptions = { turtle: turtle,
+        strapOptions = { turtle: turtle,
                          distance: endBrokenStrap - capGap,
                          spacing: options.strappingWidth,
                          startAngle: 6* piTenths,
@@ -124,14 +162,13 @@ Decagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( i, chainNumber)
                        };
         if (svg) {
-            svgStrings = svgStrings.concat(
-                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
-	turtle.toaD( -2* piTenths, 0);
+        turtle.toaD( -2* piTenths, 0);
 
-	strapOptions = { turtle: turtle,
+        strapOptions = { turtle: turtle,
                          distance: strapLength - capGap,
                          spacing: options.strappingWidth,
                          startAngle: 6* piTenths,
@@ -143,61 +180,9 @@ Decagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( i, chainNumber)
                        };
         if (svg) {
-            svgStrings = svgStrings.concat(
-                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
-	//endGroup()
     }
-    return svgStrings;
 }
-
-
-Decagon.prototype._buildInnerPolygons = function( edgeLength ) {
-    var centralStar = new IKRS.Polygon();
-    for( var i = 0; i < 10; i++ ) {
-	var innerTile = new IKRS.Polygon(); // [];
-	// Make polygon
-/*
-	var topPoint    = this.getVertexAt( i ).clone().scaleTowards( this.getVertexAt(i+1), 0.5 );
-	var bottomPoint = topPoint.clone().multiplyScalar( 0.615 );
-	var leftPoint   = this.getVertexAt( i ).clone().multiplyScalar( 0.69 );
-	var rightPoint  = this.getVertexAt( i+1 ).clone().multiplyScalar( 0.69 );
-*/
-	var center = this.position;
-	var topPoint    = this.getVertexAt( i ).clone().scaleTowards( this.getVertexAt(i+1), 0.5 );
-	var bottomPoint = topPoint.clone().scaleTowards( center, 0.385 );
-	var leftPoint   = this.getVertexAt( i ).clone().scaleTowards( center, 0.31 );
-	var rightPoint  = this.getVertexAt( i+1 ).clone().scaleTowards( center, 0.31 );
-
-//console.log("dec_bIP " + i +": "+ center +" "+ topPoint)
-
-	innerTile.addVertex( topPoint );
-	innerTile.addVertex( rightPoint );
-	innerTile.addVertex( bottomPoint );
-	innerTile.addVertex( leftPoint );
-
-	this.innerTilePolygons.push( innerTile );
-
-	centralStar.addVertex( leftPoint.clone() );
-	centralStar.addVertex( bottomPoint.clone() );
-    }
-
-    this.innerTilePolygons.push( centralStar );
-};
-
-
-Decagon.prototype._buildOuterPolygons = function( edgeLength ) {
-
-    // DON'T include the inner star here!
-    for( var i = 0; i < 10; i++ ) {
-	var outerTile = new IKRS.Polygon();
-	outerTile.addVertex( this.getVertexAt(i).clone() );
-	outerTile.addVertex( this.innerTilePolygons[i].getVertexAt(0).clone() );
-	outerTile.addVertex( this.innerTilePolygons[i].getVertexAt(3).clone() );
-	outerTile.addVertex( this.getInnerTilePolygonAt( i==0 ? 9 : i-1 ).getVertexAt(0).clone() );
-
-	this.outerTilePolygons.push( outerTile );
-    }
-};

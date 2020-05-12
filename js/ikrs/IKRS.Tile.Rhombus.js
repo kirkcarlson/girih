@@ -25,14 +25,14 @@ class Rhombus extends Tile {
         this.buildConnectors();
 
         this.imageProperties = {
-	    source: { x:      32/500.0,
-		      y:      188/460.0,
-		      width:  127/500.0, // 127,
-		      height: 92/460.0
-		    },
-	    destination: { xOffset: 0.0,
-		           yOffset: 0.0
-		         }
+            source: { x:      32/500.0,
+                      y:      188/460.0,
+                      width:  127/500.0, // 127,
+                      height: 92/460.0
+                    },
+            destination: { xOffset: 0.0,
+                           yOffset: 0.0
+                         }
         }
     }
 };
@@ -141,8 +141,8 @@ Rhombus.prototype._buildOuterPolygons = function() {
 }
 
 
-Rhombus.prototype.getSVGforFancyStrapping = function( options) {
-    return this._drawFancyStrapping (undefined, true, options);
+Rhombus.prototype.getSVGforFancyStrapping = function( options, buffer, indent) {
+    this._drawFancyStrapping (undefined, true, options, buffer, indent);
 }
 
 
@@ -151,7 +151,7 @@ Rhombus.prototype.drawFancyStrapping = function( canvasContext, options) {
 }
 
 
-Rhombus.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
+Rhombus.prototype._drawFancyStrapping = function(canvasContext, svg, options, buffer, indent) {
 //inputs: size, position, angle, canvas context
     // each segment in this function is its own path/segment
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
@@ -161,7 +161,6 @@ Rhombus.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
     var directSegmentLength = 0.587 * this.size // direct cross segment
     var capGap = options.capGap;
     var faces = IKRS.Girih.TILE_FACES [this.tileType];
-    var svgStrings = [];
 
     // do all of the straps
     for( var i = 0; i<2; i++) {
@@ -180,8 +179,7 @@ Rhombus.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
             console.log( "chain fill color not defined")
         }
 
-	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:i} , ["strap"]))
-	strapOptions = { turtle: turtle,
+        strapOptions = { turtle: turtle,
                          distance: directSegmentLength - capGap,
                          spacing: options.strappingWidth,
                          startAngle: 7* piTenths,
@@ -193,12 +191,10 @@ Rhombus.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( 0 +i*2, chainNumber)
                        };
         if (svg) {
-            svgStrings = svgStrings.concat(
-                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
-        //endGroup
         turtle.toaD( 0, capGap); // to edgue
         turtle.toaD( 6 * piTenths, 0) // ready for next strap
 
@@ -211,7 +207,7 @@ Rhombus.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
             console.log( "chain fill color not defined")
         }
 
-	strapOptions = { turtle: turtle,
+        strapOptions = { turtle: turtle,
                          distance: bentSegmentLength,
                          spacing: options.strappingWidth,
                          startAngle: 7* piTenths,
@@ -223,14 +219,13 @@ Rhombus.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( 1+ i*2, chainNumber)
                        };
         if (svg) {
-            svgStrings = svgStrings.concat(
-                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
-	turtle.toaD( -2* piTenths, 0); //do the bend
+        turtle.toaD( -2* piTenths, 0); //do the bend
 
-	strapOptions = { turtle: turtle,
+        strapOptions = { turtle: turtle,
                          distance: bentSegmentLength - capGap,
                          spacing: options.strappingWidth,
                          startAngle: 6* piTenths,
@@ -242,12 +237,9 @@ Rhombus.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( 1+ i*2, chainNumber)
                        };
         if (svg) {
-            svgStrings = svgStrings.concat(
-                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
-	//endGroup()
     }
-    return svgStrings
 }

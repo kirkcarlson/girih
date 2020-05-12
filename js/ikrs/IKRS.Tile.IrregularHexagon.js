@@ -7,9 +7,6 @@
  **/
 
 
-//IKRS.Tile.IrregularHexagon = function( size, position, angle, fillColor ) {
-
-//    IKRS.Tile.call( this, size, position, angle, IKRS.Girih.TILE_TYPE_IRREGULAR_HEXAGON );
 class IrregularHexagon extends Tile {
     constructor ( size, position, angle, fillColor) {
         if (fillColor !== undefined) {
@@ -27,14 +24,14 @@ class IrregularHexagon extends Tile {
         this.buildConnectors();
 
         this.imageProperties = {
-	    source: { x:      77/500.0, // 75,
-		      y:      11/460.0,
-		      width:  205/500.0, // 207,
-		  height: 150/460.0  // 150
-		    },
-	    destination: { xOffset: 0.0,
-		           yOffset: 0.0
-		         }
+            source: { x:      77/500.0, // 75,
+                      y:      11/460.0,
+                      width:  205/500.0, // 207,
+                  height: 150/460.0  // 150
+                    },
+            destination: { xOffset: 0.0,
+                           yOffset: 0.0
+                         }
         }
     }
 };
@@ -75,8 +72,71 @@ IrregularHexagon.getFaces = function() {
 }
 
 
-IrregularHexagon.prototype.getSVGforFancyStrapping = function( options) {
-    return this._drawFancyStrapping (undefined, true, options);
+IrregularHexagon.prototype._buildInnerPolygons = function() {
+    var turtle = new Turtle();
+    var innerTile = new IKRS.Polygon(); // [];
+    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+
+
+    turtle.toXY( this.position.x, this.position.y); // center of pentagon
+    turtle.toAD( this.angle + faces[0].centralAngle,
+                                faces[0].radialCoefficient * this.size); //at vertice 0
+    turtle.toaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex,
+                                0.5 * this.size); //midpoint of side 0
+    for( var j = 0; j<2; j++) {
+        innerTile.addVertex( turtle.position); //[0][5]mid point 0,3
+        turtle.toaD(  3* piTenths, 0.587 * this.size);
+
+        for( var i = 0; i<2; i++) {
+            innerTile.addVertex( turtle.position); //mid point [1]1,[3]3, [6]4,[8]5
+            turtle.toaD( 6* piTenths, 0.587 * this.size);
+            innerTile.addVertex( turtle.position); //bend point [2]1,[4]2 [7]3,[9]4
+
+            turtle.toaD( -4* piTenths, 0.587 * this.size);
+        }
+        turtle.toaD( 3* piTenths, 0);
+    }
+    this.innerTilePolygons.push( innerTile );
+}
+
+
+IrregularHexagon.prototype._buildOuterPolygons = function() {
+
+    // First add the two triangles at the 'ends' of the shape.
+    var indicesA = [ 0, 3 ];  //  6:2
+    var indicesB = [ 0, 5 ];  // 10:2
+    for( var i = 0; i < indicesA.length; i++ ) {
+
+        var indexA     = indicesA[i];
+        var indexB     = indicesB[i];
+        // The triangle
+        var outerTileX = new IKRS.Polygon();
+        outerTileX.addVertex( this.getVertexAt(indexA+1).clone() );
+        outerTileX.addVertex( this.innerTilePolygons[0].getVertexAt(indexB).clone() );
+        outerTileX.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+1).clone() );
+        this.outerTilePolygons.push( outerTileX );
+
+        // The first 'kite'
+        var outerTileY = new IKRS.Polygon();
+        outerTileY.addVertex( this.getVertexAt(indexA+2).clone() );
+        outerTileY.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+1).clone() );
+        outerTileY.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+2).clone() );
+        outerTileY.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+3).clone() );
+        this.outerTilePolygons.push( outerTileY );
+
+        // The second 'kite'
+        var outerTileY = new IKRS.Polygon();
+        outerTileY.addVertex( this.getVertexAt(indexA+3).clone() );
+        outerTileY.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+3).clone() );
+        outerTileY.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+4).clone() );
+        outerTileY.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+5).clone() );
+        this.outerTilePolygons.push( outerTileY );
+    }
+};
+
+
+IrregularHexagon.prototype.getSVGforFancyStrapping = function( options, buffer, indent) {
+    this._drawFancyStrapping (undefined, true, options, buffer, indent);
 }
 
 
@@ -85,7 +145,7 @@ IrregularHexagon.prototype.drawFancyStrapping = function( canvasContext, options
 }
 
 
-IrregularHexagon.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
+IrregularHexagon.prototype._drawFancyStrapping = function(canvasContext, svg, options, buffer, indent) {
 //inputs: size, position, angle, canvas context
     // each segment in this function is its own path/segment
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
@@ -99,8 +159,10 @@ IrregularHexagon.prototype._drawFancyStrapping = function(canvasContext, svg, op
     // do all of the straps
     for( var i = 0; i<2; i++) {
         turtle.toXY( this.position.x, this.position.y); // center of hexagon
-        turtle.toAD( this.angle + faces[0 +i*3].centralAngle, faces[0 +i*3].radialCoefficient * this.size); //vertex of hexagon
-        turtle.toaD( Math.PI - faces[0 +i*3].angleToCenter + faces[0 +i*3].angleToNextVertex, this.size/2); //at midpoint
+        turtle.toAD( this.angle + faces[0 +i*3].centralAngle,
+                faces[0 +i*3].radialCoefficient * this.size); //vertex of hexagon
+        turtle.toaD( Math.PI - faces[0 +i*3].angleToCenter + faces[0 +i*3].angleToNextVertex,
+                this.size/2); //at midpoint
 
         turtle.toaD( 3* piTenths, 0); // ready for strapping
 
@@ -113,8 +175,7 @@ IrregularHexagon.prototype._drawFancyStrapping = function(canvasContext, svg, op
             console.log( "chain fill color not defined")
         }
 
-	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:i} , ["strap"]))
-	strapOptions = { turtle: turtle,
+        strapOptions = { turtle: turtle,
                          distance: strapLength - capGap,
                          spacing: options.strappingWidth,
                          startAngle: 7* piTenths,
@@ -126,13 +187,12 @@ IrregularHexagon.prototype._drawFancyStrapping = function(canvasContext, svg, op
                          segmentClass: this.getSegmentClass( i, chainNumber)
                        };
         if (svg) {
-            svgStrings = svgStrings.concat(
-                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
-	turtle.toaD( 0, capGap); // gap on each side of strap
-	turtle.toaD( 6* piTenths, 0); // ready for next strap
+        turtle.toaD( 0, capGap); // gap on each side of strap
+        turtle.toaD( 6* piTenths, 0); // ready for next strap
 
         for( var j=0; j<2; j++) {
             var chainNumber = this.connectors[ j+1 +i*3].CWchainID
@@ -144,8 +204,7 @@ IrregularHexagon.prototype._drawFancyStrapping = function(canvasContext, svg, op
                 console.log( "chain fill color not defined")
             }
 
-	    //beginGroup()
-	    strapOptions = { turtle: turtle,
+            strapOptions = { turtle: turtle,
                              distance: strapLength,
                              spacing: options.strappingWidth,
                              startAngle: 7* piTenths,
@@ -157,16 +216,13 @@ IrregularHexagon.prototype._drawFancyStrapping = function(canvasContext, svg, op
                              segmentClass: this.getSegmentClass( j+1 +i*3, chainNumber)
                            };
             if (svg) {
-                svgStrings = svgStrings.concat(
-                        girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
+                girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
             } else {
                 girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
             }
-	    //endGroup()
-	    turtle.toaD( -4* piTenths, 0); //do the bend
+            turtle.toaD( -4* piTenths, 0); //do the bend
 
-	    //beginGroup()
-	    strapOptions = { turtle: turtle,
+            strapOptions = { turtle: turtle,
                              distance: strapLength - capGap,
                              spacing: options.strappingWidth,
                              startAngle: 7* piTenths,
@@ -178,78 +234,12 @@ IrregularHexagon.prototype._drawFancyStrapping = function(canvasContext, svg, op
                              segmentClass: this.getSegmentClass( j+1 +i*3, chainNumber)
                            };
             if (svg) {
-                svgStrings = svgStrings.concat(
-                        girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
+                girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
             } else {
                 girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
             }
-	    turtle.toaD( 0, capGap); // back to edge
-	    turtle.toaD( 6* piTenths, 0); // ready for next strap
-	    //endGroup()
+            turtle.toaD( 0, capGap); // back to edge
+            turtle.toaD( 6* piTenths, 0); // ready for next strap
         }
     }
-    return svgStrings;
 }
-
-
-IrregularHexagon.prototype._buildInnerPolygons = function() {
-    var turtle = new Turtle();
-    var innerTile = new IKRS.Polygon(); // [];
-    var faces = IKRS.Girih.TILE_FACES [this.tileType];
-
-
-    turtle.toXY( this.position.x, this.position.y); // center of pentagon
-    turtle.toAD( this.angle + faces[0].centralAngle,
-                                faces[0].radialCoefficient * this.size); //at vertice 0
-    turtle.toaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex,
-                                0.5 * this.size); //midpoint of side 0
-    for( var j = 0; j<2; j++) {
-	innerTile.addVertex( turtle.position); //[0][5]mid point 0,3
-	turtle.toaD(  3* piTenths, 0.587 * this.size);
-
-        for( var i = 0; i<2; i++) {
-	    innerTile.addVertex( turtle.position); //mid point [1]1,[3]3, [6]4,[8]5
-	    turtle.toaD( 6* piTenths, 0.587 * this.size);
-	    innerTile.addVertex( turtle.position); //bend point [2]1,[4]2 [7]3,[9]4
-
-	    turtle.toaD( -4* piTenths, 0.587 * this.size);
-	}
-	turtle.toaD( 3* piTenths, 0);
-    }
-    this.innerTilePolygons.push( innerTile );
-}
-
-
-IrregularHexagon.prototype._buildOuterPolygons = function() {
-
-    // First add the two triangles at the 'ends' of the shape.
-    var indicesA = [ 0, 3 ];  //  6:2
-    var indicesB = [ 0, 5 ];  // 10:2
-    for( var i = 0; i < indicesA.length; i++ ) {
-
-	var indexA     = indicesA[i];
-	var indexB     = indicesB[i];
-	// The triangle
-	var outerTileX = new IKRS.Polygon();
-	outerTileX.addVertex( this.getVertexAt(indexA+1).clone() );
-	outerTileX.addVertex( this.innerTilePolygons[0].getVertexAt(indexB).clone() );
-	outerTileX.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+1).clone() );
-	this.outerTilePolygons.push( outerTileX );
-
-	// The first 'kite'
-	var outerTileY = new IKRS.Polygon();
-	outerTileY.addVertex( this.getVertexAt(indexA+2).clone() );
-	outerTileY.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+1).clone() );
-	outerTileY.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+2).clone() );
-	outerTileY.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+3).clone() );
-	this.outerTilePolygons.push( outerTileY );
-
-	// The second 'kite'
-	var outerTileY = new IKRS.Polygon();
-	outerTileY.addVertex( this.getVertexAt(indexA+3).clone() );
-	outerTileY.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+3).clone() );
-	outerTileY.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+4).clone() );
-	outerTileY.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+5).clone() );
-	this.outerTilePolygons.push( outerTileY );
-    }
-};

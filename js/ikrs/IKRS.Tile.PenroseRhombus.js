@@ -29,14 +29,14 @@ class PenroseRhombus extends Tile {
         this.buildConnectors();
 
         this.imageProperties = {
-	    source: { x:      2/500.0,
-		      y:      8/460.0,
-		      width:  173/500.0,
-		      height: 56/460.0
-		    },
-	    destination: { xOffset: 0.0,
-		           yOffset: 0.0
-		         }
+            source: { x:      2/500.0,
+                      y:      8/460.0,
+                      width:  173/500.0,
+                      height: 56/460.0
+                    },
+            destination: { xOffset: 0.0,
+                           yOffset: 0.0
+                         }
         }
     }
 };
@@ -196,8 +196,8 @@ PenroseRhombus.prototype._buildOuterPolygons = function( addCenterPolygon ) {
 }
 
 
-PenroseRhombus.prototype.getSVGforFancyStrapping = function( options) {
-    return this._drawFancyStrapping (undefined, true, options);
+PenroseRhombus.prototype.getSVGforFancyStrapping = function( options, buffer, indent) {
+    this._drawFancyStrapping (undefined, true, options, buffer, indent);
 }
 
 
@@ -206,20 +206,21 @@ PenroseRhombus.prototype.drawFancyStrapping = function( canvasContext, options) 
 }
 
 
-PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
+PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, options, buffer, indent) {
     turtle = new Turtle();
     var shortSegmentLength = 0.163 * this.size;
     var mediumSegmentLength = 0.2625 * this.size;
     var longSegmentLength = 0.587 * this.size;
     var capGap = options.capGap;
     var faces = IKRS.Girih.TILE_FACES [this.tileType];
-    var svgStrings = [];
 
     // do all of the straps
     for( var i = 0; i<2; i++) {
         turtle.toXY( this.position.x, this.position.y); // center of decagon
-        turtle.toAD( this.angle + faces[0 +i*2].centralAngle, faces[0 +i*2].radialCoefficient * this.size); //vertex of decagon
-        turtle.toaD( Math.PI - faces[0 +i*2].angleToCenter + faces[0 +i*2].angleToNextVertex, this.size/2); //at midpoint
+        turtle.toAD( this.angle + faces[0 +i*2].centralAngle,
+                faces[0 +i*2].radialCoefficient * this.size); //vertex of decagon
+        turtle.toaD( Math.PI - faces[0 +i*2].angleToCenter + faces[0 +i*2].angleToNextVertex,
+                this.size/2); //at midpoint
 
         turtle.toaD( 3* piTenths, 0); // ready for strapping
 
@@ -232,8 +233,7 @@ PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, opti
             console.log( "chain fill color not defined")
         }
 
-	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:i} , ["strap"]))
-	strapOptions = { turtle: turtle,
+        strapOptions = { turtle: turtle,
                          distance: shortSegmentLength,
                          spacing: options.strappingWidth,
                          startAngle: 7* piTenths,
@@ -245,17 +245,14 @@ PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, opti
                          segmentClass: this.getSegmentClass( 0 +i*2, chainNumber)
                        };
         if (svg) {
-            svgStrings = svgStrings.concat(
-                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
-        //endGroup
 
         turtle.toaD( 2 * piTenths, 0) // do the bend
 
-	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:i} , ["strap"]))
-	strapOptions = { turtle: turtle,
+        strapOptions = { turtle: turtle,
                          distance: shortSegmentLength - capGap,
                          spacing: options.strappingWidth,
                          startAngle: 4* piTenths,
@@ -267,12 +264,10 @@ PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, opti
                          segmentClass: this.getSegmentClass( 0 +i*2, chainNumber)
                        };
         if (svg) {
-            svgStrings = svgStrings.concat(
-                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
-        //endGroup
         turtle.toaD( 0, capGap); // to edge
         turtle.toaD( 6 * piTenths, 0) // ready for next strap
 
@@ -285,7 +280,7 @@ PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, opti
             console.log( "chain fill color not defined")
         }
 
-	strapOptions = { turtle: turtle,
+        strapOptions = { turtle: turtle,
                          distance: mediumSegmentLength - capGap,
                          spacing: options.strappingWidth,
                          startAngle: 7* piTenths,
@@ -297,14 +292,13 @@ PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, opti
                          segmentClass: this.getSegmentClass( 1+ i*2, chainNumber)
                        };
         if (svg) {
-            svgStrings = svgStrings.concat(
-                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
-	turtle.toaD( 0, 2* capGap); // cross over long segment
+        turtle.toaD( 0, 2* capGap); // cross over long segment
 
-	strapOptions = { turtle: turtle,
+        strapOptions = { turtle: turtle,
                          distance: longSegmentLength - mediumSegmentLength - capGap,
                          spacing: options.strappingWidth,
                          startAngle: 6* piTenths,
@@ -316,15 +310,14 @@ PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, opti
                          segmentClass: this.getSegmentClass( 1+ i*2, chainNumber)
                        };
         if (svg) {
-            svgStrings = svgStrings.concat(
-                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
 
-	turtle.toaD( -4* piTenths, 0); // do the bend
+        turtle.toaD( -4* piTenths, 0); // do the bend
 
-	strapOptions = { turtle: turtle,
+        strapOptions = { turtle: turtle,
                          distance: longSegmentLength - capGap,
                          spacing: options.strappingWidth,
                          startAngle: 7* piTenths,
@@ -336,12 +329,9 @@ PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, opti
                          segmentClass: this.getSegmentClass( 1+ i*2, chainNumber)
                        };
         if (svg) {
-            svgStrings = svgStrings.concat(
-                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
-	//endGroup()
     }
-    return svgStrings;
 }

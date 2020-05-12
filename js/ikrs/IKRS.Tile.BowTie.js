@@ -26,15 +26,15 @@ class BowTie extends Tile {
         this.buildConnectors();
 
         this.imageProperties = {
-	    source: { x:      288/500.0, // 287,
-		      y:      7/460.0,
-		      width:  206/500.0,
-		      height: 150/460.0
-		      //angle:  0.0   // IKRS.Girih.MINIMAL_ANGLE
-		    },
-	    destination: { xOffset: 0.0,
-		           yOffset: 0.0
-		         }
+            source: { x:      288/500.0, // 287,
+                      y:      7/460.0,
+                      width:  206/500.0,
+                      height: 150/460.0
+                      //angle:  0.0   // IKRS.Girih.MINIMAL_ANGLE
+                    },
+            destination: { xOffset: 0.0,
+                           yOffset: 0.0
+                         }
         }
     }
 };
@@ -86,26 +86,17 @@ BowTie.prototype._buildInnerPolygons = function( edgeLength ) {
         turtle.toaD( Math.PI - faces[ +j*3].angleToCenter + faces[ +j*3].angleToNextVertex,
                                     0.5 * this.size); //midpoint of side 0
         var innerTile = new IKRS.Polygon(); // [];
-	innerTile.addVertex( turtle.position); //mid point 0,3
+        innerTile.addVertex( turtle.position); //mid point 0,3
 
-	turtle.toaD( 3* piTenths, longDirectLength);
-	innerTile.addVertex( turtle.position); //mid point 1,4
+        turtle.toaD( 3* piTenths, longDirectLength);
+        innerTile.addVertex( turtle.position); //mid point 1,4
 
-	turtle.toaD( 6* piTenths, longDirectLength);
-	innerTile.addVertex( turtle.position); //mid [point 2,5
+        turtle.toaD( 6* piTenths, longDirectLength);
+        innerTile.addVertex( turtle.position); //mid [point 2,5
 
-	turtle.toaD( 6* piTenths, shortBentLength);
-	innerTile.addVertex( turtle.position); //mid point 2,5
+        turtle.toaD( 6* piTenths, shortBentLength);
+        innerTile.addVertex( turtle.position); //mid point 2,5
 
-//	turtle.toaD( 3* piTenths, shortBentLength);
-//	innerTile.addVertex( girihCanvasHandler.getTurtlePosition().clone()); //mid point 0, 4
-
-	//set up for other end
-        turtle.toXY( this.position.x, this.position.y); // center of bow tie
-        turtle.toAD( this.angle + faces[3].centralAngle,
-                                    faces[3].radialCoefficient * this.size); //at vertice 0
-        turtle.toaD( Math.PI - faces[3].angleToCenter + faces[3].angleToNextVertex,
-                                    0.5 * this.size); //midpoint of side 3
         this.innerTilePolygons.push( innerTile );
     }
 }
@@ -117,21 +108,21 @@ BowTie.prototype._buildOuterPolygons = function() {
     var indices = [ 0, 3 ];
     for( var i = 0; i < indices.length; i++ ) {
 
-	var index       = indices[i];
+        var index       = indices[i];
 
-	// The first/third triangle
-	var outerTileA   = new IKRS.Polygon();
-	outerTileA.addVertex( this.innerTilePolygons[i].getVertexAt(0).clone() );
-	outerTileA.addVertex( this.getVertexAt(index+1).clone() );
-	outerTileA.addVertex( this.innerTilePolygons[i].getVertexAt(1).clone()) ;
-	this.outerTilePolygons.push( outerTileA );
+        // The first/third triangle
+        var outerTileA   = new IKRS.Polygon();
+        outerTileA.addVertex( this.innerTilePolygons[i].getVertexAt(0).clone() );
+        outerTileA.addVertex( this.getVertexAt(index+1).clone() );
+        outerTileA.addVertex( this.innerTilePolygons[i].getVertexAt(1).clone()) ;
+        this.outerTilePolygons.push( outerTileA );
 
-	// The second/fourth triangle
-	var outerTileB = new IKRS.Polygon();
-	outerTileB.addVertex( this.innerTilePolygons[i].getVertexAt(1).clone() );
-	outerTileB.addVertex( this.getVertexAt(index+2).clone() );
-	outerTileB.addVertex( this.innerTilePolygons[i].getVertexAt(2).clone()) ;
-	this.outerTilePolygons.push( outerTileB );
+        // The second/fourth triangle
+        var outerTileB = new IKRS.Polygon();
+        outerTileB.addVertex( this.innerTilePolygons[i].getVertexAt(1).clone() );
+        outerTileB.addVertex( this.getVertexAt(index+2).clone() );
+        outerTileB.addVertex( this.innerTilePolygons[i].getVertexAt(2).clone()) ;
+        this.outerTilePolygons.push( outerTileB );
 
     }
 
@@ -141,18 +132,16 @@ BowTie.prototype._buildOuterPolygons = function() {
     centerTile.addVertex( this.innerTilePolygons[0].getVertexAt(4).clone() );
     centerTile.addVertex( this.innerTilePolygons[0].getVertexAt(3).clone() );
     centerTile.addVertex( this.innerTilePolygons[0].getVertexAt(2).clone() );
-//    centerTile.addVertex( this.innerTilePolygons[0].getVertexAt(1).clone() );
     centerTile.addVertex( this.getVertexAt(3).clone() );
     centerTile.addVertex( this.innerTilePolygons[1].getVertexAt(4).clone() );
     centerTile.addVertex( this.innerTilePolygons[1].getVertexAt(3).clone() );
     centerTile.addVertex( this.innerTilePolygons[1].getVertexAt(2).clone() );
-//    centerTile.addVertex( this.innerTilePolygons[1].getVertexAt(1).clone() );
     this.outerTilePolygons.push( centerTile );
 };
 
 
-BowTie.prototype.getSVGforFancyStrapping = function( options) {
-    return this._drawFancyStrapping (undefined, true, options);
+BowTie.prototype.getSVGforFancyStrapping = function( options, buffer, indent) {
+    this._drawFancyStrapping (undefined, true, options, buffer, indent);
 }
 
 BowTie.prototype.drawFancyStrapping = function( canvasContext, options) {
@@ -160,7 +149,7 @@ BowTie.prototype.drawFancyStrapping = function( canvasContext, options) {
 }
 
 
-BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
+BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options, buffer, indent) {
 //inputs: size, position, angle, canvas context
     // each segment in this function is its own path/segment
     // should be using line number for format SVG class gline segment group, e.g., "Polygon_x_Line_y"
@@ -171,7 +160,6 @@ BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
     var lineNumber = 0
     var capGap = options.capGap;
     var faces = IKRS.Girih.TILE_FACES [this.tileType];
-    var svgStrings = [];
 
 
     // do all of the straps in two passes
@@ -193,8 +181,7 @@ BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
             console.log( "chain fill color not defined")
         }
 
-	//beginGroup( idClass({polygonNumber:polygonCount,lineNumber:i} , ["strap"]))
-	strapOptions = { turtle: turtle,
+        strapOptions = { turtle: turtle,
                          distance: longDirectLength - capGap,
                          spacing: options.strappingWidth,
                          startAngle: 7* piTenths,
@@ -206,13 +193,12 @@ BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( 0 +i*3, chainNumber),
                        };
         if (svg) {
-            svgStrings = svgStrings.concat(
-                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
-	turtle.toaD( 0, capGap); // gap at end of strap
-	turtle.toaD( 6*piTenths, 0); // to start of strap
+        turtle.toaD( 0, capGap); // gap at end of strap
+        turtle.toaD( 6*piTenths, 0); // to start of strap
 
         var chainNumber = this.connectors[1 +i*3].CWchainID
         if (chainNumber === undefined) {
@@ -222,7 +208,7 @@ BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
         if (chainColor === undefined) {
             console.log( "chain fill color not defined")
         }
-	strapOptions = { turtle: turtle,
+        strapOptions = { turtle: turtle,
                          distance: longDirectLength - capGap,
                          spacing: options.strappingWidth,
                          startAngle: 7* piTenths,
@@ -234,14 +220,13 @@ BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( 1 +i*3, chainNumber)
                        };
         if (svg) {
-            svgStrings = svgStrings.concat(
-                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
 
-	turtle.toaD( 0, capGap); // to start of next segment
-	turtle.toaD( 6* piTenths, 0); // toward start via bend
+        turtle.toaD( 0, capGap); // to start of next segment
+        turtle.toaD( 6* piTenths, 0); // toward start via bend
         var chainNumber = this.connectors[2 +i*3].CWchainID
         if (chainNumber === undefined) {
             console.log("bad chain number for tile")
@@ -250,8 +235,8 @@ BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
         if (chainColor === undefined) {
             console.log( "chain fill color not defined")
         }
-	strapOptions = { turtle: turtle,
-                         distance: shortBentLength - capGap,
+        strapOptions = { turtle: turtle,
+                         distance: shortBentLength,
                          spacing: options.strappingWidth,
                          startAngle: 7* piTenths,
                          endAngle: 4* piTenths,
@@ -262,15 +247,13 @@ BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( 2 +i*3, chainNumber)
                        };
         if (svg) {
-            svgStrings = svgStrings.concat(
-                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
-	//endGroup()
 
-	turtle.toaD( 2* piTenths, 0); // middle of bend
-	strapOptions = { turtle: turtle,
+        turtle.toaD( 2* piTenths, 0); // middle of bend
+        strapOptions = { turtle: turtle,
                          distance: shortBentLength - capGap,
                          spacing: options.strappingWidth,
                          startAngle: 4* piTenths,
@@ -282,12 +265,9 @@ BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options) {
                          segmentClass: this.getSegmentClass( 2 +i*3, chainNumber)
                        };
         if (svg) {
-            svgStrings = svgStrings.concat(
-                    girihCanvasHandler.getStrapSegmentSVG ( strapOptions));
+            girihCanvasHandler.getStrapSegmentSVG ( strapOptions, buffer, indent);
         } else {
             girihCanvasHandler.drawStrapSegment ( canvasContext, strapOptions);
         }
-	//endGroup()
     }
-    return svgStrings;
 }
