@@ -6,6 +6,7 @@
  * @date 2050-05-11 Kirk Carlson (converted to use ECMA6 class).
  * @version 1.0.2
  **/
+//import Turtle from "/js/ikrs/Turtle.js";
 
 
 class Pentagon extends Tile {
@@ -16,7 +17,7 @@ class Pentagon extends Tile {
             fillColor = girihCanvasHandler.drawProperties.pentagonFillColor;
         }
 
-        super( size, position, angle, IKRS.Girih.TILE_TYPE_PENTAGON, fillColor );
+        super( size, position, angle, Girih.TILE_TYPE.PENTAGON, fillColor );
         // in theory type should not be needed.
 
         this.buildTile();
@@ -41,7 +42,7 @@ class Pentagon extends Tile {
 Pentagon.getFaces = function() {
     var faces = [];
     for (var i=0; i<5; i++) {
-        faces.push( new IKRS.Face(
+        faces.push( new Face(
              /*centralAngle:*/       (0 + (i*4)) * piTenths,
              /*angleToNextVertex:*/  4* piTenths,
              /*lengthCoefficient:*/  1,
@@ -55,8 +56,8 @@ Pentagon.getFaces = function() {
 
 Pentagon.prototype._buildInnerPolygons = function( edgeLength ) {
     var turtle = new Turtle();
-    var innerTile = new IKRS.Polygon(); // [];
-    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var innerTile = new Polygon(); // [];
+    var faces = Girih.TILE_FACES [this.tileType];
 
 
     turtle.toXY( this.position.x, this.position.y); // center of pentagon
@@ -82,7 +83,7 @@ Pentagon.prototype._buildOuterPolygons = function() {
         var indexA     = i; //indicesA[i];
         var indexB     = i*2; // indicesB[i];
         // The triangle
-        var outerTileX = new IKRS.Polygon();
+        var outerTileX = new Polygon();
         outerTileX.addVertex( this.getVertexAt(indexA+1).clone() );
         outerTileX.addVertex( this.innerTilePolygons[0].getVertexAt(indexB).clone() );
         outerTileX.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+1).clone() );
@@ -111,7 +112,7 @@ Pentagon.prototype._drawFancyStrapping = function(canvasContext, svg, options, b
     turtle = new Turtle();
     var strapLength = 0.425 * this.size // overall length of each strap
     var capGap = options.capGap;
-    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var faces = Girih.TILE_FACES [this.tileType];
 
     turtle.toXY( this.position.x, this.position.y); // center of decagon
     turtle.toAD( this.angle + faces[0].centralAngle, faces[0].radialCoefficient * this.size); //corner of decagon

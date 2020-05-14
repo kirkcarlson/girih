@@ -49,8 +49,8 @@ function onLoad() {
     defaultTextureImage = new Image();
     
     defaultTextureImage.onload = function() {
-	girihCanvasHandler = new IKRS.GirihCanvasHandler( defaultTextureImage );
-	var tileSize = IKRS.Girih.DEFAULT_EDGE_LENGTH;
+	girihCanvasHandler = new GirihCanvasHandler( defaultTextureImage );
+	var tileSize = Girih.DEFAULT_EDGE_LENGTH;
 
 
 	// Make a test tiles
@@ -72,31 +72,14 @@ function onLoad() {
 }
 
 
-/*
-function _displayTileAlign( centerTile,
-			    referenceTile
-			  ) {
-
-    var differencePoint = new IKRS.Point2( referenceTile.position.x - centerTile.position.x,
-					   referenceTile.position.y - centerTile.position.y
-					 );
-    var totalAngle      = centerTile.angle + referenceTile.angle;
-    DEBUG( "[tileAlign] new IKRS.TileAlign( IKRS.Girih.DEFAULT_EDGE_LENGTH,\n" + 
-	   "                                new IKRS.Point2( " + differencePoint.x + ", " + differencePoint.y + "),\n" +
-	   "                                " + _angle2constant(totalAngle) + " );\n"
-	 );
-}
-*/
-
-
 function _angle2constant( angle ) {
 
-    var factor = Math.floor( angle/IKRS.Girih.MINIMAL_ANGLE );
-    var remainder = angle % IKRS.Girih.MINIMAL_ANGLE;
+    var factor = Math.floor( angle/Girih.MINIMAL_ANGLE );
+    var remainder = angle % Girih.MINIMAL_ANGLE;
     
     var result = "";
     if( factor == 0 ) result = "0";
-    else              result = factor + "*IKRS.Girih.MINIMAL_ANGLE";
+    else              result = factor + "*Girih.MINIMAL_ANGLE";
 
     if( remainder != 0 ) {
 	if( factor == 0 )        result = "" + remainder;
@@ -110,9 +93,8 @@ function _angle2constant( angle ) {
 
 function _makeTest_Decagon( tileSize ) {
     // Make a test decagon
-    //var deca = new IKRS.Tile.Decagon( tileSize, 
     var deca = new Decagon( tileSize, 
-			    new IKRS.Point2(300,300),  // position
+			    new Point2(300,300),  // position
 			    0.0
 			  );
     girihCanvasHandler.addTile( deca );
@@ -121,10 +103,9 @@ function _makeTest_Decagon( tileSize ) {
 
 function _makeTest_BowTie( tileSize ) {
     // Make a test bow-tie
-    //var tie = new IKRS.Tile.BowTie( tileSize,
     var tie = new BowTie( tileSize,
-			  new IKRS.Point2(57.7319, 110.9594),  // position
-			  0.0 // IKRS.Girih.MINIMAL_ANGLE*6
+			  new Point2(57.7319, 110.9594),  // position
+			  0.0 // Girih.MINIMAL_ANGLE*6
 			);
     girihCanvasHandler.addTile( tie );
 }
@@ -134,7 +115,7 @@ function _makeTest_Pentagon( tileSize ) {
 console.log("_makeTest_Pentagon");
     // Make a test pentagon
     var penta = new Pentagon( tileSize,
-			      new IKRS.Point2(479, 52),   // position
+			      new Point2(479, 52),   // position
 			      0.0
 			    );
     girihCanvasHandler.addTile( penta );
@@ -144,9 +125,8 @@ console.log("_makeTest_Pentagon");
 function _makeTest_IrregularHexagon( tileSize ) {
 console.log("_makeTest_Hexagon");
     // Make a test pentagon
-    //var hexa = new IKRS.Tile.IrregularHexagon( tileSize,
     var hexa = new IrregularHexagon( tileSize,
-				     new IKRS.Point2(151.577, -33.4546 ), //161.1, -32.2),   // position
+				     new Point2(151.577, -33.4546 ), //161.1, -32.2),   // position
 				     0.0
 				   );
     girihCanvasHandler.addTile( hexa );
@@ -156,9 +136,8 @@ console.log("_makeTest_Hexagon");
 function _makeTest_Rhombus( tileSize ) {
 console.log("_makeTest_Rhombus");
     // Make a test pentagon
-    //var rhomb = new IKRS.Tile.Rhombus( tileSize,
     var rhomb = new Rhombus( tileSize,
-			     new IKRS.Point2(18.2, 328),   // position
+			     new Point2(18.2, 328),   // position
 			     0.0
 			   );
     girihCanvasHandler.addTile( rhomb );
@@ -166,9 +145,8 @@ console.log("_makeTest_Rhombus");
 
 
 function _makeTest_PenroseRhombus( tileSize ) {
-	//var penrose = new IKRS.Tile.PenroseRhombus( tileSize,
 	var penrose = new PenroseRhombus( tileSize,
-					  new IKRS.Point2(276.5385,49.2873), 
+					  new Point2(276.5385,49.2873), 
 					  0.0
 					);
 	girihCanvasHandler.addTile( penrose );
@@ -178,8 +156,8 @@ function _makeTest_PenroseRhombus( tileSize ) {
 // THIS IS NOT PART OF A PROPER GIRIH.
 function _makeTest_Octagon( tileSize ) {
     // Make a test octagon
-    var octa = new IKRS.Tile.Octagon( tileSize,
-					new IKRS.Point2(18.2+600, 328-130),   // position
+    var octa = new Tile.Octagon( tileSize,
+					new Point2(18.2+600, 328-130),   // position
 					0.0
 				      );
     girihCanvasHandler.addTile( octa );
@@ -327,11 +305,11 @@ function moveDown() {
 }
 
 function rotateLeft() {
-    rotateByAmount( -IKRS.Girih.MINIMAL_ANGLE );
+    rotateByAmount( -Girih.MINIMAL_ANGLE );
 }
 
 function rotateRight() {
-    rotateByAmount( IKRS.Girih.MINIMAL_ANGLE );
+    rotateByAmount( Girih.MINIMAL_ANGLE );
 }
 
 function rotateByAmount( amount ) {
@@ -342,7 +320,7 @@ function rotateByAmount( amount ) {
     if( rotateAll ) {
 
 	if( index == -1 ) {
-            var tmpCenter = new IKRS.Point2(
+            var tmpCenter = new Point2(
                  (girihCanvasHandler.canvasCenter.x -
                  girihCanvasHandler.drawOffset.x) / girihCanvasHandler.zoomFactor,
                  (girihCanvasHandler.canvasCenter.y -
@@ -376,16 +354,16 @@ function rotateByAmount( amount ) {
 	_rotatePolygons( tile.outerTilePolygons, tmpCenter, amount);
     }
 
-    //DEBUG( "" + IKRS.Girih.rad2deg(tile.angle) + "&deg;" );
+    //DEBUG( "" + Girih.rad2deg(tile.angle) + "&deg;" );
 
 
     /*
     var first = true;
     for( var i = 0; i < girihCanvasHandler.girih.tiles.length; i++ ) {
 	if( girihCanvasHandler.girih.tiles[i]._props.selected ) {
-	    girihCanvasHandler.gitih.tiles[i].angle += (IKRS.Girih.MINIMAL_ANGLE);	    
+	    girihCanvasHandler.gitih.tiles[i].angle += (Girih.MINIMAL_ANGLE);	    
 	    if( first )
-		document.getElementById("debug").innerHTML = "" + IKRS.Girih.rad2deg(girihCanvasHandler.girih.tiles[i].angle) + "&deg;";
+		document.getElementById("debug").innerHTML = "" + Girih.rad2deg(girihCanvasHandler.girih.tiles[i].angle) + "&deg;";
 	    first = false;
 	}
     }
@@ -555,7 +533,7 @@ function exportSVG() {
 }
 
 function exportTiles() {
-	var tilesJSON = girihCanvasHandler.girih.getTilesJSON()
+	var tilesJSON = girihCanvasHandler.girih.getJSON()
 
 		downloadFilename = document.getElementById( "downloadFilename");
 	saveAs(
@@ -601,7 +579,7 @@ function importTiles(e) {
 	var reader = new FileReader();
 	reader.onload = function(e) {
 		var contents = e.target.result;
-		girihCanvasHandler.girih = new IKRS.Girih // not sure if other parameters are lost by doing this, but want to clear girihCanvasHandler.girih.tiles.
+		girihCanvasHandler.girih = new GirihClass // clear girihCanvasHandler.girih.tiles.
 			girihCanvasHandler.girih.setTilesJSON( contents);
 		redrawGirih();
 	};

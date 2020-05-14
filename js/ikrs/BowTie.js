@@ -6,8 +6,7 @@
  * @date 2020-05-11 Kirk Carlson (changed to ECMA6 class)
  * @version 1.0.2
  **/
-
-
+//import Turtle from "/js/ikrs/Turtle.js";
 
 class BowTie extends Tile {
     constructor ( size, position, angle, fillColor) {
@@ -17,7 +16,7 @@ class BowTie extends Tile {
             fillColor = girihCanvasHandler.drawProperties.bowTieFillColor;
         }
 
-        super( size, position, angle, IKRS.Girih.TILE_TYPE_BOW_TIE, fillColor );
+        super( size, position, angle, Girih.TILE_TYPE.BOW_TIE, fillColor );
         // in theory type should not be needed.
 
         this.buildTile();
@@ -30,7 +29,7 @@ class BowTie extends Tile {
                       y:      7/460.0,
                       width:  206/500.0,
                       height: 150/460.0
-                      //angle:  0.0   // IKRS.Girih.MINIMAL_ANGLE
+                      //angle:  0.0   // Girih.MINIMAL_ANGLE
                     },
             destination: { xOffset: 0.0,
                            yOffset: 0.0
@@ -47,21 +46,21 @@ BowTie.getFaces = function () {
     var radialLong = Math.sqrt( 1/4 + halfLongWidth*halfLongWidth)
     var angleB = Math.atan((1/2) / halfLongWidth)
     for (var i=0; i<2; i++) {
-        faces.push( new IKRS.Face(
+        faces.push( new Face(
             /*centralAngle:*/       0 + i* Math.PI,
             /*angleToNextVertex:*/  -2* piTenths,
             /*lengthCoefficient:*/  1,
             /*angleToCenter:*/      4* piTenths,
             /*radialCoefficient:*/  radialShort
         ));
-        faces.push( new IKRS.Face(
+        faces.push( new Face(
             /*centralAngle:*/       5 * piTenths - angleB + i* Math.PI,
             /*angleToNextVertex:*/  6* piTenths,
             /*lengthCoefficient:*/  1,
             /*angleToCenter:*/      11 * piTenths - angleB,
             /*radialCoefficient:*/  radialLong
         ));
-        faces.push( new IKRS.Face(
+        faces.push( new Face(
             /*centralAngle:*/       5* piTenths + angleB + i* Math.PI,
             /*angleToNextVertex:*/  6* piTenths,
             /*lengthCoefficient:*/  1,
@@ -75,7 +74,7 @@ BowTie.getFaces = function () {
 
 BowTie.prototype._buildInnerPolygons = function( edgeLength ) {
     var turtle = new Turtle();
-    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var faces = Girih.TILE_FACES [this.tileType];
     var shortBentLength = 0.35845 * this.size
     var longDirectLength = 0.58 * this.size
 
@@ -85,7 +84,7 @@ BowTie.prototype._buildInnerPolygons = function( edgeLength ) {
                                     faces[ +j*3].radialCoefficient * this.size); //at vertice 0
         turtle.toaD( Math.PI - faces[ +j*3].angleToCenter + faces[ +j*3].angleToNextVertex,
                                     0.5 * this.size); //midpoint of side 0
-        var innerTile = new IKRS.Polygon(); // [];
+        var innerTile = new Polygon(); // [];
         innerTile.addVertex( turtle.position); //mid point 0,3
 
         turtle.toaD( 3* piTenths, longDirectLength);
@@ -111,14 +110,14 @@ BowTie.prototype._buildOuterPolygons = function() {
         var index       = indices[i];
 
         // The first/third triangle
-        var outerTileA   = new IKRS.Polygon();
+        var outerTileA   = new Polygon();
         outerTileA.addVertex( this.innerTilePolygons[i].getVertexAt(0).clone() );
         outerTileA.addVertex( this.getVertexAt(index+1).clone() );
         outerTileA.addVertex( this.innerTilePolygons[i].getVertexAt(1).clone()) ;
         this.outerTilePolygons.push( outerTileA );
 
         // The second/fourth triangle
-        var outerTileB = new IKRS.Polygon();
+        var outerTileB = new Polygon();
         outerTileB.addVertex( this.innerTilePolygons[i].getVertexAt(1).clone() );
         outerTileB.addVertex( this.getVertexAt(index+2).clone() );
         outerTileB.addVertex( this.innerTilePolygons[i].getVertexAt(2).clone()) ;
@@ -127,7 +126,7 @@ BowTie.prototype._buildOuterPolygons = function() {
     }
 
     // Add the center polygon
-    var centerTile = new IKRS.Polygon();
+    var centerTile = new Polygon();
     centerTile.addVertex( this.getVertexAt(0).clone() );
     centerTile.addVertex( this.innerTilePolygons[0].getVertexAt(4).clone() );
     centerTile.addVertex( this.innerTilePolygons[0].getVertexAt(3).clone() );
@@ -159,7 +158,7 @@ BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options, buf
     var longDirectLength = 0.58 * this.size
     var lineNumber = 0
     var capGap = options.capGap;
-    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var faces = Girih.TILE_FACES [this.tileType];
 
 
     // do all of the straps in two passes

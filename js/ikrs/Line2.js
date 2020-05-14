@@ -11,36 +11,36 @@
  * @author Ikaros Kappler
  * @date 2013-12-13
  * @version 1.0.0
- **/
+ * @date 2020-05-11 Kirk Carlson (changed to ECMA6 class)
+ */
 
-IKRS.Line2 = function( pointA,
-		       pointB
-		       
-		       //pointComparator
-		     ) {
+class Line2 {
+    constructor( pointA, pointB) {
 
-    IKRS.Object.call( this );
+        this._pointA = pointA;
+        this._pointB = pointB;
+    }
 
-    //if( !pointComparator || typeof pointComparator == "undefined" )
-//	pointComparator = new IKRS.PythagoreanPointComparator(EPSILON);
+    get pointA () {
+        return this._pointA;
+    }
 
-    this.pointA = pointA;
-    this.pointB = pointB;
-
-    //this.pointComparator = pointComparator;
+    get pointB () {
+        return this._pointB;
+    }
 }
 
-IKRS.Line2.prototype.length = function() {
+Line2.prototype.length = function() {
     return this.pointA.distanceTo( this.pointB );
 }
 
-IKRS.Line2.prototype.determinant = function() {
+Line2.prototype.determinant = function() {
     //return this.pointA.x * this.pointB.y - this.pointA.y * this.pointB.x;
-    return IKRS.Line2.determinant( this.pointA, this.pointB );
+    return Line2.determinant( this.pointA, this.pointB );
 };
 
 
-IKRS.Line2.prototype.dotProduct = function( line ) {
+Line2.prototype.dotProduct = function( line ) {
     // Translate both lines to (0,0) and handle them as vectors
     var lineA = this._cloneDeep().translate( this.pointA.clone().invert() );
     var lineB = line._cloneDeep().translate( line.pointA.clone().invert() );
@@ -49,11 +49,11 @@ IKRS.Line2.prototype.dotProduct = function( line ) {
     return this.pointB.dotProduct( line.pointB );
 };
 
-IKRS.Line2.prototype.isColinearWith = function( line, epsilon ) {
+Line2.prototype.isColinearWith = function( line, epsilon ) {
     return this.isColinearWithPoint(line.pointA,epsilon) && this.isColinearWithPoint(line.pointB,epsilon);
 };
 
-IKRS.Line2.prototype.isColinearWithPoint = function( point, epsilon ) {
+Line2.prototype.isColinearWithPoint = function( point, epsilon ) {
     // See
     // http://stackoverflow.com/questions/4557840/find-all-collinear-points-in-a-given-set
     //bool collinear(int x1, int y1, int x2, int y2, int x3, int y3) {
@@ -68,7 +68,7 @@ IKRS.Line2.prototype.isColinearWithPoint = function( point, epsilon ) {
 };
 
 /*
-IKRS.Line2.prototype.isColinearWith = function( line, epsilon ) {
+Line2.prototype.isColinearWith = function( line, epsilon ) {
     
     if( epsilon == undefined )
 	epsilon = 0.00001;  // !!! ???
@@ -98,12 +98,12 @@ IKRS.Line2.prototype.isColinearWith = function( line, epsilon ) {
 */
 
 
-IKRS.Line2.prototype.translate = function( amount ) {
+Line2.prototype.translate = function( amount ) {
     this.pointA.add( amount );
     this.pointB.add( amount );
 };
 
-IKRS.Line2.prototype.equalEdgePoints = function( line ) {
+Line2.prototype.equalEdgePoints = function( line ) {
     return ( (this.pointA == line.pointA && this.pointB == line.pointB) || 
 	     (this.pointA == line.pointB && this.pointB == line.pointA) );
     
@@ -121,15 +121,15 @@ IKRS.Line2.prototype.equalEdgePoints = function( line ) {
  * If the edges intersected, this function returns the intersection point,
  * otherwise null.
  **/
-IKRS.Line2.prototype.computeEdgeIntersection = function( edge ) {
+Line2.prototype.computeEdgeIntersection = function( edge ) {
 
-    var det = IKRS.Line2.determinant( this.pointB.clone().sub( this.pointA ),
+    var det = Line2.determinant( this.pointB.clone().sub( this.pointA ),
 				      edge.pointA.clone().sub( edge.pointB )
 				    );
-    var t   = IKRS.Line2.determinant( edge.pointA.clone().sub( this.pointA ),
+    var t   = Line2.determinant( edge.pointA.clone().sub( this.pointA ),
 				      edge.pointA.clone().sub( edge.pointB )
 				    ) / det;
-    var u   = IKRS.Line2.determinant( this.pointB.clone().sub( this.pointA ),
+    var u   = Line2.determinant( this.pointB.clone().sub( this.pointA ),
 				      edge.pointA.clone().sub( this.pointA )
 				    ) / det;
     
@@ -157,7 +157,7 @@ IKRS.Line2.prototype.computeEdgeIntersection = function( edge ) {
 */
 }
 
-IKRS.Line2.prototype.computeLineIntersection = function( line ) {
+Line2.prototype.computeLineIntersection = function( line ) {
     
     /*
     var A = y2-y1
@@ -201,9 +201,9 @@ IKRS.Line2.prototype.computeLineIntersection = function( line ) {
     if( det == 0 )
 	return null;
     
-    return new IKRS.Point2( (b2*c1 - b1*c2)/det,
-			    (a1*c2 - a2*c1)/det
-			  );
+    return new Point2( (b2*c1 - b1*c2)/det,
+		       (a1*c2 - a2*c1)/det
+		      );
     
 
     /*
@@ -216,21 +216,19 @@ IKRS.Line2.prototype.computeLineIntersection = function( line ) {
     */
 };
 
-IKRS.Line2.prototype.clone = function() {
-    return new IKRS.Line2( this.pointA, this.pointB );
+Line2.prototype.clone = function() {
+    return new Line2( this.pointA, this.pointB );
 };
 
-IKRS.Line2.prototype._cloneDeep = function() {
-    return new IKRS.Line2( this.pointA.clone(), this.pointB.clone() );
+Line2.prototype._cloneDeep = function() {
+    return new Line2( this.pointA.clone(), this.pointB.clone() );
 };
 
-IKRS.Line2.prototype.toString = function() {
+Line2.prototype.toString = function() {
 
     return "{ " +this.pointA.toString() + ", " + this.pointB.toString() + "}";
 
 };
-
-IKRS.Line2.prototype.constructor = IKRS.Line2;
 
 /*
  public static Vector3 Intersect(Vector3 line1V1, Vector3 line1V2, Vector3 line2V1, Vector3 line2V2)
@@ -259,6 +257,6 @@ IKRS.Line2.prototype.constructor = IKRS.Line2;
     }*/
 
 
-IKRS.Line2.determinant = function( pointA, pointB ) {
+Line2.determinant = function( pointA, pointB ) {
     return pointA.x * pointB.y - pointA.y * pointB.x;
 }

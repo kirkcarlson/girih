@@ -10,6 +10,7 @@
  * @date 2020-05-11 KirkCarlson (converted to use ECMA6 class).
  * @version 1.0.2
  **/
+//import Turtle from "/js/ikrs/Turtle.js";
 
 
 class PenroseRhombus extends Tile {
@@ -20,7 +21,7 @@ class PenroseRhombus extends Tile {
             fillColor = girihCanvasHandler.drawProperties.penroseRhombusFillColor;
         }
 
-        super( size, position, angle, IKRS.Girih.TILE_TYPE_PENROSE_RHOMBUS, fillColor );
+        super( size, position, angle, Girih.TILE_TYPE.PENROSE_RHOMBUS, fillColor );
         // in theory type should not be needed.
 
         this.buildTile();
@@ -47,14 +48,14 @@ PenroseRhombus.getFaces = function() {
     var radialShort = Math.sin( 1* piTenths);
     var radialLong = Math.cos( 1* piTenths);
     for (var i=0; i<2; i++) {
-        faces.push( new IKRS.Face(
+        faces.push( new Face(
             /*centralAngle:*/       0* piTenths + i* Math.PI,
             /*angleToNextVertex:*/  2* piTenths,
             /*lengthCoefficient:*/  1,
             /*angleToCenter:*/      6* piTenths,
             /*radialCoefficient:*/  radialShort
         ));
-        faces.push( new IKRS.Face(
+        faces.push( new Face(
             /*centralAngle:*/       5* piTenths + i* Math.PI,
             /*angleToNextVertex:*/  8* piTenths,
             /*lengthCoefficient:*/  1,
@@ -72,10 +73,10 @@ PenroseRhombus.prototype._buildInnerPolygons = function( addCenterPolygon ) {
     const mediumSegmentLength = 0.2625 * this.size;
     const longSegmentLength = 0.587 * this.size;
 
-    var rightTile =  new IKRS.Polygon(); // [];
-    var centerTile = new IKRS.Polygon(); // [];
-    var leftTile =   new IKRS.Polygon(); // [];
-    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var rightTile =  new Polygon(); // [];
+    var centerTile = new Polygon(); // [];
+    var leftTile =   new Polygon(); // [];
+    var faces = Girih.TILE_FACES [this.tileType];
 
     turtle.toXY( this.position.x, this.position.y); // center of rhombus
     turtle.toAD( this.angle + faces[0].centralAngle,
@@ -129,11 +130,11 @@ PenroseRhombus.prototype._buildOuterPolygons = function( addCenterPolygon ) {
     const mediumSegmentLength = 0.2625 * this.size;
     const longSegmentLength = 0.587 * this.size;
 
-    var rightPointTile = new IKRS.Polygon(); // [];
-    var topTile =        new IKRS.Polygon(); // [];
-    var bottomTile =     new IKRS.Polygon(); // [];
-    var leftPointTile =  new IKRS.Polygon(); // [];
-    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var rightPointTile = new Polygon(); // [];
+    var topTile =        new Polygon(); // [];
+    var bottomTile =     new Polygon(); // [];
+    var leftPointTile =  new Polygon(); // [];
+    var faces = Girih.TILE_FACES [this.tileType];
 
     turtle.toXY( this.position.x, this.position.y); // center of pentagon
     turtle.toAD( this.angle + faces[0].centralAngle,
@@ -212,7 +213,7 @@ PenroseRhombus.prototype._drawFancyStrapping = function(canvasContext, svg, opti
     var mediumSegmentLength = 0.2625 * this.size;
     var longSegmentLength = 0.587 * this.size;
     var capGap = options.capGap;
-    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var faces = Girih.TILE_FACES [this.tileType];
 
     // do all of the straps
     for( var i = 0; i<2; i++) {

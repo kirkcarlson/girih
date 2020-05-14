@@ -5,6 +5,7 @@
  * @date 2015-03-19 Ikaros Kappler (added toSVG()).
  * @version 1.0.2
  **/
+//import Turtle from "/js/ikrs/Turtle.js";
 
 
 class IrregularHexagon extends Tile {
@@ -15,7 +16,7 @@ class IrregularHexagon extends Tile {
             fillColor = girihCanvasHandler.drawProperties.hexagonFillColor;
         }
 
-        super( size, position, angle, IKRS.Girih.TILE_TYPE_IRREGULAR_HEXAGON, fillColor );
+        super( size, position, angle, Girih.TILE_TYPE.IRREGULAR_HEXAGON, fillColor );
         // in theory type should not be needed.
 
         this.buildTile();
@@ -46,21 +47,21 @@ IrregularHexagon.getFaces = function() {
     var radialShort = halfNarrowWidth / Math.cos( radialAngle);
     //var radialAngle = Math.atan(  halfNarrowWidth/(1/2))
     for (var i=0; i<2; i++) {
-        faces.push( new IKRS.Face( // left side of point
+        faces.push( new Face( // left side of point
             /*centralAngle*/        10* piTenths + radialAngle + i* Math.PI,
             /*angleToNextVertex:*/  2* piTenths,
             /*lengthCoefficient:*/  1,
             /*angleToCenter:*/      5* piTenths + radialAngle,
             /*radialCoefficient:*/  radialShort
         ));
-        faces.push( new IKRS.Face( // right side of point
+        faces.push( new Face( // right side of point
             /*centralAngle:*/       15* piTenths + i* Math.PI,
             /*angleToNextVertex:*/  6* piTenths,
             /*lengthCoefficient:*/  1,
             /*angleToCenter:*/      8* piTenths,
             /*radialCoefficient:*/  radialLong
         ));
-        faces.push( new IKRS.Face( // flat side
+        faces.push( new Face( // flat side
             /*centralAngle:*/       0* piTenths - radialAngle + i* Math.PI,
             /*angleToNextVertex:*/  2* piTenths,
             /*lengthCoefficient:*/  1,
@@ -74,8 +75,8 @@ IrregularHexagon.getFaces = function() {
 
 IrregularHexagon.prototype._buildInnerPolygons = function() {
     var turtle = new Turtle();
-    var innerTile = new IKRS.Polygon(); // [];
-    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var innerTile = new Polygon(); // [];
+    var faces = Girih.TILE_FACES [this.tileType];
 
 
     turtle.toXY( this.position.x, this.position.y); // center of pentagon
@@ -110,14 +111,14 @@ IrregularHexagon.prototype._buildOuterPolygons = function() {
         var indexA     = indicesA[i];
         var indexB     = indicesB[i];
         // The triangle
-        var outerTileX = new IKRS.Polygon();
+        var outerTileX = new Polygon();
         outerTileX.addVertex( this.getVertexAt(indexA+1).clone() );
         outerTileX.addVertex( this.innerTilePolygons[0].getVertexAt(indexB).clone() );
         outerTileX.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+1).clone() );
         this.outerTilePolygons.push( outerTileX );
 
         // The first 'kite'
-        var outerTileY = new IKRS.Polygon();
+        var outerTileY = new Polygon();
         outerTileY.addVertex( this.getVertexAt(indexA+2).clone() );
         outerTileY.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+1).clone() );
         outerTileY.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+2).clone() );
@@ -125,7 +126,7 @@ IrregularHexagon.prototype._buildOuterPolygons = function() {
         this.outerTilePolygons.push( outerTileY );
 
         // The second 'kite'
-        var outerTileY = new IKRS.Polygon();
+        var outerTileY = new Polygon();
         outerTileY.addVertex( this.getVertexAt(indexA+3).clone() );
         outerTileY.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+3).clone() );
         outerTileY.addVertex( this.innerTilePolygons[0].getVertexAt(indexB+4).clone() );
@@ -153,7 +154,7 @@ IrregularHexagon.prototype._drawFancyStrapping = function(canvasContext, svg, op
     turtle = new Turtle();
     var strapLength = 0.587 * this.size // overall length of each strap
     var capGap = options.capGap;
-    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var faces = Girih.TILE_FACES [this.tileType];
     var svgStrings = [];
 
     // do all of the straps

@@ -1,6 +1,7 @@
+//export default class Turtle {
 class Turtle {
     constructor () {
-        this._position = new IKRS.Point2 (0,0);
+        this._position = new Point2 (0,0);
         this._angle = 0;
     }
 
@@ -23,7 +24,7 @@ class Turtle {
     }
 
     reset () {
-        this._position = new Point (0,0);
+        this._position = new Point2 (0,0);
         this._angle = 0;
         return this;
     }

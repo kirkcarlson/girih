@@ -6,6 +6,7 @@
  * @date 2020-05-11 Kirk Carlson (converted to use ECMA6 class).
  * @version 1.0.2
  **/
+//import Turtle from "/js/ikrs/Turtle.js";
 
 
 class Decagon extends Tile {
@@ -16,7 +17,7 @@ class Decagon extends Tile {
             fillColor = girihCanvasHandler.drawProperties.decagonFillColor;
         }
 
-        super( size, position, angle, IKRS.Girih.TILE_TYPE_DECAGON, fillColor );
+        super( size, position, angle, Girih.TILE_TYPE.DECAGON, fillColor );
         // in theory type should not be needed.
 
         this.buildTile();
@@ -41,7 +42,7 @@ class Decagon extends Tile {
 Decagon.getFaces = function() {
     var faces = [];
     for (var i=0; i<10; i++) {
-        faces.push( new IKRS.Face(
+        faces.push( new Face(
             /*centralAngle:*/       //-4* piTenths + i* 2* piTenths,
             /*centralAngle:*/       0 * piTenths + i* 2* piTenths,
             /*angleToNextVertex:*/  2* piTenths,
@@ -55,9 +56,9 @@ Decagon.getFaces = function() {
 
 
 Decagon.prototype._buildInnerPolygons = function( edgeLength ) {
-    var centralStar = new IKRS.Polygon();
+    var centralStar = new Polygon();
     for( var i = 0; i < 10; i++ ) {
-        var innerTile = new IKRS.Polygon(); // [];
+        var innerTile = new Polygon(); // [];
         // Make polygon
         var center = this.position;
         var topPoint    = this.getVertexAt( i ).clone().scaleTowards( this.getVertexAt(i+1), 0.5 );
@@ -84,7 +85,7 @@ Decagon.prototype._buildOuterPolygons = function( edgeLength ) {
 
     // DON'T include the inner star here!
     for( var i = 0; i < 10; i++ ) {
-        var outerTile = new IKRS.Polygon();
+        var outerTile = new Polygon();
         outerTile.addVertex( this.getVertexAt(i).clone() );
         outerTile.addVertex( this.innerTilePolygons[i].getVertexAt(0).clone() );
         outerTile.addVertex( this.innerTilePolygons[i].getVertexAt(3).clone() );
@@ -111,7 +112,7 @@ Decagon.prototype._drawFancyStrapping = function(canvasContext, svg, options, bu
     var startBrokenStrap = 0.589 * this.size
     var endBrokenStrap = strapLength - startBrokenStrap // end part of strap
     var capGap = options.capGap;
-    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var faces = Girih.TILE_FACES [this.tileType];
 
     // do all of the straps
     for( var i = 0; i<10; i++) {

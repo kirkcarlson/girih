@@ -14,16 +14,16 @@
 
 
 /**
- * @param size     number  The edge size (usually IKRS.Girih.DEFAULT_EDGE_LENGTH).
+ * @param size     number  The edge size (usually Girih.DEFAULT_EDGE_LENGTH).
  * @param position Point2  The position of the tile.
  * @param angle    number  The rotation angle.
- * @param tileType integer One of IKRS.Girih.TILE_TYPE_*.
+ * @param tileType integer One of Girih.TILE_TYPE.*
  **/
 class Tile {
     constructor( size,
                  position,
                  angle = 0.0,
-                 tileType = IKRS.Girih.TILE_TYPE_UNKNOWN,
+                 tileType = Girih.TILE_TYPE.UNKNOWN,
                  fillColor
                 ) {
 
@@ -33,7 +33,7 @@ class Tile {
         this.tileType             = tileType;
         this.fillColor            = fillColor;
 
-        this.polygon              = new IKRS.Polygon(); // Empty vertice array
+        this.polygon              = new Polygon(); // Empty vertice array
 
         // The inner tile polygons are those that do not share edges with the outer
         // tile bounds (vertices are OK).
@@ -54,7 +54,7 @@ class Tile {
 
 Tile.prototype.buildTile = function( ) {
     var turtle = new Turtle();
-    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var faces = Girih.TILE_FACES [this.tileType];
     var face = faces[0];
 
     turtle.toXY( this.position.x, this.position.y);
@@ -62,7 +62,7 @@ Tile.prototype.buildTile = function( ) {
                  face.radialCoefficient * this.size);
     turtle.toaD( Math.PI - face.angleToCenter, 0);
     for (var i = 0; i< faces.length; i++) {
-        this.polygon.vertices[i] = turtle.position; // save vertex
+        this.polygon.addVertex( turtle.position.clone()); // save vertex
 
         face = faces[ i];
         turtle.toaD( face.angleToNextVertex,
@@ -76,9 +76,9 @@ Tile.prototype.buildConnectors = function() {
     this.connectors = []; // clear any existing connectors, this is somewhat wasteful
     for (var i=0; i < this.polygon.vertices.length;  i++) { // all sides of each tile
         var edge = this.polygon.getEdgeAt( i);
-        var midpoint = new IKRS.Point2 ((edge.pointA.x + edge.pointB.x)/2,
+        var midpoint = new Point2 ((edge.pointA.x + edge.pointB.x)/2,
                                         (edge.pointA.y + edge.pointB.y)/2);
-        var connector = new IKRS.Connector( i, midpoint);
+        var connector = new Connector( i, midpoint);
         this.connectors.push( connector);
     }
 }
@@ -260,7 +260,7 @@ Tile.prototype.toSVG = function( options,
     }
 
     // Export outer shape?
-    classStr = "polygon " + IKRS.Girih.TILE_TYPE_NAMES[ this.tileType];
+    classStr = "polygon " + Girih.TILE_TYPE_NAMES[ this.tileType];
 
     var idStr = "";
     var styleStr = "";
@@ -378,12 +378,12 @@ Tile.prototype._polygonToSVG = function( polygon, // an array of vertices
     svgStr += ' points="';
     var preamble = '';
     for( var i = 0; i < polygon.vertices.length; i++ ) {
-        vertex = polygon.getVertexAt(i);
+        vertex = polygon.getVertexAt( i);
         svgStr += preamble +
-                   IKRS.round(vertex.x, girihCanvasHandler.SVG_PRECISION ) +
+                   Girih.round(vertex.x, girihCanvasHandler.SVG_PRECISION ) +
                    ','+
-                   IKRS.round(vertex.y, girihCanvasHandler.SVG_PRECISION );
-        boundingBox.evaluatePoint( vertex.x, vertex.y)
+                   Girih.round(vertex.y, girihCanvasHandler.SVG_PRECISION );
+        boundingBox.updatePoint( vertex);
         preamble = ' ';
     }
     svgStr += '"/>';
@@ -539,15 +539,8 @@ Tile.prototype.drawStrapSegment = function( canvasContext, {
 }
 
 
-const IKRS_SVG_DECIMALS = 3;
-
-function _round (number, decimals = IKRS_SVG_DECIMALS) {
-    var rounder = Math.pow( 10, decimals);
-    return Math.round(number * rounder) / rounder;
-}
-
 function svgPointString( point) {
-   return _round( point.x) +' '+ _round( point.y);
+   return Girih.round( point.x) +' '+ Girih.round( point.y);
 }
 
 
@@ -628,16 +621,11 @@ Tile.prototype.getSegmentClass = function( linkNumber, chainNumber) {
 
 
 Tile.prototype.computeBounds = function() {
-    return IKRS.BoundingBox2.computeFromPoints( this.polygon.vertices );
+    return new BoundingBox2( this.polygon.vertices );
 };
 
 
 Tile.prototype._translateVertex = function( vertex ) {
-    //return vertex.clone().rotate( IKRS.Point2.ZERO_POINT, this.angle ).add( this.position );
-    return vertex.clone().rotate( IKRS.Point2.ZERO_POINT, this.angle );
-};
-
-
-Tile.prototype._addVertex = function( vertex ) {
-    this.polygon.vertices.push( vertex );
+    //return vertex.clone().rotate( Point2.ZERO_POINT, this.angle ).add( this.position );
+    return vertex.clone().rotate( Point2.ZERO_POINT, this.angle );
 };

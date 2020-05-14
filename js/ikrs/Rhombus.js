@@ -6,6 +6,7 @@
  * @date 2030-05-11 Kirk Carlson (converted to use ECMA6 class).
  * @version 1.0.2
  **/
+//import Turtle from "/js/ikrs/Turtle.js";
 
 
 class Rhombus extends Tile {
@@ -16,7 +17,7 @@ class Rhombus extends Tile {
             fillColor = girihCanvasHandler.drawProperties.rhombusFillColor;
         }
 
-        super( size, position, angle, IKRS.Girih.TILE_TYPE_RHOMBUS, fillColor );
+        super( size, position, angle, Girih.TILE_TYPE.RHOMBUS, fillColor );
         // in theory type should not be needed.
 
         this.buildTile();
@@ -43,14 +44,14 @@ Rhombus.getFaces = function () {
     var radialShort = Math.sin( 2* piTenths);
     var radialLong = Math.cos( 2* piTenths);
     for (var i=0; i<2; i++) {
-        faces.push( new IKRS.Face(
+        faces.push( new Face(
             /*centralAngle:*/       0 + i* Math.PI,
             /*angleToNextVertex:*/  4* piTenths,
             /*lengthCoefficient:*/  1,
             /*angleToCenter:*/      7* piTenths,
             /*radialCoefficient:*/  radialShort
         ));
-        faces.push( new IKRS.Face(
+        faces.push( new Face(
             /*centralAngle:*/       5* piTenths + i* Math.PI,
             /*angleToNextVertex:*/  6* piTenths,
             /*lengthCoefficient:*/  1,
@@ -67,8 +68,8 @@ Rhombus.prototype._buildInnerPolygons = function( ) {
     const bentSegmentLength = 0.424 * this.size // bent segment
     const directSegmentLength = 0.587 * this.size // direct cross segment
 
-    var innerTile =  new IKRS.Polygon(); // [];
-    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var innerTile =  new Polygon(); // [];
+    var faces = Girih.TILE_FACES [this.tileType];
 
     turtle.toXY( this.position.x, this.position.y); // center of rhombus
     turtle.toAD( this.angle + faces[0].centralAngle,
@@ -97,12 +98,12 @@ Rhombus.prototype._buildOuterPolygons = function() {
     const bentSegmentLength = 0.424 * this.size // bent segment
     const directSegmentLength = 0.587 * this.size // direct cross segment
 
-    var tile0 =  new IKRS.Polygon(); // [];
-    var tile1 =  new IKRS.Polygon(); // [];
-    var tile2 =  new IKRS.Polygon(); // [];
-    var tile3 =  new IKRS.Polygon(); // [];
+    var tile0 =  new Polygon(); // [];
+    var tile1 =  new Polygon(); // [];
+    var tile2 =  new Polygon(); // [];
+    var tile3 =  new Polygon(); // [];
 
-    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var faces = Girih.TILE_FACES [this.tileType];
 
     turtle.toXY( this.position.x, this.position.y); // center of rhombus
     turtle.toAD( this.angle + faces[0].centralAngle,
@@ -160,7 +161,7 @@ Rhombus.prototype._drawFancyStrapping = function(canvasContext, svg, options, bu
     var bentSegmentLength = 0.424 * this.size // bent segment
     var directSegmentLength = 0.587 * this.size // direct cross segment
     var capGap = options.capGap;
-    var faces = IKRS.Girih.TILE_FACES [this.tileType];
+    var faces = Girih.TILE_FACES [this.tileType];
 
     // do all of the straps
     for( var i = 0; i<2; i++) {
