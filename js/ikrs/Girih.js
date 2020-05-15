@@ -147,7 +147,7 @@ GirihClass.prototype.findConnections = function() {
     if (this.tiles.length == 0) {
         return;
     }
-    var bigRadius = Decagon.getFaces.radialCoefficient * this.tiles[0].size; // radius of decagon
+    var bigRadius = Girih.TILE_FACES[ Girih.TILE_TYPE.DECAGON][0].radialCoefficient * this.tiles[0].size; // radius of decagon
     var fineDistance = 2.1 * bigRadius
 
 

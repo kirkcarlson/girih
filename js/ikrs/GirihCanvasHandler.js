@@ -5,7 +5,6 @@
  * @version 1.0.0
  * @date 2020-05-11 Kirk Carlson (changed to ECMA6 class)
  **/
-//import Turtle from "/js/ikrs/Turtle.js"
 
 class GirihCanvasHandler {
     constructor( imageObject ) {
@@ -334,41 +333,41 @@ GirihCanvasHandler.prototype.keyDownHandler = function( e ) {
     } else if( e.keyCode == 69 ) { //e
         this.girihCanvasHandler._exportSVG();
     } else if( e.keyCode == 48 ) { // 0
-        this.girihCanvasHandler.adjacentTileOptionPointer = Girih.INDEX_DECAGON;
+        this.girihCanvasHandler.adjacentTileOptionPointer = Girih.POSSIBLES_INDEX.DECAGON;
         this.girihCanvasHandler.redraw();
     } else if( e.keyCode == 80 || e.keyCode == 53 ) { // p,5
-        this.girihCanvasHandler.adjacentTileOptionPointer = Girih.INDEX_PENTAGON;
+        this.girihCanvasHandler.adjacentTileOptionPointer = Girih.POSSIBLES_INDEX.PENTAGON;
         this.girihCanvasHandler.redraw();
     } else if( e.keyCode == 72 || e.keyCode == 54 ) { // h,6
-        if ( this.girihCanvasHandler.adjacentTileOptionPointer == Girih.INDEX_GIRIH_HEXAGON) {
-            this.girihCanvasHandler.adjacentTileOptionPointer = Girih.INDEX_GIRIH_HEXAGON +1
-        } else if ( this.girihCanvasHandler.adjacentTileOptionPointer == Girih.INDEX_GIRIH_HEXAGON +1) {
-            this.girihCanvasHandler.adjacentTileOptionPointer = Girih.INDEX_GIRIH_HEXAGON +2
+        if ( this.girihCanvasHandler.adjacentTileOptionPointer == Girih.POSSIBLES_INDEX.GIRIH_HEXAGON) {
+            this.girihCanvasHandler.adjacentTileOptionPointer = Girih.POSSIBLES_INDEX.GIRIH_HEXAGON +1
+        } else if ( this.girihCanvasHandler.adjacentTileOptionPointer == Girih.POSSIBLES_INDEX.GIRIH_HEXAGON +1) {
+            this.girihCanvasHandler.adjacentTileOptionPointer = Girih.POSSIBLES_INDEX.GIRIH_HEXAGON +2
         } else {
-            this.girihCanvasHandler.adjacentTileOptionPointer = Girih.INDEX_GIRIH_HEXAGON;
+            this.girihCanvasHandler.adjacentTileOptionPointer = Girih.POSSIBLES_INDEX.GIRIH_HEXAGON;
         }
         this.girihCanvasHandler.redraw();
     } else if( e.keyCode == 82 || e.keyCode == 52 ) { // r,4
-        if ( this.girihCanvasHandler.adjacentTileOptionPointer == Girih.INDEX_RHOMBUS) {
-            this.girihCanvasHandler.adjacentTileOptionPointer = Girih.INDEX_RHOMBUS +1
+        if ( this.girihCanvasHandler.adjacentTileOptionPointer == Girih.POSSIBLES_INDEX.RHOMBUS) {
+            this.girihCanvasHandler.adjacentTileOptionPointer = Girih.POSSIBLES_INDEX.RHOMBUS +1
         } else {
-            this.girihCanvasHandler.adjacentTileOptionPointer = Girih.INDEX_RHOMBUS;
+            this.girihCanvasHandler.adjacentTileOptionPointer = Girih.POSSIBLES_INDEX.RHOMBUS;
         }
         this.girihCanvasHandler.redraw();
     } else if( e.keyCode == 66 || e.keyCode == 51 ) { // b,3
-        if ( this.girihCanvasHandler.adjacentTileOptionPointer == Girih.INDEX_BOW_TIE) {
-            this.girihCanvasHandler.adjacentTileOptionPointer = Girih.INDEX_BOW_TIE +1
-        } else if ( this.girihCanvasHandler.adjacentTileOptionPointer == Girih.INDEX_BOW_TIE +1) {
-            this.girihCanvasHandler.adjacentTileOptionPointer = Girih.INDEX_BOW_TIE +2
+        if ( this.girihCanvasHandler.adjacentTileOptionPointer == Girih.POSSIBLES_INDEX.BOW_TIE) {
+            this.girihCanvasHandler.adjacentTileOptionPointer = Girih.POSSIBLES_INDEX.BOW_TIE +1
+        } else if ( this.girihCanvasHandler.adjacentTileOptionPointer == Girih.POSSIBLES_INDEX.BOW_TIE +1) {
+            this.girihCanvasHandler.adjacentTileOptionPointer = Girih.POSSIBLES_INDEX.BOW_TIE +2
         } else {
-            this.girihCanvasHandler.adjacentTileOptionPointer = Girih.INDEX_BOW_TIE;
+            this.girihCanvasHandler.adjacentTileOptionPointer = Girih.POSSIBLES_INDEX.BOW_TIE;
         }
         this.girihCanvasHandler.redraw();
     } else if( e.keyCode == 78 || e.keyCode == 50 ) { // b,2
-        if ( this.girihCanvasHandler.adjacentTileOptionPointer == Girih.INDEX_PENROSE_RHOMBUS) {
-            this.girihCanvasHandler.adjacentTileOptionPointer = Girih.INDEX_PENROSE_RHOMBUS +1
+        if ( this.girihCanvasHandler.adjacentTileOptionPointer == Girih.POSSIBLES_INDEX.PENROSE_RHOMBUS) {
+            this.girihCanvasHandler.adjacentTileOptionPointer = Girih.POSSIBLES_INDEX.PENROSE_RHOMBUS +1
         } else {
-            this.girihCanvasHandler.adjacentTileOptionPointer = Girih.INDEX_PENROSE_RHOMBUS;
+            this.girihCanvasHandler.adjacentTileOptionPointer = Girih.POSSIBLES_INDEX.PENROSE_RHOMBUS;
         }
         this.girihCanvasHandler.redraw();
     }
@@ -409,18 +408,17 @@ GirihCanvasHandler.prototype._resolveCurrentAdjacentTilePreset = function( curre
     var face = Girih.TILE_FACES [currentTile.tileType][highlightedEdgeIndex];
     var turtle = new Turtle();
 
-    turtle.toXY( currentTile.position.x, currentTile.position.y) // at currrent center
+    turtle.toXY( currentTile.position.x, currentTile.position.y) // at current center
     turtle.toAD( currentTile.angle + face.centralAngle,
                   currentTile.size * face.radialCoefficient) // at highlighted edge vertex
     turtle.toaD( Math.PI + face.angleToNextVertex - face.angleToCenter,
                   currentTile.size * face.lengthCoefficient); // at next vertex
 
     var proposedFace = Girih.TILE_FACES [proposedPosition.tileType]
-                                             [proposedPosition.startVertex];
+                                        [proposedPosition.startVertex];
     turtle.toaD( Math.PI - proposedFace.angleToNextVertex + proposedFace.angleToCenter,
               currentTile.size * proposedFace.radialCoefficient) // at adjacent center
     var proposedCenter = turtle.position;
-
 
     var proposedTileAngle = (turtle.angle - proposedFace.centralAngle +
                              Math.PI) % (2* Math.PI);
@@ -525,7 +523,7 @@ GirihCanvasHandler.prototype.setTextureImage = function( imageObject,
 };
 
 
-GirihCanvasHandler.prototype._drawTextures = function( tile, imageObject, originalBounds) {
+GirihCanvasHandler.prototype.drawTextures = function( tile, imageObject, originalBounds) {
 /*
     This function applies a clipped portion of an external image file to be used as the background of a tile.
     This image may be generalized texture (e.g., wood, stone, water, etc.) or it may be a very specific
@@ -591,313 +589,91 @@ GirihCanvasHandler.prototype._drawTextures = function( tile, imageObject, origin
 
 
 // **** CANVAS RENDERING ************************************
-
-GirihCanvasHandler.prototype._drawTile = function( tile ) {
-
-    // Penrose tile allowed?
-    if( tile.tileType == Girih.TILE_TYPE.PENROSE_RHOMBUS && !this.getProperties().allowPenroseTile ) {
-        return;
-    }
-    var tileBounds = tile.computeBounds();
-    if( this.drawProperties.drawBoxes ) {
-        this._drawBoundingBox( tile.position,
-                               tileBounds,
-                               tile.angle
-                             );
-    }
-
-    // draw the polygon
-    //if( this.drawProperties.drawOutlines || this.drawProperties.drawTextures) 
-    if( this.drawProperties.drawOutlines) {
-        this._drawTileFromFaces(tile, this.drawProperties.polygonStrokeColor)
-    } else {
-        this._drawTileFromFaces(tile, "transparent");
-    }
-
-    // the following relys on polygon context set from _drawTileFromFaces above
-    if( this.drawProperties.drawTextures) {
-       this._drawTextures( tile, this.imageObject, tileBounds)
-    };
+// leaving the functions that directly interact with the canvas
 
 
-    // the following relys on polygon context set from _drawTileFromFaces above
-    if( this.drawProperties.drawPolygonColor) {
-        if (this.drawProperties.polygonColorType === "default") {
-            var tileColor = tile.fillColor;
-            if (typeof tileColor === "string" && tileColor[0] === '#' && tileColor.length == 7) {
-                tileColor = tileColor +"80"; // add alpha channel
-            }
-        } else if (this.drawProperties.polygonColorType === "random") {
-            var tileColor = "rgba(" +
-                Math.round( Math.random()*255 ) + "," +
-                Math.round( Math.random()*255 ) + "," +
-                Math.round( Math.random()*255 ) + "," +
-                "0.5)";
-        } else {
-            var tileColor = "transparent";
-        }
-
-        this.context.fillStyle = tileColor;
-        this.context.fill();
-        this.context.fillOpacity = 1; // reset this for other uses
-    }
-
-    if( this.drawProperties.drawInnerPolygons ) {
-        this._drawInnerTilePolygons( tile );
-        this._drawOuterTilePolygons( tile );
-    }
-
-    // strapping is drawn externally...
-}
-
-
-GirihCanvasHandler.prototype._drawStrapping = function( tile ) {
-    if( this.drawProperties.drawStrapping) {
-        if( (this.drawProperties.drawStrappingType === "fancy" ||
-             this.drawProperties.drawStrappingType === "random")) {
-
-            tile.drawFancyStrapping( this.context, {
-                     capGap: this.capGap(),
-                     strappingWidth: this.drawProperties.strappingWidth,
-                     strappingStrokeWidth: this.drawProperties.strappingStrokeWidth,
-                     strappingStrokeColor: this.drawProperties.strappingStrokeColor,
-                     strappingFillColor: this.drawProperties.strappingFillColor,
-                                  });
-
-        } else {
-            this._drawSimpleStrapping( tile);
-        }
-    };
-};
-
-
-/**************************************************************************
- *  capGap -- compute the spacing for the end cap of a crossing line
- *
- *  parameters:
- *    none passed
- *
- *  returns
- *    the required spacing for the end cap in pixels
- *************************************************************************/
-GirihCanvasHandler.prototype.capGap = function () {
-    return this.drawProperties.strappingWidth/2 +
-           this.drawProperties.strappingStrokeWidth /
-                   this.drawProperties.strappingPixelFactor +
-           this.drawProperties.strappingGap;
-}
-
-
-/**
- * The 'colors' object may contain:
- *  - unselectedEdgeColor
- *  - selectedEdgeColor
- *  - fillColor
- **/
-GirihCanvasHandler.prototype._drawPolygonFromPoints = function( points,
-                                                                     position,
-                                                                     angle,
-                                                                     originalBounds,
-                                                                     colors,
-                                                                     imgProperties,
-                                                                     imageObject,
-                                                                     highlightedEdgeIndex,
-                                                                     drawOutlines
-                                                                   ) {
-
-    if( !points ) {
+GirihCanvasHandler.prototype.drawPolygonFromPoints =
+        function( {
+                    // vertices, strokeColor, fillColor,
+                    strokeWidth = 1.0,
+                    strokeOpacity = 1,
+                    fillOpacity = 1,
+                  } ) {
+    var options = arguments[0];
+    if( !options.vertices ) {
         return;
     }
 
+    // move through the polygon segments
+    var point = options.vertices[0];
     this.context.beginPath();
-    var point      = points[0].clone();
-    var startPoint = point.clone();
     this.context.moveTo( point.x * this.zoomFactor + this.drawOffset.x,
                          point.y * this.zoomFactor + this.drawOffset.y
                        );
-
-    var bounds = new BoundingBox2( point.x, point.y);
-
-    for( var i = 1; i < points.length; i++ ) {
-
-        point.set( points[i] );
+    for( var i = 1; i < options.vertices.length; i++ ) {
+        point = options.vertices[i];
         this.context.lineTo( point.x * this.zoomFactor + this.drawOffset.x,
-                             point.y * this.zoomFactor + this.drawOffset.y
-                           );
-
-        bounds.updatePoint( point);
+                              point.y * this.zoomFactor + this.drawOffset.y
+                            );
     }
-    // Close path
-    this.context.lineTo( startPoint.x * this.zoomFactor + this.drawOffset.x,
-                         startPoint.y * this.zoomFactor + this.drawOffset.y
-                       );
     this.context.closePath();
 
-/*
-    if( this.drawProperties.drawTextures &&
-        imgProperties &&
-        imageObject ) {
-
-        // Build absolute image bounds from relative
-        var imgBounds = new BoundingBox2( imgProperties.source.x * imageObject.width,
-                                         (imgProperties.source.x + imgProperties.source.width) * imageObject.width,
-                                          imgProperties.source.y * imageObject.height,
-                                         (imgProperties.source.y + imgProperties.source.height) * imageObject.height
-                                        );
-        var polyImageRatio = Point2( originalBounds.width / imgBounds.width,
-                                          originalBounds.height / imgBounds.height
-                                        );
-        //window.alert( "polyImageRatio=" + polyImageRatio );
-
-        this.context.clip();
-        var imageX = this.drawOffset.x + position.x * this.zoomFactor + originalBounds.xMin * this.zoomFactor;
-        var imageY = this.drawOffset.y + position.y * this.zoomFactor + originalBounds.yMin * this.zoomFactor;
-        var imageW = (originalBounds.width + imgProperties.destination.xOffset*imageObject.width*polyImageRatio.x) * this.zoomFactor;
-        var imageH = (originalBounds.height + imgProperties.destination.yOffset*imageObject.height*polyImageRatio.y) * this.zoomFactor;
-
-        this.context.translate( imageX + imageW/2.0,
-                                imageY + imageH/2.0
-                              );
-
-        this.context.rotate( angle );
-
-        var drawStartX = (-originalBounds.width/2.0) * this.zoomFactor;
-        var drawStartY = (-originalBounds.height/2.0) * this.zoomFactor;
-        this.context.drawImage( imageObject,
-                                imgProperties.source.x*imageObject.width,                    // source x
-                                imgProperties.source.y*imageObject.height,                   // source y
-                                imgProperties.source.width*imageObject.width,                // source width
-                                imgProperties.source.height*imageObject.height,              // source height
-                                drawStartX + imgProperties.destination.xOffset*imageObject.width*polyImageRatio.x*0.5*this.zoomFactor,         // destination x
-                                drawStartY + imgProperties.destination.yOffset*imageObject.height*polyImageRatio.y*0.5*this.zoomFactor,        // destination y
-                                (originalBounds.width - imgProperties.destination.xOffset*imageObject.width*polyImageRatio.x) * this.zoomFactor,       // destination width
-                                (originalBounds.height - imgProperties.destination.yOffset*imageObject.height*polyImageRatio.y) * this.zoomFactor      // destination height
-                              );
-    }
-*/
-
-    // Fill polygon with color (eventually additional to texture)?
-    if( colors.fillColor ) {
-        //window.alert( "fillColor=" + colors.fillColor );
-
-        this.context.fillStyle = colors.fillColor;
+    // Fill polygon with color
+    if( options.fillColor ) {
+        this.context.fillStyle = options.fillColor;
         this.context.fill();
     }
 
-    // Draw outlines?
-    if( drawOutlines && colors.unselectedEdgeColor ) {
-        this.context.lineWidth   = 1.0;
-        this.context.strokeStyle = colors.unselectedEdgeColor;
+    // Stroke outline
+    if( options.strokeColor) {
+        this.context.lineWidth =     options.strokeWidth;
+        this.context.strokeStyle =   options.strokeColor;
+        this.context.strokeOpacity = options.strokeOpacity;
         this.context.stroke();
     }
 };
 
 
+GirihCanvasHandler.prototype.drawHighlightedPolygonEdge = function( tile, highlightedEdgeIndex) {
 
-
-GirihCanvasHandler.prototype._drawTileFromFaces = function( tile, strokeColor) {
-    var turtle = new Turtle();
-    var faces = Girih.TILE_FACES [tile.tileType];
-    var face = faces[0];
-
-
-    this.context.beginPath();
-    turtle.toXY( tile.position.x, tile.position.y);
-    turtle.toAD( tile.angle + face.centralAngle,
-                              face.radialCoefficient * tile.size);
-    this.context.moveTo( turtle.position.x * this.zoomFactor + this.drawOffset.x,
-                         turtle.position.y * this.zoomFactor + this.drawOffset.y)
-
-    turtle.toaD( Math.PI - face.angleToCenter, 0);
-    for (var i = 0; i< faces.length; i++) {
-        //face = faces[ i % faces.length]
-        face = faces[ i]
-        turtle.toaD( face.angleToNextVertex, tile.size * face.lengthCoefficient);
-        this.context.lineTo( turtle.position.x * this.zoomFactor + this.drawOffset.x,
-                             turtle.position.y * this.zoomFactor + this.drawOffset.y)
-    }
-    this.context.strokeStyle = strokeColor,
-    this.context.lineWidth = "1pt";
-    this.context.closePath();
-    this.context.stroke();
-}
-
-
-GirihCanvasHandler.prototype._drawHighlightedPolygonEdge = function( points,
-                                                                          position,
-                                                                          angle,
-                                                                          originalBounds,
-                                                                          colors,
-                                                                          imgProperties,
-                                                                          imageObject,
-                                                                          highlightedEdgeIndex,
-                                                                          drawOutlines
-                                                                   ) {
-
-    if( !points || highlightedEdgeIndex == -1 ) {
+    if( highlightedEdgeIndex == -1 ) {
         return;
     }
 
-    var pointA = points[ highlightedEdgeIndex ].clone();
-    var pointB = points[ highlightedEdgeIndex+1 < points.length ? highlightedEdgeIndex+1 : 0 ].clone();
+    var edge = tile.polygon.getEdgeAt( highlightedEdgeIndex);
 
     this.context.beginPath();
-    this.context.lineTo( pointA.x * this.zoomFactor + this.drawOffset.x,
-                         pointA.y * this.zoomFactor + this.drawOffset.y
+    this.context.moveTo( edge.pointA.x * this.zoomFactor + this.drawOffset.x,
+                         edge.pointA.y * this.zoomFactor + this.drawOffset.y
                        );
-    this.context.lineTo( pointB.x * this.zoomFactor + this.drawOffset.x,
-                         pointB.y * this.zoomFactor + this.drawOffset.y
+    this.context.lineTo( edge.pointB.x * this.zoomFactor + this.drawOffset.x,
+                         edge.pointB.y * this.zoomFactor + this.drawOffset.y
                        );
     this.context.closePath();
-    this.context.strokeStyle = colors.selectedEdgeColor;
-    this.context.lineWidth   = 3.0;
+    this.context.strokeStyle = this.drawProperties.polygonSelectedStrokeColor,
+    this.context.lineWidth = 3.0;
+    this.context.opacity = 1.0;
     this.context.stroke();
 };
 
 
-GirihCanvasHandler.prototype._drawPreviewTileAtHighlightedPolygonEdge = function( tile,
-                                                                        points,
-                                                                        position,
-                                                                        angle,
-                                                                        originalBounds,
-                                                                        colors,
-                                                                        imgProperties,
-                                                                        imageObject,
-                                                                        highlightedEdgeIndex,
-                                                                        drawOutlines
-                                                                      ) {
-
-    var adjacentTile = this._resolveCurrentAdjacentTilePreset(  tile,
-                                                                highlightedEdgeIndex,
-                                                             );
-    if( !adjacentTile ) {
-        return;
-    }
-
-
-    // Draw adjacent tile
-    this.context.globalAlpha = 0.5;  // 50% transparency
-    this._drawPolygonFromPoints( adjacentTile.polygon.vertices,
-                                 adjacentTile.position,
-                                 adjacentTile.angle,
-                                 adjacentTile.computeBounds(), // originalBounds,
-                                 { unselectedEdgeColor: "#888888", // null, // "#000000",
-                                   selectedEdgeColor:   null, // "#e80088",
-                                   fillColor:           null
-                                 },
-                                 adjacentTile.imageProperties,
-                                 this.imageObject,
-                                 -1,  // tile._props.highlightedEdgeIndex,
-                                 true // always draw the preview outlines? // this.drawProperties.drawOutlines
-                               );
-    this.context.globalAlpha = 1.0;  // reset to opaque
-
+//Partially moved
+/*
+Tile.prototype._drawPreviewTile = function( canvasContext) {
+    this.drawPolygonFromPoints( canvasContext,
+                                    { vertices:      tile.polygon.vertices,
+                                      strokeColor:   "#888888",
+                                      strokeWidth:   1,
+                                      strokeOpacity: 0.5,
+                                      fillColor:     null,
+                                    } );
 };
+*/
 
 
-GirihCanvasHandler.prototype._drawCrosshairAt = function( position,
-                                                isSelected
-                                              ) {
+GirihCanvasHandler.prototype.drawCrosshairAt = function( position,
+                                                         isSelected
+                                                       ) {
 
     if( isSelected ) {
         this.context.strokeStyle = "#FF0000";
@@ -938,34 +714,20 @@ GirihCanvasHandler.prototype._drawCrosshairAt = function( position,
 };
 
 
-GirihCanvasHandler.prototype._drawBoundingBox = function( position,
-                                                bounds,
-                                                angle ) {
+/*
+GirihCanvasHandler.prototype._drawBoundingBox = function( canvasContext, bounds) {
 
-    var points = [ bounds.leftUpperPoint(),
-                   bounds.rightUpperPoint(),
-                   bounds.rightLowerPoint(),
-                   bounds.leftLowerPoint()
+    var points = [ bounds.leftUpperPoint,
+                   bounds.rightUpperPoint,
+                   bounds.rightLowerPoint,
+                   bounds.leftLowerPoint
                  ];
-
-    this.context.strokeStyle = "#c8c8ff";
-    this.context.fillStyle = "";
-    this._drawPolygonFromPoints( points,
-                                 position,
-                                 angle,
-                                 bounds,
-                                 { unselectedEdgeColor: this.drawProperties.polygonSelectedStrokeColor,
-                                    selectedEdgeColor:   this.drawProperties.polygonSelectedStrokeColor,
-                                   fillColor:           null
-                                 },
-                                 null,   // imgProperties,
-                                 null,   // imageObject,
-                                 -1,     // highlightedEdgeIndex
-                                 true    // drawOutlines
-                               );
-
-    this.context.stroke();
+    this.drawPolygonFromPoints ( canvasContext, {
+                                                  vertices: points,
+                                                  strokeColor: "#c8c8ff",
+                                                } );
 };
+*/
 
 
 GirihCanvasHandler.prototype._drawCoordinateSystem = function() {
@@ -992,106 +754,8 @@ GirihCanvasHandler.prototype._drawCoordinateSystem = function() {
 };
 
 
-GirihCanvasHandler.prototype._drawInnerTilePolygons = function( tile ) {
-    for( var i = 0; i < tile.innerTilePolygons.length; i++ ) {
-        if( tile.tileType == Girih.TILE_TYPE.PENROSE_RHOMBUS &&
-            !this.getProperties().drawPenroseCenterPolygon &&
-            i == tile.getCenterPolygonIndex() ) {
-            continue;
-        }
-        this._drawInnerTile( tile, i );
-    }
-};
-
-
-GirihCanvasHandler.prototype._drawOuterTilePolygons = function( tile ) {
-    for( var i = 0; i < tile.outerTilePolygons.length; i++ ) {
-        var polygon = tile.outerTilePolygons[ i ];
-
-        var randomColor = null;
-        if( this.drawProperties.outerRandomColorFill ) {
-            randomColor = "rgba(" +
-                    Math.round( Math.random()*255 ) + "," +
-                    Math.round( Math.random()*255 ) + "," +
-                    Math.round( Math.random()*255 ) + "," +
-                    "0.5)";
-        }
-        this._drawPolygonFromPoints( polygon.vertices,   // points,
-                                     tile.position,
-                                     tile.angle,
-                                     new BoundingBox2( polygon.vertices), //originalBounds,
-                                     { unselectedEdgeColor: null,
-                                       selectedEdgeColor:   null,
-                                       fillColor:           randomColor //"rgba(255,255,0,0.5)" //"#ffff00"
-                                     },    // colors,
-                                     null, // imgProperties,
-                                     null, // imageObject,
-                                     -1,   // highlightedEdgeIndex,
-                                     true  // drawOutlines
-                                   );
-    }
-};
-
-
-GirihCanvasHandler.prototype._drawInnerTile = function( tile, index ) {
-    var polygon = tile.innerTilePolygons[ index ];
-
-    var randomColor = null;
-    if( this.drawProperties.innerRandomColorFill ) {
-        randomColor = "rgba(" +
-            Math.round( Math.random()*255 ) + "," +
-            Math.round( Math.random()*255 ) + "," +
-            Math.round( Math.random()*255 ) + "," +
-            "0.5)";
-    }
-    this._drawPolygonFromPoints( polygon.vertices,   // points,
-                                 tile.position,
-                                 tile.angle,
-                                 new BoundingBox2( polygon.vertices), //originalBounds,
-                                 { unselectedEdgeColor: this.drawProperties.simpleStrappingStrokeColor,
-                                   selectedEdgeColor: this.drawProperties.simpleStrappingStrokeColor,
-                                   fillColor:           randomColor // null
-                                 },    // colors,
-                                 null, // imgProperties,
-                                 null, // imageObject,
-                                 -1,   // highlightedEdgeIndex,
-                                 this.drawProperties.drawStrapping  // drawOutlines
-                               );
-
-};
-
-
-GirihCanvasHandler.prototype._drawSimpleStrapping = function( tile ) {
-    for( var i = 0; i < tile.innerTilePolygons.length; i++ ) {
-        if( tile.tileType == Girih.TILE_TYPE.PENROSE_RHOMBUS &&
-                !this.getProperties().drawPenroseCenterPolygon &&
-                i == tile.getCenterPolygonIndex() ) {
-            continue;
-        }
-        var polygon = tile.innerTilePolygons[ i ];
-
-        this._drawPolygonFromPoints( polygon.vertices,   // points,
-                                     tile.position,
-                                     tile.angle,
-                                     new BoundingBox2( polygon.vertices), //originalBounds,
-                                     { unselectedEdgeColor: this.drawProperties.simpleStrappingStrokeColor,
-                                       selectedEdgeColor:   this.drawProperties.simpleStrappingStrokeColor,
-                                       fillColor:           null // null do not fill
-                                     },    // colors,
-                                     null, // imgProperties,
-                                     null, // imageObject,
-                                     -1,   // highlightedEdgeIndex,
-                                     true  // drawOutlines
-                                   );
-    }
-};
-
-
 GirihCanvasHandler.prototype._drawTiles = function() {
-    // draw the basic tiles
-    for( var i = 0; i < this.girih.tiles.length; i++ ) {
-        this._drawTile( this.girih.tiles[i] );
-    }
+     var tile;
 
     // find all chains
     if (this.lastTileCount !== this.girih.tiles.length ||
@@ -1103,48 +767,24 @@ GirihCanvasHandler.prototype._drawTiles = function() {
     }
     this.lastDrawStrappingType = this.drawProperties.drawStrappingType;
 
-    // draw the strapping
+    // draw the basic tiles
     for( var i = 0; i < this.girih.tiles.length; i++ ) {
-        var tile = this.girih.tiles[i];
-        this._drawStrapping( tile);
-
-        if( this.drawProperties.drawOutlines || tile._props.selected ) {
-            this._drawCrosshairAt( tile.position, tile._props.selected );
-        }
+        this.girih.tiles[ i].drawTile();
     }
 
     // Finally draw the selected tile's hovering edge
     var hoveredTileIndex = this._locateHoveredTile();
     if( hoveredTileIndex != -1 ) {
+
         var tile = this.girih.tiles[ hoveredTileIndex ];
-        var tileBounds       = tile.computeBounds()
-        this._drawHighlightedPolygonEdge( tile.polygon.vertices,
-                                          tile.position,
-                                          tile.angle,
-                                          tileBounds,
-                                          { unselectedEdgeColor: "#000000",
-                                            selectedEdgeColor:   this.drawProperties.polygonSelectedStrokeColor,
-                                            fillColor:           null
-                                          },
-                                          tile.imageProperties,
-                                          this.imageObject,
-                                          tile._props.highlightedEdgeIndex,
-                                          this.drawProperties.drawOutlines
-                                        );
-        this._drawPreviewTileAtHighlightedPolygonEdge( tile,
-                                                       tile.polygon.vertices,
-                                                       tile.position,
-                                                       tile.angle,
-                                                       tileBounds,
-                                                       { unselectedEdgeColor: null, // "#000000",
-                                                         selectedEdgeColor:   null, // "#d80000",
-                                                         fillColor:           null
-                                                       },
-                                                       null,//tile.imageProperties,
-                                                       null,//this.imageObject,
-                                                       tile._props.highlightedEdgeIndex,
-                                                       this.drawProperties.drawOutlines
-                                                     );
+        if (tile._props.highlightedEdgeIndex !== -1) {
+            this.drawHighlightedPolygonEdge( tile, tile._props.highlightedEdgeIndex);
+
+            var adjacentTile = this._resolveCurrentAdjacentTilePreset(  tile,
+                                                                        tile._props.highlightedEdgeIndex,
+                                                                     );
+            adjacentTile.drawPreviewTile();
+        }
     }
 };
 

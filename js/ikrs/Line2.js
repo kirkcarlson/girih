@@ -44,7 +44,7 @@ Line2.prototype.dotProduct = function( line ) {
     // Translate both lines to (0,0) and handle them as vectors
     var lineA = this._cloneDeep().translate( this.pointA.clone().invert() );
     var lineB = line._cloneDeep().translate( line.pointA.clone().invert() );
-    
+
     // Now return the dot product of both non-zero points
     return this.pointB.dotProduct( line.pointB );
 };

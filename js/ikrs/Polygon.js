@@ -40,7 +40,7 @@ class Polygon {
  **/
 Polygon.prototype.getVertexAt = function( index ) {
     if( index < 0 )
-        return this._vertices[ this._vertices.length - (Math.abs(index)%this._vertices.length) ];
+        return this._vertices[ this._vertices.length - (Math.abs(index) % this._vertices.length) ];
     else
         return this._vertices[ index % this._vertices.length ];
 };
@@ -421,7 +421,7 @@ Polygon.prototype.computePolygonIntersection = function( clipPolygon ) {
 };
 
 Polygon.prototype.computeBoundingBox = function() {
-    return BoundingBox2.computeFromPoints( this._vertices );
+    return new BoundingBox2( this._vertices );
 };
 
 Polygon.prototype.addVertex = function( vertex ) {

@@ -237,12 +237,248 @@ Tile.prototype.locateAdjacentEdge = function( pointA,
 };
 
 
+
+//**** TILE RENDERING FUNCTIONS *****
+
 function randomColor () {
     return 'rgb(' + Math.round( Math.random()*255 ) + ',' +
                     Math.round( Math.random()*255 ) + ',' +
                     Math.round( Math.random()*255 ) + ')';
 }
 
+
+/**************************************************************************
+ *  capGap -- compute the spacing for the end cap of a crossing line
+ *
+ *  parameters:
+ *    none passed
+ *
+ *  returns
+ *    the required spacing for the end cap in pixels
+ *************************************************************************/
+capGap = function () {
+    return girihCanvasHandler.drawProperties.strappingWidth/2 +
+           girihCanvasHandler.drawProperties.strappingStrokeWidth /
+                   girihCanvasHandler.drawProperties.strappingPixelFactor +
+           girihCanvasHandler.drawProperties.strappingGap;
+}
+
+
+Tile.prototype.drawTile = function() {
+
+    // Penrose tile allowed?
+    if( this.tileType == Girih.TILE_TYPE.PENROSE_RHOMBUS &&
+        !girihCanvasHandler.properties.allowPenroseTile ) {
+        return;
+    }   
+    if( girihCanvasHandler.drawProperties.drawBoxes ) {
+        this.drawBoundingBox();
+    }
+
+    // draw the polygon
+    if( girihCanvasHandler.drawProperties.drawPolygonColor) {
+        if (girihCanvasHandler.drawProperties.polygonColorType === "default") {
+            var fillColor = this.fillColor;
+            if (typeof tileColor === "string" && tileColor[0] === '#' && tileColor.length == 7) {
+                tileColor = tileColor +"80"; // add alpha channel
+            }
+        } else if (girihCanvasHandler.drawProperties.polygonColorType === "random") {
+            var fillColor = randomColor()
+        } else {
+            var fillColor = "transparent";
+        }
+    }
+    if( girihCanvasHandler.drawProperties.drawOutlines) {
+        var strokeColor = girihCanvasHandler.drawProperties.polygonStrokeColor;
+    } else {
+        var strokeColor = "transparent";
+    }
+    girihCanvasHandler.drawPolygonFromPoints ( {
+                                                 vertices: this.polygon.vertices,
+                                                 strokeColor: strokeColor,
+                                                 fillColor: fillColor,
+                                                 fillOpacity: 1,
+                                                 strokeOpacity: 0.5, 
+                                               } );
+
+    // the following relys on polygon context set from _drawPolygonFromPoints above
+    if( girihCanvasHandler.drawProperties.drawTextures) {
+        var tileBounds = this.computeBounds();
+        girihCanvasHandler.drawTextures( this, girihCanvasHandler.imageObject, tileBounds)
+    };
+
+    if( girihCanvasHandler.drawProperties.drawInnerPolygons ) {
+        this.drawInnerTilePolygons( tile );
+        this.drawOuterTilePolygons( tile );
+    }
+
+    // draw strapping
+    if( girihCanvasHandler.drawProperties.drawStrapping) {
+        if( (girihCanvasHandler.drawProperties.drawStrappingType === "fancy" ||
+             girihCanvasHandler.drawProperties.drawStrappingType === "random")) {
+
+            this.drawFancyStrapping( girihCanvasHandler.context, {
+                     capGap: capGap(),
+                     strappingWidth: girihCanvasHandler.drawProperties.strappingWidth,
+                     strappingStrokeWidth: girihCanvasHandler.drawProperties.strappingStrokeWidth,
+                     strappingStrokeColor: girihCanvasHandler.drawProperties.strappingStrokeColor,
+                     strappingFillColor: girihCanvasHandler.drawProperties.strappingFillColor,
+                                  });
+
+        } else {
+            tile.drawSimpleStrapping( tile);
+        }
+    };
+
+    if( girihCanvasHandler.drawProperties.drawOutlines || tile._props.selected ) {
+        girihCanvasHandler.drawCrosshairAt( tile.position, tile._props.selected );
+    }
+};
+
+
+/*
+Tile.prototype.drawPolygonFromPoints = function( canvasContext, {
+                                    // vertices, strokeColor, fillColor,
+                                    strokeWidth = 1.0,
+                                    strokeOpacity = 1,
+                                    fillOpacity = 1,
+                                  } ) {
+    var options = arguments[1];
+    if( !options.vertices ) {
+        return;
+    }
+
+    // move through the polygon segments
+    var point = options.vertices[0];
+    canvasContext.beginPath();
+    canvasContext.moveTo( point.x * girihCanvasHandler.zoomFactor +
+                                    girihCanvasHandler.drawOffset.x,
+                          point.y * girihCanvasHandler.zoomFactor +
+                                    girihCanvasHandler.drawOffset.y
+                        );
+    for( var i = 1; i < options.vertices.length; i++ ) {
+        point = options.vertices[i];
+        canvasContext.lineTo( point.x * girihCanvasHandler.zoomFactor +
+                                        girihCanvasHandler.drawOffset.x,
+                              point.y * girihCanvasHandler.zoomFactor +
+                                        girihCanvasHandler.drawOffset.y
+                            );
+    }
+    canvasContext.closePath();
+
+    // Fill polygon with color
+    if( options.fillColor ) {
+        canvasContext.fillStyle = options.fillColor;
+        canvasContext.fill();
+    }
+
+    // Stroke outline
+    if( options.strokeColor) {
+        canvasContext.lineWidth =     options.strokeWidth;
+        canvasContext.strokeStyle =   options.strokeColor;
+        canvasContext.strokeOpacity = options.strokeOpacity;
+        canvasContext.stroke();
+    }
+};
+*/
+
+
+Tile.prototype.drawPreviewTile = function() {
+    girihCanvasHandler.drawPolygonFromPoints(
+                                    { vertices:      this.polygon.vertices,
+                                      strokeColor:   "#888888",
+                                      strokeWidth:   1,
+                                      strokeOpacity: 0.5,
+                                      fillColor:     null,
+                                    } );
+};
+
+
+Tile.prototype.drawBoundingBox = function() {
+    bounds = this.polygon.computeBoundingBox();
+    var points = [ bounds.leftUpperPoint,
+                   bounds.rightUpperPoint,
+                   bounds.rightLowerPoint,
+                   bounds.leftLowerPoint
+                 ];
+    girihCanvasHandler.drawPolygonFromPoints ( {
+                                                 vertices: points,
+                                                 strokeColor: "#c8c8ff",
+                                               } );
+};
+
+
+Tile.prototype.drawInnerTilePolygons = function() {
+    for( var i = 0; i < this.innerTilePolygons.length; i++ ) {
+        if( this.tileType == Girih.TILE_TYPE.PENROSE_RHOMBUS &&
+            !girihCanvasHandler.properties.allowPenroseTile) {
+            continue;
+        }
+        this._drawInnerTile( i );
+    }
+};
+
+
+Tile.prototype._drawInnerTile = function( index ) {
+    var polygon = this.innerTilePolygons[ index ];
+
+    var fillColor = null;
+    if( girihCanvasHandler.drawProperties.innerRandomColorFill ) {
+        fillColor = randomColor();
+    }
+    var strokeColor = null;
+    if ( girihCanvasHandler.drawProperties.drawStrapping &&
+         girihCanvasHandler.drawProperties.drawStrappingType === "basic") {
+        strokeColor = girihCanvasHandler.drawProperties.simpleStrappingStrokeColor;
+    }
+
+    girihCanvasHandler.drawPolygonFromPoints ( {
+                                                  vertices: polygon.vertices,
+                                                  strokeColor: strokeColor,
+                                                  strokeOpacity: 0.5,
+                                                  fillColor: fillColor,
+                                                  fillOpacity: 0.5,
+                                                } );
+};
+
+
+Tile.prototype.drawOuterTilePolygons = function() {
+    for( var i = 0; i < this.outerTilePolygons.length; i++ ) {
+        var polygon = this.outerTilePolygons[ i ];
+
+        var fillColor = null;
+        if( girihCanvasHandler.drawProperties.outerRandomColorFill ) {
+            fillColor = randomColor();
+        }
+        girihCanvasHandler.drawPolygonFromPoints ( {
+                                                     vertices: polygon.vertices,
+                                                     fillColor: fillColor,
+                                                     fillOpacity: 0.5,
+                                                   } );
+    }
+};
+
+
+Tile.prototype.drawSimpleStrapping = function() {
+
+    for( var i = 0; i < this.innerTilePolygons.length; i++ ) {
+        if( this.tileType == Girih.TILE_TYPE.PENROSE_RHOMBUS &&
+            !girihCanvasHandler.properties.allowPenroseTile) {
+            continue;
+        }
+        var polygon = this.innerTilePolygons[ i ];
+        strokeColor = girihCanvasHandler.drawProperties.simpleStrappingStrokeColor,
+        girihCanvasHandler.drawPolygonFromPoints ( {
+                                                     vertices: polygon.vertices,
+                                                     strokeColor: strokeColor,
+                                                     strokeOpacity: 1,
+                                                   } );
+    }
+};
+
+
+
+//**** TILE TO SVG FUNCTIONS *****
 
 Tile.prototype.toSVG = function( options,
                                  polygonStyle,
@@ -345,13 +581,28 @@ Tile.prototype.toSVG = function( options,
         indent.inc();
 
         this.getSVGforFancyStrapping( {
-                     capGap: girihCanvasHandler.capGap(),
+                     capGap: capGap(),
                      strappingWidth: drawProperties.strappingWidth,
                      strappingStrokeWidth: drawProperties.strappingStrokeWidth,
                      strappingStrokeColor: drawProperties.strappingStrokeColor,
                      strappingFillColor: drawProperties.strappingFillColor,
                                   }, buffer, indent);
 
+/*
+new code looks like:
+        abstraction = this.abstractStraps( {
+                     capGap: capGap(),
+                     strappingWidth: drawProperties.strappingWidth,
+                     strappingStrokeWidth: drawProperties.strappingStrokeWidth,
+                     strappingStrokeColor: drawProperties.strappingStrokeColor,
+                     strappingFillColor: drawProperties.strappingFillColor,
+                                  });
+
+        for (strap in abstraction)
+            this.getStrapSegmentSVG ( strap.strapOptions, buffer, indent);
+        }
+    }
+*/
         indent.dec();
         buffer.push( indent.now + '</g>' + indent.eol);
     }
@@ -459,7 +710,6 @@ _findStrapSegmentPoints = function( {
  *  which may pan and zoom.
  *
  *  parameters: (parameters are named and can be in any order)
- *    canvasContext is the canvas to be drawn upon
  *    options is a dictionary with the following:
  *      distance is the nominal length of the line in pixels (required)
  *      spacing is the distance between twin line centers in pixels
@@ -609,6 +859,23 @@ Tile.prototype.getStrapSegmentSVG = function(  options, buffer, indent) {
     buffer.push( svgLine.join( ""));
 
     return
+}
+
+
+Tile.prototype.getSegmentClassNew = function( linkNumber) {
+    var chainNumber = this.connectors[linkNumber].CWchainID
+    if (chainNumber === undefined) {
+        console.log("bad chain number for tile")
+    }
+    var chainColor = girihCanvasHandler.girih.chains[chainNumber].fillColor;
+    if (chainColor === undefined) {
+        console.log( "chain fill color not defined")
+    }
+
+    chain = girihCanvasHandler.girih.chains[ chainNumber];
+    return "link_"+ linkNumber +" chain_"+ chainNumber
+           +" chain_length_"+ chain.links.length
+           + (chain.isLoop ? "L loop" : "")
 }
 
 
