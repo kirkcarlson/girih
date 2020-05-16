@@ -714,21 +714,6 @@ GirihCanvasHandler.prototype.drawCrosshairAt = function( position,
 };
 
 
-/*
-GirihCanvasHandler.prototype._drawBoundingBox = function( canvasContext, bounds) {
-
-    var points = [ bounds.leftUpperPoint,
-                   bounds.rightUpperPoint,
-                   bounds.rightLowerPoint,
-                   bounds.leftLowerPoint
-                 ];
-    this.drawPolygonFromPoints ( canvasContext, {
-                                                  vertices: points,
-                                                  strokeColor: "#c8c8ff",
-                                                } );
-};
-*/
-
 
 GirihCanvasHandler.prototype._drawCoordinateSystem = function() {
 
@@ -788,6 +773,82 @@ GirihCanvasHandler.prototype._drawTiles = function() {
     }
 };
 
+
+/**************************************************************************
+ *  drawStrapSegment -- draw a double girih strap segment from an array of points
+ *
+ *  parameters: (parameters are named and can be in any order)
+ *    points is an array of points describing a strap segment (see below)
+ *    options is a dictionary with the following:
+ *      fillStyle is optional style parameter used to fill shape
+ *      fillOpacity is optional style parameter used to fill shape
+ *      strokeStroke is optional style of the stroked line
+ *      strokeOpacity is optional opacity of the stroked line (0..1)
+ *      strokeWidth is optional width of the stroked line in pixels
+ *
+ *  the array of points corresponds to the following diagram of a segment
+ *     1 +--------------------------------------------+ 2
+ *   0,5 +                                            + 6
+ *     4 +--------------------------------------------+ 3
+ *************************************************************************/
+GirihCanvasHandler.prototype.drawStrapSegment = function( points, {
+        //distance,
+        fillOpacity = 1,
+        fillStyle = "gray",
+        strokeOpacity = 1,
+        strokeStyle = "black",
+        strokeWidth = 1,
+    }) {
+
+    var zoomFactor = girihCanvasHandler.zoomFactor;
+    var drawOffset = girihCanvasHandler.drawOffset;
+    options = arguments[1];
+    lineToPoint = function ( point) {
+        girihCanvasHandler.context.lineTo( point.x * zoomFactor + drawOffset.x,
+                                           point.y * zoomFactor + drawOffset.y)
+    }
+
+    moveToPoint = function ( point) {
+        girihCanvasHandler.context.moveTo( point.x * zoomFactor + drawOffset.x,
+                                           point.y * zoomFactor + drawOffset.y)
+    }
+
+    girihCanvasHandler.context.beginPath();
+    moveToPoint( points [4]); //start
+    lineToPoint( points [1]); // start cap
+    lineToPoint( points [2]); // left side
+    lineToPoint( points [3]); // end cap
+    lineToPoint( points [4]); // right side
+    //this.context.lineWidth = 0;
+    girihCanvasHandler.context.fillStyle = options.fillStyle;
+    girihCanvasHandler.context.fillOpacity = options.fillOpacity;
+    girihCanvasHandler.context.closePath();
+    girihCanvasHandler.context.fill();
+
+    // stroke the segment for the lines
+    girihCanvasHandler.context.beginPath();
+
+    if (options.startCap) {
+        moveToPoint( points [4]); //bottom of start cap, should be unnecessary
+        moveToPoint( points [4]); //bottom of start cap
+        lineToPoint( points [1]); //top of start cap
+    } else {
+        moveToPoint( points [1]); //top of start cap
+    }
+    lineToPoint( points [2]); // left side
+
+    if( options.endCap) {
+        lineToPoint( points [3]); // end cap
+    } else {
+        moveToPoint( points [3]); // no end cap
+    }
+    lineToPoint( points [4]); // right side
+    girihCanvasHandler.context.strokeStyle = options.strokeStyle;
+    //this.context.fillStyle = "";
+    girihCanvasHandler.context.lineWidth = options.strokeWidth;
+    girihCanvasHandler.context.strokeOpacity = options.strokeOpacity;
+    girihCanvasHandler.context.stroke();
+}
 
 /**
  * The drawProperties object may contain following members:

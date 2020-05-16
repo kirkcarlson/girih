@@ -263,6 +263,14 @@ capGap = function () {
            girihCanvasHandler.drawProperties.strappingGap;
 }
 
+addAlphaChannel = function ( colorcode, alpha) {
+// alpha is a 2 character hexadecimal code. 00 transparent. FF opaque
+     if (typeof colorcode === "string" && colorcode[0] === '#' && colorcode.length == 7) {
+         colorcode = colorcode +"80"; // add alpha channel
+     }
+     return colorcode
+}
+
 
 Tile.prototype.drawTile = function() {
 
@@ -270,28 +278,23 @@ Tile.prototype.drawTile = function() {
     if( this.tileType == Girih.TILE_TYPE.PENROSE_RHOMBUS &&
         !girihCanvasHandler.properties.allowPenroseTile ) {
         return;
-    }   
+    }
     if( girihCanvasHandler.drawProperties.drawBoxes ) {
         this.drawBoundingBox();
     }
 
     // draw the polygon
+    var fillColor = "transparent";
     if( girihCanvasHandler.drawProperties.drawPolygonColor) {
         if (girihCanvasHandler.drawProperties.polygonColorType === "default") {
-            var fillColor = this.fillColor;
-            if (typeof tileColor === "string" && tileColor[0] === '#' && tileColor.length == 7) {
-                tileColor = tileColor +"80"; // add alpha channel
-            }
+            fillColor = addAlphaChannel( this.fillColor, "80");
         } else if (girihCanvasHandler.drawProperties.polygonColorType === "random") {
-            var fillColor = randomColor()
-        } else {
-            var fillColor = "transparent";
+            fillColor = randomColor()
         }
     }
+    var strokeColor = "transparent";
     if( girihCanvasHandler.drawProperties.drawOutlines) {
         var strokeColor = girihCanvasHandler.drawProperties.polygonStrokeColor;
-    } else {
-        var strokeColor = "transparent";
     }
     girihCanvasHandler.drawPolygonFromPoints ( {
                                                  vertices: this.polygon.vertices,
@@ -330,57 +333,11 @@ Tile.prototype.drawTile = function() {
         }
     };
 
+    // draw crosshair
     if( girihCanvasHandler.drawProperties.drawOutlines || tile._props.selected ) {
         girihCanvasHandler.drawCrosshairAt( tile.position, tile._props.selected );
     }
 };
-
-
-/*
-Tile.prototype.drawPolygonFromPoints = function( canvasContext, {
-                                    // vertices, strokeColor, fillColor,
-                                    strokeWidth = 1.0,
-                                    strokeOpacity = 1,
-                                    fillOpacity = 1,
-                                  } ) {
-    var options = arguments[1];
-    if( !options.vertices ) {
-        return;
-    }
-
-    // move through the polygon segments
-    var point = options.vertices[0];
-    canvasContext.beginPath();
-    canvasContext.moveTo( point.x * girihCanvasHandler.zoomFactor +
-                                    girihCanvasHandler.drawOffset.x,
-                          point.y * girihCanvasHandler.zoomFactor +
-                                    girihCanvasHandler.drawOffset.y
-                        );
-    for( var i = 1; i < options.vertices.length; i++ ) {
-        point = options.vertices[i];
-        canvasContext.lineTo( point.x * girihCanvasHandler.zoomFactor +
-                                        girihCanvasHandler.drawOffset.x,
-                              point.y * girihCanvasHandler.zoomFactor +
-                                        girihCanvasHandler.drawOffset.y
-                            );
-    }
-    canvasContext.closePath();
-
-    // Fill polygon with color
-    if( options.fillColor ) {
-        canvasContext.fillStyle = options.fillColor;
-        canvasContext.fill();
-    }
-
-    // Stroke outline
-    if( options.strokeColor) {
-        canvasContext.lineWidth =     options.strokeWidth;
-        canvasContext.strokeStyle =   options.strokeColor;
-        canvasContext.strokeOpacity = options.strokeOpacity;
-        canvasContext.stroke();
-    }
-};
-*/
 
 
 Tile.prototype.drawPreviewTile = function() {
@@ -459,6 +416,24 @@ Tile.prototype.drawOuterTilePolygons = function() {
 };
 
 
+Tile.prototype.drawFancyStrapping = function() {
+    // get the strap vectors for the tile
+    vectors = this.getStrapVectors( {
+                                     capGap: capGap(),
+                                     strappingWidth: girihCanvasHandler.drawProperties.strappingWidth
+                                    } );
+
+    // render each strap vector
+    for( index in vectors) {
+        points = _findStrapSegmentPoints( vectors[ index]);
+        // vector already has fillStyle and fillOpacity
+        vectors[ index].strokeStyle = girihCanvasHandler.drawProperties.strappingStrokeColor;
+        vectors[ index].strokeWidth = girihCanvasHandler.drawProperties.strappingStrokeColor;
+        girihCanvasHandler.drawStrapSegment( points, vectors[ index])
+    }
+}
+
+
 Tile.prototype.drawSimpleStrapping = function() {
 
     for( var i = 0; i < this.innerTilePolygons.length; i++ ) {
@@ -516,8 +491,8 @@ Tile.prototype.toSVG = function( options,
     if (styleStr != "") {
         styleStr += '"';
     }
-    buffer.push( indent.now + girihCanvasHandler.getSVGTileFromFaces (
-                 this, idStr, classStr, styleStr, boundingBox) + indent.eol);
+    buffer.push( indent.now + this.getSVGTileFromFaces (
+                 idStr, classStr, styleStr, boundingBox) + indent.eol);
 
     // Export inner polygons?
     if( drawProperties.drawInnerPolygons) {
@@ -614,6 +589,47 @@ new code looks like:
 };
 
 
+Tile.prototype.getSVGTileFromFaces = function( idStr, classStr, styleStr, boundingBox) {
+// idStr is short string to uniquely identify polygon (may be "")
+// classStr is short string to identify class or classes used by polygon (may be "")
+// styleStr is string to apply style or other attributes to the polygon (may be "")
+//     (must include attribute name and enclose attribute in double quotes 
+// returns an SVG string
+    var turtle = new Turtle();
+    var faces = Girih.TILE_FACES [this.tileType];
+    var face = faces[0];
+ // <polygon points="0,100 50,25 50,75 100,0" />
+    var polygon = '<polygon';
+    if (idStr && idStr !== "") {
+        polygon += ' id="'+ idStr +'"';
+    }
+    if (classStr && classStr !== "") {
+        polygon += ' class="'+ classStr +'"';
+    }
+    if (styleStr && styleStr !== "") {
+        polygon += ' '+ styleStr;
+    }
+    polygon += ' points="';
+    turtle.toXY( this.position.x, this.position.y);
+
+    turtle.toAD( this.angle + face.centralAngle, face.radialCoefficient * this.size);
+    turtle.toaD( Math.PI - face.angleToCenter, 0)
+    var preemble = ''
+    for (var i = 0; i< faces.length; i++) {
+        polygon += preemble +
+                   Girih.round( turtle.position.x, Girih.SVG_PRECISION) +','+
+                   Girih.round( turtle.position.y, Girih.SVG_PRECISION)
+        boundingBox.updateXY( turtle.position.x, turtle.position.y);// important to use translated vertices
+        face = faces[ i];
+        turtle.toaD( face.angleToNextVertex, this.size * face.lengthCoefficient);
+        preemble = ' ';
+    }
+    polygon += '"/>';
+//console.log("svgPoly: " + polygon)
+    return polygon;
+}
+
+
 Tile.prototype._polygonToSVG = function( polygon, // an array of vertices
                                          polygonStyleString, // for color, etc.
                                          boundingBox // for limits of drawing
@@ -642,6 +658,24 @@ Tile.prototype._polygonToSVG = function( polygon, // an array of vertices
 }
 
 
+
+Tile.prototype.getSVGforFancyStrapping = function( options, buffer, indent) {
+    // get the strap vectors for the tile
+    vectors = this.getStrapVectors( {
+                                     capGap: capGap(),
+                                     strappingWidth: girihCanvasHandler.drawProperties.strappingWidth
+                                    } );
+
+    // render each strap vector
+    for( index in vectors) {
+        points = _findStrapSegmentPoints( vectors[ index]);
+        // vector already has fillStyle and fillOpacity
+        vectors[ index].strokeStyle = options.strappingStrokeColor;
+        vectors[ index].strokeWidth = options.strappingStrokeWidth;
+        this.getStrapSegmentSVG( points, vectors[ index], buffer, indent)
+    }
+}
+
 /**************************************************************************
  *  _findStrapSegmentPoints -- find the points for a double girih strap segment
  *
@@ -662,9 +696,9 @@ Tile.prototype._polygonToSVG = function( polygon, // an array of vertices
  *
  *  returns:
  *    an array of 7 points:
- *       1               2
- *       0,5             6
- *       4               3
+ *       [1]     +------------------------------------------------+ [2]
+ *       [0],[5] +                                                + [6]
+ *       [4]     +------------------------------------------------+ [3]
  *    turtle.position is the end point
  *    turtle.angle is the segment angle
  *************************************************************************/
@@ -675,8 +709,6 @@ _findStrapSegmentPoints = function( {
                                       endAngle = Math.PI/2,
                                       startCap = true,
                                       endCap = true,
-                                      fillStyle = this.drawProperties.strappingFillColor,
-                                      fillOpacity = 1,
                                     }) {
     // compute the real distances and angles needed
     var options = arguments[0];
@@ -689,16 +721,21 @@ _findStrapSegmentPoints = function( {
     var points = [];
 
     // just exactly which turtle is this routine using? it is working OK
-    points.push( turtle.position); //start point 0
-    points.push( turtle.toaD( options.startAngle, startDiag/2).position); //half of start cap 1
-    points.push( turtle.toaD( -options.startAngle,
-                     options.distance + startRightDist + endRightDist).position); // left side 2
-    points.push( turtle.toaD( -options.endAngle, endDiag).position); // end cap 3
-    points.push( turtle.toaD( options.endAngle + 10* piTenths,
-                     options.distance + startLeftDist + endLeftDist).position); // right side 4
-    points.push( turtle.toaD( options.startAngle - 10* piTenths,
-                     startDiag/2).position); // other half of start cap 5
-    points.push( turtle.toaD( -options.startAngle, options.distance).position); // end of segment 6
+    points.push( options.turtle.position); //start point [0, midpoint of start cap
+    points.push( options.turtle.toaD( options.startAngle, startDiag/2).position);
+                                                      //midpoint of start cap [1]
+    points.push( options.turtle.toaD( -options.startAngle,
+                     options.distance + startRightDist + endRightDist).position);
+                                                             // left side [2]
+    points.push( options.turtle.toaD( -options.endAngle, endDiag).position);
+                                                             // end cap [3]
+    points.push( options.turtle.toaD( options.endAngle + 10* piTenths,
+                     options.distance + startLeftDist + endLeftDist).position);
+                                                            // right side [4]
+    points.push( options.turtle.toaD( options.startAngle - 10* piTenths,
+                     startDiag/2).position); // start of start cap [5]
+    points.push( options.turtle.toaD( -options.startAngle, options.distance).position);
+                                                        // end of segment [6]
 
     return points;
 }
@@ -710,7 +747,8 @@ _findStrapSegmentPoints = function( {
  *  which may pan and zoom.
  *
  *  parameters: (parameters are named and can be in any order)
- *    options is a dictionary with the following:
+ *    canvasContext
+ *    vector is a dictionary with the following:
  *      distance is the nominal length of the line in pixels (required)
  *      spacing is the distance between twin line centers in pixels
  *      startAngle is the cut angle at the start of the line with respect to the turtle
@@ -730,6 +768,7 @@ _findStrapSegmentPoints = function( {
  *    turtle.position is the end point
  *    turtle.angle is the segment angle
  *************************************************************************/
+/*
 Tile.prototype.drawStrapSegment = function( canvasContext, {
         //distance,
         spacing = 4,
@@ -739,8 +778,8 @@ Tile.prototype.drawStrapSegment = function( canvasContext, {
         endCap = true,
         fillOpacity = 1,
     }) {
-    var options = arguments[1];
-    var points = _findStrapSegmentPoints( options); // uses the turtle
+    var vector = arguments[1];
+    var points = _findStrapSegmentPoints( vector); // uses the turtle
 
     var zoomFactor = girihCanvasHandler.zoomFactor;
     var drawOffset = girihCanvasHandler.drawOffset;
@@ -761,7 +800,7 @@ Tile.prototype.drawStrapSegment = function( canvasContext, {
     canvasContext.lineToPoint( points [3]); // end cap
     canvasContext.lineToPoint( points [4]); // right side
     //canvasContext.lineWidth = 0;
-    canvasContext.fillStyle = options.fillStyle;
+    canvasContext.fillStyle = vector.fillStyle;
     canvasContext.fillOpacity = 1;
     canvasContext.closePath();
     canvasContext.fill();
@@ -787,6 +826,7 @@ Tile.prototype.drawStrapSegment = function( canvasContext, {
     canvasContext.lineWidth = girihCanvasHandler.drawProperties.strappingStrokeWidth;
     canvasContext.stroke();
 }
+*/
 
 
 function svgPointString( point) {
@@ -798,7 +838,8 @@ function svgPointString( point) {
  *  getStrapSegmentSVG -- get the SVG for a girih strap segment
  *
  *  parameters:
- *    options (parameters are named and can be in any order)
+ *    points is an array of points defining the strap segment
+ *    vector (parameters are named and can be in any order)
  *      distance is the nominal length of the line in pixels (required)
  *      spacing is the distance between twin line centers in pixels
  *      startAngle is the cut angle at the start of the line with respect to the turtle
@@ -821,11 +862,10 @@ function svgPointString( point) {
  *    turtle.position is the end point
  *    turtle.angle is the segment angle
  *************************************************************************/
-Tile.prototype.getStrapSegmentSVG = function(  options, buffer, indent) {
-    var points = _findStrapSegmentPoints( options); // uses the turtle
+Tile.prototype.getStrapSegmentSVG = function(  points, vector, buffer, indent) {
     var svgLine = [] ;
 
-    svgLine.push( svgString = indent.now + '<path class="gfill '+ options.segmentClass +'" d="');
+    svgLine.push( svgString = indent.now + '<path class="gfill '+ vector.segmentClass +'" d="');
     svgLine.push( 'M' + svgPointString( points[0])); // start point
     svgLine.push( 'M' + svgPointString( points[1])); // half start cap
     svgLine.push( 'M' + svgPointString( points[2])); // left side
@@ -837,22 +877,22 @@ Tile.prototype.getStrapSegmentSVG = function(  options, buffer, indent) {
 
     // stroke the segment for the lines
     var svgLine = [] ;
-    svgLine.push( indent.now + '<path class="gstroke '+ options.segmentClass +'" d="');
+    svgLine.push( indent.now + '<path class="gstroke '+ vector.segmentClass +'" d="');
     // ...handle individual style for this segment
-    if (options.startCap) {
+    if (vector.startCap) {
         svgLine.push( 'M' + svgPointString( points [0])); //half of start cap
         svgLine.push( 'L' + svgPointString( points [1])); //half of start cap
     } else {
         svgLine.push( 'M' + svgPointString( points [1])); //start of left side
     }
     svgLine.push( 'L' + svgPointString( points [2])); // left side
-    if( options.endCap) {
+    if( vector.endCap) {
         svgLine.push( 'L' + svgPointString( points [3])); // end cap
     } else {
         svgLine.push( 'M' + svgPointString( points [3])); // end cap
     }
     svgLine.push( 'L' + svgPointString( points [4])); // right side
-    if ( options.startCap) {
+    if ( vector.startCap) {
         svgLine.push( 'L' + svgPointString( points [0])); // other half of start cap
     }
     svgLine.push( '"/>' + indent.eol);
@@ -862,7 +902,20 @@ Tile.prototype.getStrapSegmentSVG = function(  options, buffer, indent) {
 }
 
 
-Tile.prototype.getSegmentClassNew = function( linkNumber) {
+Tile.prototype.getSegmentClass = function( linkNumber) {
+    var chainNumber = this.connectors[linkNumber].CWchainID
+    if (chainNumber === undefined) {
+        console.log("bad chain number for tile")
+    }
+
+    chain = girihCanvasHandler.girih.chains[ chainNumber];
+    return "link_"+ linkNumber +" chain_"+ chainNumber
+           +" chain_length_"+ chain.links.length
+           + (chain.isLoop ? "L loop" : "")
+}
+
+
+Tile.prototype.getChainColor = function( linkNumber) {
     var chainNumber = this.connectors[linkNumber].CWchainID
     if (chainNumber === undefined) {
         console.log("bad chain number for tile")
@@ -871,20 +924,18 @@ Tile.prototype.getSegmentClassNew = function( linkNumber) {
     if (chainColor === undefined) {
         console.log( "chain fill color not defined")
     }
-
-    chain = girihCanvasHandler.girih.chains[ chainNumber];
-    return "link_"+ linkNumber +" chain_"+ chainNumber
-           +" chain_length_"+ chain.links.length
-           + (chain.isLoop ? "L loop" : "")
+    return chainColor;
 }
 
 
+/*
 Tile.prototype.getSegmentClass = function( linkNumber, chainNumber) {
     chain = girihCanvasHandler.girih.chains[ chainNumber];
     return "link_"+ linkNumber +" chain_"+ chainNumber
            +" chain_length_"+ chain.links.length
            + (chain.isLoop ? "L loop" : "")
 }
+*/
 
 
 Tile.prototype.computeBounds = function() {

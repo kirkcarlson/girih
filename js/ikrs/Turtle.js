@@ -29,6 +29,13 @@ class Turtle {
         return this;
     }
 
+    clone () {
+        var turtleClone = new Turtle();
+        turtleClone.position = this._position.clone();
+        turtleClone.angle = this._angle;
+        return turtleClone
+    }
+
     toXY( x, y) {
         this._position.x = x;
         this._position.y = y;

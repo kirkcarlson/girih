@@ -110,6 +110,7 @@ GirihClass.prototype.setTilesJSON = function( jsonFile) {
             girihCanvasHandler.addTile( tile );
         }
     }
+    girihCanvasHandler.redraw();
 }
 
 

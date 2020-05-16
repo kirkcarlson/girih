@@ -139,6 +139,7 @@ BowTie.prototype._buildOuterPolygons = function() {
 };
 
 
+/*
 BowTie.prototype.getSVGforFancyStrapping = function( options, buffer, indent) {
     this._drawFancyStrapping (undefined, true, options, buffer, indent);
 }
@@ -269,4 +270,164 @@ BowTie.prototype._drawFancyStrapping = function(canvasContext, svg, options, buf
             this.drawStrapSegment ( canvasContext, strapOptions);
         }
     }
+}
+*/
+
+/* idea is to split the _drawFancyStrapping into three modules:
+get strap vectors for a particular tile
+render the strap vectors onto the canvas
+convert the strap vectors into SVG
+
+A strap vector describes one strap segment (location, direction, color, etc...)
+
+
+class StrapVector {
+    constructor() {
+        strapOptions = {
+                         turtle: turtle.clone(), // conveys position and angle
+                         distance: longDirectLength - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 7* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: true,
+                         fillStyle: chainColor,
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( 0 +i*3, chainNumber),
+                       };
+    }
+
+    getPoints() {
+        // get the relevant points for a strap from the strap vector
+    }
+
+    render( canvasContext) {
+        this.getPoints()
+        this.drawStrapSegment ( canvasContext, strap.strapOptions);
+    }
+
+    toSVG( options, buffer, indent) {
+        this.getPoints()
+        this.renderPointsToSVG convertPointgetStrapSegmentSVG ( strap.strapOptions, buffer, indent);
+    }
+}
+
+elsewhere (in Tile):
+Tile.draw() {
+    // do the rest
+    // draw the straps
+}
+
+Tile.drawStraps()
+    //get strap vectors for tile
+    // for each strap vector
+    //  render strap vector
+}
+
+Tile.drawStrapSegment()
+    // get points for the strap segment vector
+    // render strap vector
+}
+
+
+Tile.toSVG() {
+    do the rest of the tile
+    do the straps
+}
+
+Tile._strapsToSVG() {
+    //get strap vectors for tile
+    //for each strap vector
+    //  get svg for strap vector
+}
+
+Tile._strapSegmentToSVG() {
+    // get points for the strap segment vector
+    // render the points into SVG
+}
+
+*/
+
+BowTie.prototype.getStrapVectors = function( options) {
+    turtle = new Turtle();
+    var shortBentLength = 0.35845 * this.size
+    var longDirectLength = 0.58 * this.size
+    var lineNumber = 0
+    var capGap = options.capGap;
+    var faces = Girih.TILE_FACES [this.tileType];
+    var vectors = [];
+
+    // do all of the straps in two passes, one for each side
+    for( var i = 0; i<2; i++) {
+        //move to first segment
+        turtle.toPoint( this.position); // to center
+        turtle.toAD( this.angle + faces[0 +i*3].centralAngle,
+                faces[0 +i*3].radialCoefficient * this.size); //waist of bowtie
+        turtle.toaD( Math.PI - faces[0 +i*3].angleToCenter + faces[0 +i*3].angleToNextVertex,
+                this.size/2); //ready to start
+        turtle.toaD( 3* piTenths, 0); // ready for strapping
+
+        vectors.push( {
+                         turtle: turtle.clone(), // conveys position and angle
+                         distance: longDirectLength - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 7* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: true,
+                         fillStyle: this.getChainColor( 0 +i*3),
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( 0 +i*3),
+                       });
+
+        turtle.toaD( 0, longDirectLength); // to end of strap
+        turtle.toaD( 6*piTenths, 0); // to start of next strap
+
+        vectors.push( {
+                         turtle: turtle.clone(),
+                         distance: longDirectLength - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 7* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: true,
+                         fillStyle: this.getChainColor( 1 +i*3),
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( 1 +i*3)
+                       });
+
+        turtle.toaD( 0, longDirectLength); // to end of strap
+        turtle.toaD( 6* piTenths, 0); // toward start via bend
+
+        vectors.push( {
+                         turtle: turtle.clone(),
+                         distance: shortBentLength,
+                         spacing: options.strappingWidth,
+                         startAngle: 7* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: false,
+                         fillStyle: this.getChainColor( 2 +i*3),
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( 2 +i*3)
+                       });
+
+        turtle.toaD( 0, shortBentLength);
+        turtle.toaD( 2* piTenths, 0); // middle of bend
+
+        vectors.push( {
+                         turtle: turtle.clone(),
+                         distance: shortBentLength,
+                         spacing: options.strappingWidth,
+                         startAngle: 4* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: true,
+                         fillStyle: this.getChainColor( 2 +i*3),
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( 2 +i*3)
+                       });
+        // don't worry about turtle here
+    }
+    return vectors;
 }

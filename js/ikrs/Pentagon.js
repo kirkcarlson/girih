@@ -94,6 +94,7 @@ Pentagon.prototype._buildOuterPolygons = function() {
 };
 
 
+/*
 Pentagon.prototype.getSVGforFancyStrapping = function( options, buffer, indent) {
     this._drawFancyStrapping (undefined, true, options, buffer, indent);
 }
@@ -168,4 +169,56 @@ Pentagon.prototype._drawFancyStrapping = function(canvasContext, svg, options, b
         turtle.toaD( 0, capGap);
         turtle.toaD( 3* piTenths, 0);
     }
+}
+*/
+
+Pentagon.prototype.getStrapVectors = function( options) {
+    turtle = new Turtle();
+    var strapLength = 0.425 * this.size // overall length of each strap
+    var capGap = options.capGap;
+    var faces = Girih.TILE_FACES [this.tileType];
+    var vectors = [];
+
+    turtle.toXY( this.position.x, this.position.y); // center of decagon
+    turtle.toAD( this.angle + faces[0].centralAngle, faces[0].radialCoefficient * this.size); //corner of decagon
+    turtle.toaD( Math.PI - faces[0].angleToCenter + faces[0].angleToNextVertex, this.size/2); //midpoint of side 0
+
+    // do all of the straps
+    for( var i = 0; i<5; i++) {
+
+        turtle.toaD( 3* piTenths, 0); // ready for strapping
+
+        vectors.push( {
+                         turtle: turtle.clone(),
+                         distance: strapLength,
+                         spacing: options.strappingWidth,
+                         startAngle: 7* piTenths,
+                         endAngle: 6* piTenths,
+                         startCap: false,
+                         endCap: false,
+                         fillStyle: this.getChainColor( i),
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( i)
+                       } );
+
+        turtle.toaD( 0, strapLength);
+        turtle.toaD( -2* piTenths, 0); // do the bend
+
+        vectors.push( {
+                         turtle: turtle.clone(),
+                         distance: strapLength - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 6* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: true,
+                         fillStyle: this.getChainColor( i),
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( i)
+                       } );
+
+        turtle.toaD( 0, strapLength);
+        turtle.toaD( 3* piTenths, 0); // bend at end.
+    }
+    return vectors;
 }

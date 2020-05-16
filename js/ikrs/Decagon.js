@@ -96,6 +96,7 @@ Decagon.prototype._buildOuterPolygons = function( edgeLength ) {
 };
 
 
+/*
 Decagon.prototype.getSVGforFancyStrapping = function( options, buffer, indent) {
     this._drawFancyStrapping (undefined, true, options, buffer, indent);
 }
@@ -186,4 +187,72 @@ Decagon.prototype._drawFancyStrapping = function(canvasContext, svg, options, bu
             this.drawStrapSegment ( canvasContext, strapOptions);
         }
     }
+}
+*/
+
+
+Decagon.prototype.getStrapVectors = function(options) {
+    turtle = new Turtle();
+    var strapLength = 0.95 * this.size // overall length of each strap
+    var startBrokenStrap = 0.589 * this.size
+    var endBrokenStrap = strapLength - startBrokenStrap // end part of strap
+    var capGap = options.capGap;
+    var faces = Girih.TILE_FACES [this.tileType];
+    var vectors = [];
+
+    // do all of the straps, one for each face
+    for( var i = 0; i<10; i++) {
+        turtle.toXY( this.position.x, this.position.y); // center of decagon
+        turtle.toAD( this.angle + faces[i].centralAngle,
+                     faces[i].radialCoefficient * this.size); //vertex of decagon
+        turtle.toaD( Math.PI - faces[i].angleToCenter + faces[i].angleToNextVertex,
+                     this.size/2); //at midpoint
+
+        turtle.toaD( 3* piTenths, 0); // ready for strapping
+
+        vectors.push( {
+                         turtle: turtle.clone(), // conveys position and angle
+                         distance: startBrokenStrap - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 7* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: true,
+                         fillStyle: this.getChainColor( i),
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( i)
+                       } );
+
+        turtle.toaD( 0, startBrokenStrap + capGap); // gap on each side of strap
+
+        vectors.push( {
+                         turtle: turtle.clone(),
+                         distance: endBrokenStrap - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 6* piTenths,
+                         endAngle: 6* piTenths,
+                         startCap: true,
+                         endCap: false,
+                         fillStyle: this.getChainColor( i),
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( i)
+                       } );
+
+        turtle.toaD( 0, endBrokenStrap - capGap); // to bend
+        turtle.toaD( -2* piTenths, 0);
+
+        vectors.push( {
+                         turtle: turtle.clone(),
+                         distance: strapLength - capGap,
+                         spacing: options.strappingWidth,
+                         startAngle: 6* piTenths,
+                         endAngle: 4* piTenths,
+                         startCap: false,
+                         endCap: true,
+                         fillStyle: this.getChainColor( i),
+                         fillOpacity: 1,
+                         segmentClass: this.getSegmentClass( i)
+                       } );
+    }
+    return vectors;
 }
