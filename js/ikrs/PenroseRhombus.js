@@ -7,7 +7,7 @@
  * @date 2013-12-11
  * @date 2014-04-05 Ikaros Kappler (member array outerTilePolygons added).
  * @date 2015-03-19 Ikaros Kappler (added toSVG()).
- * @date 2020-05-11 KirkCarlson (converted to use ECMA6 class).
+ * @date 2020-05-11 Kirk Carlson (converted to use ECMA6 class).
  * @version 1.0.2
  **/
 //import Turtle from "/js/ikrs/Turtle.js";

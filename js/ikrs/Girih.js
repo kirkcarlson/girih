@@ -22,6 +22,10 @@ class GirihClass {
         return this._tiles;
     }
 
+    set tiles ( tiles) {
+        this._tiles = tiles;
+    }
+
     addTile( tile ) {
         this._tiles.push( tile );
     }

@@ -41,11 +41,10 @@
     <script src="js/main.js" language="Javascript" type="text/javascript"></script>
 <script>console.log("body mSG:" + typeof moreStrapGap);</script>
 <div id="container">
-  <!--<div id="canvas-div" width="1024" height="768"> -->
   <div id="canvasPane">
-    <!-- changing canvas size affects polygon proportions... -->
-    <!--<canvas id="girih_canvas"  width="1024" height="768" class="tooltip" title="Hover over existing tiles to see possible adjacent tiles. -->
-    <canvas id="girih_canvas"  width="calc(100% - 240px)" height=calc(100%) class="tooltip" title="Hover over existing tiles to see possible adjacent tiles.
+    <canvas id="girih_canvas"  width="calc(100% - 240px)" height=calc(100%)
+    class="tooltip"
+    title="Hover over existing tiles to see possible adjacent tiles.
 Press keys to perform the following:
  [a] or [d] to navigate through the tile set.
  [0] to select the decagon tile.
@@ -67,82 +66,111 @@ Press keys to perform the following:
     <form name="girih_form">
       <span class="navLabel">Drawing Options</br></span>
       <label>
-        <input type="checkbox" name="draw_boxes" onclick="redrawGirih()" /> Draw Boxes<br/>
+        <input type="checkbox" name="draw_boxes" onclick="redrawGirih()" />
+        Draw Boxes<br/> </label>
+      <label>
+        <input type="checkbox" name="draw_outlines" onclick="redrawGirih()"
+        checked="checked" />
+        Draw Outlines</br> </label>
+      <label>
+        <input type="checkbox" name="draw_textures" onclick="redrawGirih()"
+          checked="checked" />
+          Draw Textures</br> </label>
+      <label>
+      &nbsp;&nbsp;&nbsp;<input type="radio" name="texture_type"
+        id="texture_type_default"
+        onclick="document.getElementById('custom_texture_file').disabled = this.checked;
+        if( this.checked ) { girihCanvasHandler.setTextureImage( defaultTextureImage, true ); }"
+        value="default" checked="checked" />
+        Default Background<br/></label>
+      <label>
+        &nbsp;&nbsp;&nbsp;<input type="radio" name="texture_type"
+        id="texture_type_custom"
+        onclick="document.getElementById('custom_texture_file').disabled = !this.checked;
+        document.getElementById('custom_texture_file').click()";
+        value="custom" />
+        Custom Background</br></label>
+      <label>
+        <span x-style="margin-left: 32px;"><input type="file"
+          name="custom_texture_file" id="custom_texture_file"
+          onchange="ImageFileReader.readTextureImage();" />
+        </span> </br> </label>
+      <label>
+        <input type="checkbox" name="draw_polygon_color"
+        onclick="redrawGirih()" checked="checked" />
+        Draw Polygon Color</br></label>
+      <label>
+        &nbsp;&nbsp;&nbsp;<input type="radio" name="polygon_color_type"
+        id="polygon_color_type_default" onclick="redrawGirih();"
+        value="default" checked="checked" />
+        Default Colors<br/></label>
+      <label>
+        &nbsp;&nbsp;&nbsp;<input type="radio" name="polygon_color_type"
+        id="polygon_color_type_random" onclick="redrawGirih();"
+        value="random" />
+        Random Colors<br/></label>
+      <label>
+        <input type="checkbox" name="draw_inner_polygons"
+        onclick="redrawGirih();" checked="checked" />
+        Draw Inner Polygons</br> </label>
+      <label>
+        &nbsp;&nbsp;&nbsp;<input type="checkbox" name="outer_random_color_fill"
+        onclick="redrawGirih();" />
+        Random Color Outer Facets<br/>
       </label>
       <label>
-        <input type="checkbox" name="draw_outlines" onclick="redrawGirih()" checked="checked" /> Draw Outlines</br>
-      </label>
+        &nbsp;&nbsp;&nbsp;<input type="checkbox" name="inner_random_color_fill"
+        onclick="redrawGirih();" />
+        Random Color Inner Facets<br/> </label>
       <label>
-        <input type="checkbox" name="draw_textures" onclick="redrawGirih()" checked="checked" /> Draw Textures</br>
-      </label>
-      &nbsp;&nbsp;&nbsp;<input type="radio" name="texture_type" id="texture_type_default" onclick="document.getElementById('custom_texture_file').disabled = this.checked; if( this.checked ) { girihCanvasHandler.setTextureImage( defaultTextureImage, true ); }" value="default" checked="checked" /> Default Background<br/>
+        <input type="checkbox" name="draw_strapping" onclick="redrawGirih();"
+        checked="checked" />
+        Draw Strapping </label><br/>
       <label>
-      &nbsp;&nbsp;&nbsp;<input type="radio" name="texture_type" id="texture_type_custom" onclick="document.getElementById('custom_texture_file').disabled = !this.checked; document.getElementById('custom_texture_file').click();" value="custom" /><span x-style="margin-left: 32px;"><input type="file" name="custom_texture_file" id="custom_texture_file"   onchange="ImageFileReader.readTextureImage();" /></span></br>
-      </label>
+        &nbsp;&nbsp;&nbsp;<input type="radio" name="draw_strapping_type"
+        id="draw_strapping_type_basic" onclick="redrawGirih();" value="basic" />
+        Basic Strapping<br/> </label>
       <label>
-        <input type="checkbox" name="draw_polygon_color" onclick="redrawGirih()" checked="checked" /> Draw Polygon Color</br>
-      </label>
+        &nbsp;&nbsp;&nbsp;<input type="radio" name="draw_strapping_type"
+        id="draw_strapping_type_fancy" onclick="redrawGirih();" value="fancy"
+        checked="checked" />
+        Fancy Strapping<br/> </label>
       <label>
-        &nbsp;&nbsp;&nbsp;<input type="radio" name="polygon_color_type" id="polygon_color_type_default" onclick="redrawGirih();" value="default" checked="checked" /> Default Colors<br/>
-      </label>
-      <label>
-        &nbsp;&nbsp;&nbsp;<input type="radio" name="polygon_color_type" id="polygon_color_type_random"  onclick="redrawGirih();" value="random" /> Random Colors<br/>
-      </label>
-      <label>
-        <input type="checkbox" name="draw_inner_polygons" onclick="redrawGirih();" checked="checked" /> Draw Inner Polygons</br>
-      </label>
-      <label>
-        &nbsp;&nbsp;&nbsp;<input type="checkbox" name="outer_random_color_fill" onclick="redrawGirih();" />Random Color Outer Facets<br/>
-      </label>
-      <label>
-        &nbsp;&nbsp;&nbsp;<input type="checkbox" name="inner_random_color_fill" onclick="redrawGirih();" />Random Color Inner Facets<br/>
-      </label>
-      <label>
-        <input type="checkbox" name="draw_strapping" onclick="redrawGirih();" checked="checked" /> Draw Strapping
-      </label>
-      <br/>
-      <label>
-        &nbsp;&nbsp;&nbsp;<input type="radio" name="draw_strapping_type" id="draw_strapping_type_basic"   onclick="redrawGirih();" value="basic" />Basic Strapping<br/>
-      </label>
-      <label>
-        &nbsp;&nbsp;&nbsp;<input type="radio" name="draw_strapping_type" id="draw_strapping_type_fancy"   onclick="redrawGirih();" value="fancy" checked="checked" />Fancy Strapping<br/>
-      </label>
-      <label>
-        &nbsp;&nbsp;&nbsp;<input type="radio" name="draw_strapping_type" id="draw_strapping_type_random" onclick="redrawGirih();" value="random" />Random Color Chains<br/>
-      </label>
-        <div class="buttonGroup">
+        &nbsp;&nbsp;&nbsp;<input type="radio" name="draw_strapping_type"
+        id="draw_strapping_type_random" onclick="redrawGirih();" value="random" />
+        Random Color Chains<br/> </label>
+      <div class="buttonGroup">
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strapping Gap
         <div class="floatRight">
-<script>console.log("body mSG:" + typeof moreStrapGap);</script>
           <button id="moreStrapGapButton" onclick="moreStrapGap();return false;">+</button>
           <input type="text" id="strapGap" onkeydown="event.stopPropagation();">
           <button id="lessStrapGapButton" onclick="lessStrapGap();return false;">&ndash;</button>
         </div>
-        </div>
-        <div class="buttonGroup">
+      </div>
+      <div class="buttonGroup">
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strapping Width
         <div class="floatRight">
           <button id="moreStrapWidthButton" onclick="moreStrapWidth();return false;">+</button>
           <input type="text" id="strapWidth" onkeydown="event.stopPropagation();">
           <button id="lessStrapWidthButton" onclick="lessStrapWidth();return false;">&ndash;</button>
         </div>
-        </div>
-        <div class="buttonGroup">
+      </div>
+      <div class="buttonGroup">
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Line Width
         <div class="floatRight">
           <button id="moreStrapStrokeWidthButton" onclick="moreStrapStrokeWidth();return false;">+</button>
           <input type="text" id="strapStrokeWidth" onkeydown="event.stopPropagation();">
           <button id="lessStrapStrokeWidthButton" onclick="lessStrapStrokeWidth();return false;">&ndash;</button>
         </div>
-        </div>
-        <div class="buttonGroup">
+      </div>
+      <div class="buttonGroup">
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Pixel Factor
-          <div class="floatRight">
-            <button id="morePixelFactorButton" onclick="morePixelFactor();return false;">+</button>
-            <input type="text" id="pixelFactor" onkeydown="event.stopPropagation();">
-            <button id="lessPixelFactorButton" onclick="lessPixelFactor();return false;">&ndash;</button>
-          </div>
-        </div><!--end ButtonGroup -->
+        <div class="floatRight">
+          <button id="morePixelFactorButton" onclick="morePixelFactor();return false;">+</button>
+          <input type="text" id="pixelFactor" onkeydown="event.stopPropagation();">
+          <button id="lessPixelFactorButton" onclick="lessPixelFactor();return false;">&ndash;</button>
+        </div>
+      </div><!--end ButtonGroup -->
       <br/>
       <label>
         <input type="checkbox" name="allow_penrose_tile" onclick="redrawGirih()" checked="checked" /> Allow Penrose Tile</br>
@@ -178,24 +206,86 @@ Press keys to perform the following:
             <input type="radio" name="rotate_type" id="rotate_type_tile" onclick="redrawGirih();" value="tile" /> Tile<br/>
           </label>
         </form>
-      </div>
-    </div>
+      </div> <!-- end of rotation keys -->
+    </div> <!-- end of pan and zoom sub panel -->
     <br/>
     <div id="saveButtons">
       <span class="fileInput">Load</span><input type="file" id="importButton" />
       <button id="exportSVGKey"   onclick="exportSVG();return   false">Save SVG</button><br/>
       <button id="exportTilesKey" onclick="exportTiles();return false">Save</button><br/>
       <input type="text" id="downloadFilename" placeholder="girih" onkeydown="event.stopPropagation();">
-    </div>
+    </div> <!-- end of save buttons -->
     <br/>
     <br/>
     <span class="navLabel">Debug Messages</br></span>
       <textarea id="debug" rows="5" cols="30"></textarea>
-      <script>
-        function DEBUG( msg ) {
-           this.document.getElementById("debug").innerHTML = msg;
-        }
-      </script>
+        <form name="extras">
+          Coordinate axes<br/>
+            <label>
+              <input type="radio" name="axes" id="axes-none"
+                 onclick="redrawGirih()" value="none" />
+              None</label><br/>
+            <label>
+              <input type="radio" name="axes" id="axes-canvas"
+                 onclick="redrawGirih()" value="canvas"/>
+              Canvas</label><br/>
+            <label>
+              <input type="radio" name="axes" id="axes-absolute"
+                 onclick="redrawGirih()" value="absolute" checked="checked" />
+              Absolute</label><br/>
+            <label>
+              <input type="radio" name="axes" id="axes-circumcenter"
+                 onclick="redrawGirih()" value="circumcenter" />
+              Circumcenter</label><br/>
+            <br/>
+          n-fold symmetry<br/>
+            <label>
+              <input type="radio" name="symmetry" id="symmetry-none"
+                onclick="redrawGirih()" value="none" checked="checked" />
+              None</label>
+
+            <label>
+              <input type="radio" name="symmetry" id="symmetry-2fold"
+                onclick="redrawGirih()" value="2fold" />
+              2</label>
+            <label>
+              <input type="radio" name="symmetry" id="symmetry-5fold"
+                onclick="redrawGirih()" value="5fold" />
+              5</label>
+            <label>
+              <input type="radio" name="symmetry" id="symmetry-10fold"
+                onclick="redrawGirih()" value="10fold" />
+              10</label>
+            <br/>
+            <br/>
+          <label>
+            <input type="checkbox" name="draw_symmetrically"
+              onclick="redrawGirih()"/>
+              Draw symmetrically</label></br>
+          <label>
+            <input type="checkbox" name="draw_circumcircle" onclick="redrawGirih()"/>
+            Draw circumscribed circle</label></br>
+          <label>
+            <input type="checkbox" name="draw_tile_order" onclick="redrawGirih()"/>
+            Draw tile order</label></br>
+
+          <button id="recenterTileKey" onclick="recenterTile();return false">
+            Recenter on tile</button><br/>
+          <button id="recenterCanvasKey" onclick="recenterCanvas();return false">
+            Recenter on canvas</button><br/>
+          <button id="recenterCircumcenterKey" onclick="recenterCircumcenter();return false">
+            Recenter on circumcenter</button><br/>
+          <button id="resetAngleRightKey" onclick="resetAngleRight();return false">
+            Reset angle right</button><br/>
+          <button id="resetAngleTopKey" onclick="resetAngleTop();return false">
+            Reset angle top</button><br/>
+          <button id="renumberRadiallyKey" onclick="renumberRadially();return false">
+            Renumber radially</button><br/>
+          <button id="renumberTangentiallyKey" onclick="renumberTangentially();return false">
+            Renumber tangentially</button><br/>
+      </form>
+      <div> <!-- end of ?? -->
+    </div> <!-- end of ?? -->
   </div> <!-- end of control pane div -->
 </div> <!-- end of container div -->
 </body>

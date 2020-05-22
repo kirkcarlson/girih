@@ -39,47 +39,47 @@ class Point2 {
     */
 
     add( amount ) {
-        this.x += amount.x;
-        this.y += amount.y;
+        this._x += amount.x;
+        this._y += amount.y;
         return this;  // For operator concatenation
     };
 
     addXY( x, y ) {
-        this.x += x;
-        this.y += y;
+        this._x += x;
+        this._y += y;
         return this;
     };
 
     sub( amount ) {
-        this.x -= amount.x;
-        this.y -= amount.y;
+        this._x -= amount.x;
+        this._y -= amount.y;
         return this;  // For operator concatenation
     };
 
     set( position ) {
-        this.x = position.x;
-        this.y = position.y;
+        this._x = position.x;
+        this._y = position.y;
         return this;  // For operator concatenation
     };
 
     setXY( x, y ) {
-        this.x = x;
-        this.y = y;
+        this._x = x;
+        this._y = y;
     };
 
     invert() {
-        this.x = -this.x;
-        this.y = -this.y;
+        this._x = -this._x;
+        this._y = -this._y;
         return this;
     };
 
     difference( point ) {
-        return new Point2( point.x - this.x, point.y - this.y );
+        return new Point2( point.x - this._x, point.y - this._y );
     }
 
     // Is this correct?
     dotProduct( point ) {
-        return (this.x * point.x + this.y * point.y);
+        return (this._x * point.x + this._y * point.y);
     };
 
 
@@ -96,16 +96,22 @@ class Point2 {
     };
 
     length() {
-        return Math.sqrt( Math.pow(this.x,2) + Math.pow(this.y,2) );
+        return Math.sqrt( Math.pow(this._x,2) + Math.pow(this._y,2) );
     };
 
     distanceTo( point ) {
-        return Math.sqrt( Math.pow(this.x-point.x,2) + Math.pow(this.y-point.y,2) );
+        return Math.sqrt( Math.pow(this._x-point.x,2) + Math.pow(this._y-point.y,2) );
     };
 
     multiplyScalar( s ) {
-        this.x *= s;
-        this.y *= s;
+        this._x *= s;
+        this._y *= s;
+        return this;  // For operator concatenation
+    }
+
+    divideScalar( s ) {
+        this._x /= s;
+        this._y /= s;
         return this;  // For operator concatenation
     }
 
@@ -124,7 +130,7 @@ class Point2 {
     }
 
     clone() {
-        return new Point2( this.x, this.y );
+        return new Point2( this._x, this._y );
     }
 
     rotate( origin,
@@ -137,18 +143,18 @@ class Point2 {
         //  p'y = sin(theta) * (px-ox) + cos(theta) * (py-oy) + oy
         var cosT = Math.cos(theta);
         var sinT = Math.sin(theta);
-        var dX   = this.x - origin.x;
-        var dY   = this.y - origin.y;
+        var dX   = this._x - origin.x;
+        var dY   = this._y - origin.y;
 
-        this.x = cosT * dX - sinT * dY + origin.x;
-        this.y = sinT * dX + cosT * dY + origin.y;
+        this._x = cosT * dX - sinT * dY + origin.x;
+        this._y = sinT * dX + cosT * dY + origin.y;
 
         return this;  // For operator concatenation
     }
 
     toString() {
-        return "(" + Girih.round( this.x, girihCanvasHandler.SVG_PRECISION)  + ", " +
-                     Girih.round( this.y, girihCanvasHandler.SVG_PRECISION)  + ")";
+        return "(" + Girih.round( this._x, girihCanvasHandler.SVG_PRECISION)  + ", " +
+                     Girih.round( this._y, girihCanvasHandler.SVG_PRECISION)  + ")";
     }
 };
 

@@ -22,6 +22,8 @@ class GirihCanvasHandler {
 
         this.drawOffset                = this.canvasCenter.clone();
         this.zoomFactor                = 1.0;
+        this.angle                     = 0; // angle of the image relative to coordinate
+        this.circumcircle              = undefined; // circle containing all tiles
 
         this.girih                     = new GirihClass(); // describes a set of tiles
 
@@ -32,6 +34,10 @@ class GirihCanvasHandler {
                                            drawInnerPolygons:          true,
                                            drawStrapping:              true,
                                            drawStrappingType:          "basic", // can be "basic", "fancy", "random"
+                                           drawTileOrder:              false,
+                                           drawCircumcircle:           "basic", // can be "basic", "fancy", "random"
+                                           axesType:                   "absolute", // can be "none", "canvas", "absolute", "circumcenter"
+                                           symmetry:                   "none", // can be "none", "2-fold", "5-fold", "10-fold"
                                            polygonColorType:           "default", // can be "random"
                                            innerRandomColorFill:       false, //true
                                            outerRandomColorFill:       false,
@@ -155,7 +161,9 @@ GirihCanvasHandler.prototype.mouseDownHandler = function( e ) {
 
     var tileIndex = this.girihCanvasHandler._locateTileAtPoint( point );
     if( tileIndex == -1 ) {
-        return;  // Hover over blank space
+        girihCanvasHandler._clearSelection();
+        girihCanvasHandler.redraw();
+        return;  // click on blank space
     }
 
     // Adjacent tile displayed?
@@ -165,24 +173,27 @@ GirihCanvasHandler.prototype.mouseDownHandler = function( e ) {
     if( hoveredTileIndex != -1 ) {
         tile            = this.girihCanvasHandler.girih.tiles[ hoveredTileIndex ];
 
-        // Check if cursor is not directly on center
-        if( tile.position.distanceTo(point) > 5 ) {
+        // Check if cursor is directly on center
+        if( tile.position.distanceTo(point) < 8 ) {
+            this.girihCanvasHandler._clearSelection();
+            tile._props.selected = true;
+            girihCanvasHandler.redraw();
+        } else {
 
-            var tileBounds   = tile.computeBounds();
+//            var tileBounds   = tile.computeBounds();
 
             adjacentTile = this.girihCanvasHandler._resolveCurrentAdjacentTilePreset(
                      tile,
                      tile._props.highlightedEdgeIndex,
                    );
+            if( adjacentTile) {
+                this.girihCanvasHandler._performAddCurrentAdjacentPresetTile();
+//    } else { // No adjacent tile found for this location
+//        this.girihCanvasHandler._clearSelection();
+//        this.girihCanvasHandler.girih.tiles[tileIndex]._props.selected = true;
+//        this.girihCanvasHandler.redraw();
+            }
         }
-    }
-
-    if( adjacentTile) {
-        this.girihCanvasHandler._performAddCurrentAdjacentPresetTile();
-    } else { // No adjacent tile found for this location
-        this.girihCanvasHandler._clearSelection();
-        this.girihCanvasHandler.girih.tiles[tileIndex]._props.selected = true;
-        this.girihCanvasHandler.redraw();
     }
 };
 
@@ -285,6 +296,7 @@ GirihCanvasHandler.prototype._locateSelectedTile = function() {
     return -1;
 };
 
+
 GirihCanvasHandler.prototype._locateHoveredTile = function() {
     for( var i = 0; i < this.girih.tiles.length; i++ ) {
         if( this.girih.tiles[i]._props.hovered ) {
@@ -294,11 +306,13 @@ GirihCanvasHandler.prototype._locateHoveredTile = function() {
     return -1;
 };
 
+
 GirihCanvasHandler.prototype._clearSelection = function() {
     for( var i = 0; i < this.girih.tiles.length; i++ ) {
-        this.girih.tiles[i]._props.selected             = false;
+        this.girih.tiles[i]._props.selected = false;
     }
 };
+
 
 GirihCanvasHandler.prototype._clearHovered = function() {
     for( var i = 0; i < this.girih.tiles.length; i++ ) {
@@ -596,7 +610,6 @@ GirihCanvasHandler.prototype.drawPolygonFromPoints =
         function( {
                     // vertices, strokeColor, fillColor,
                     strokeWidth = 1.0,
-                    strokeOpacity = 1,
                     fillOpacity = 1,
                   } ) {
     var options = arguments[0];
@@ -628,7 +641,6 @@ GirihCanvasHandler.prototype.drawPolygonFromPoints =
     if( options.strokeColor) {
         this.context.lineWidth =     options.strokeWidth;
         this.context.strokeStyle =   options.strokeColor;
-        this.context.strokeOpacity = options.strokeOpacity;
         this.context.stroke();
     }
 };
@@ -652,7 +664,6 @@ GirihCanvasHandler.prototype.drawHighlightedPolygonEdge = function( tile, highli
     this.context.closePath();
     this.context.strokeStyle = this.drawProperties.polygonSelectedStrokeColor,
     this.context.lineWidth = 3.0;
-    this.context.opacity = 1.0;
     this.context.stroke();
 };
 
@@ -664,7 +675,6 @@ Tile.prototype._drawPreviewTile = function( canvasContext) {
                                     { vertices:      tile.polygon.vertices,
                                       strokeColor:   "#888888",
                                       strokeWidth:   1,
-                                      strokeOpacity: 0.5,
                                       fillColor:     null,
                                     } );
 };
@@ -677,6 +687,7 @@ GirihCanvasHandler.prototype.drawCrosshairAt = function( position,
 
     if( isSelected ) {
         this.context.strokeStyle = "#FF0000";
+        this.context.fillStyle = "#FF0000";
     } else {
         this.context.strokeStyle = "#808080";
     }
@@ -709,17 +720,19 @@ GirihCanvasHandler.prototype.drawCrosshairAt = function( position,
                       false
                     );
 
-    this.context.stroke();
     this.context.closePath();
+    this.context.stroke();
+    if( isSelected ) {
+       this.context.fill();
+    }
 };
 
 
 
 GirihCanvasHandler.prototype._drawCoordinateSystem = function() {
 
-    this.context.strokeStyle = this.drawProperties.boundingBoxColor,
-    this.context.beginPath();
 
+/*
     this.context.moveTo( this.drawOffset.x,
                          0
                        );
@@ -733,9 +746,70 @@ GirihCanvasHandler.prototype._drawCoordinateSystem = function() {
     this.context.lineTo( this.canvasWidth,
                          this.drawOffset.y
                        );
+*/
+//NEW BEGIN
+    if( this.drawProperties.drawCircumcircle) {
+        document.getElementById('recenterCircumcenterKey').disabled = false;
+        document.getElementById('axes-circumcenter').disabled = false;
+        this.circumscribeTiles();
+    } else {
+        document.getElementById('recenterCircumcenterKey').disabled = true;
+        document.getElementById('axes-circumcenter').disabled = true;
+    }
+// what is the center of the figure? circumcenter? bounding box?
+// what about centering on current center?
+// tile seems to be automatic when tile is selected (and rotate all is selected)
+    var angle, center;
+    var centerType = this.drawProperties.axesType
+    if (centerType === "none") {
+        return;
+    } else if (centerType === "canvas") {
+        var index = this._locateSelectedTile();
+        if (index == -1) {
+            center = new Point2( this.canvasWidth/2, this.canvasHeight/2);
+            angle = this.angle;
+        } else {
+            tile = this.girih.tiles[ index]
+            angle = tile.angle;
+            center = new Point2( tile.position.x * this.zoomFactor + this.drawOffset.x,
+                                 tile.position.y * this.zoomFactor + this.drawOffset.y);
+        }
 
+    } else if (centerType === "absolute") {
+        angle = this.angle;
+        center = new Point2( this.drawOffset.x, this.drawOffset.y);
+    } else if (centerType === "circumcenter") {
+        angle = this.angle;
+        center = this.circumcircle.center.multiplyScalar( this.zoomFactor).
+                 add (this.drawOffset).clone()
+console.log("circumcircle center", center);
+    }
+
+    var radius = Math.sqrt(this.canvasWidth * this.canvasWidth +
+                           this.canvasHeight * this.canvasHeight)
+
+    var turtle = new Turtle();
+    var numberOfAxes = this.drawProperties.symmetryType;
+    if (numberOfAxes === "none" || numberOfAxes === "2fold") {
+        numberOfAxes = 4;
+    } else if (numberOfAxes === "5fold") {
+        numberOfAxes = 5;
+    } else if (numberOfAxes === "10fold") {
+        numberOfAxes = 10;
+    }
+
+    this.context.beginPath();
+console.log("axes center", center);
+    for (var i = 0; i< numberOfAxes; i++) {
+        turtle.toXY(center.x, center.y);
+        this.context.moveTo(turtle.position.x,turtle.position.y);
+        turtle.toAD( i * 2*Math.PI/numberOfAxes + angle, radius);
+        this.context.lineTo(turtle.position.x,turtle.position.y);
+    }
+//NEW END
+    this.context.strokeStyle = this.drawProperties.boundingBoxColor,
+    //this.context.closePath();
     this.context.stroke();
-    this.context.closePath();
 };
 
 
@@ -774,6 +848,22 @@ GirihCanvasHandler.prototype._drawTiles = function() {
 };
 
 
+GirihCanvasHandler.prototype._drawTileOrder = function() {
+    var tile;
+    this.context.beginPath();
+    this.context.moveTo( this.drawOffset.x, this.drawOffset.y);
+    var savedLineWidth = this.context.lineWidth;
+    this.context.lineWidth = 2;
+    this.context.strokeStyle = "blue";
+    for (tile of this.girih.tiles){
+        this.context.lineTo( tile.position.x * this.zoomFactor + this.drawOffset.x,
+                             tile.position.y * this.zoomFactor + this.drawOffset.y);
+    }
+    this.context.stroke();
+    this.context.lineWidth = savedLineWidth;
+    //this.context.lineWidth = 0.0001;
+}
+
 /**************************************************************************
  *  drawStrapSegment -- draw a double girih strap segment from an array of points
  *
@@ -783,7 +873,6 @@ GirihCanvasHandler.prototype._drawTiles = function() {
  *      fillStyle is optional style parameter used to fill shape
  *      fillOpacity is optional style parameter used to fill shape
  *      strokeStroke is optional style of the stroked line
- *      strokeOpacity is optional opacity of the stroked line (0..1)
  *      strokeWidth is optional width of the stroked line in pixels
  *
  *  the array of points corresponds to the following diagram of a segment
@@ -795,7 +884,6 @@ GirihCanvasHandler.prototype.drawStrapSegment = function( points, {
         //distance,
         fillOpacity = 1,
         fillStyle = "gray",
-        strokeOpacity = 1,
         strokeStyle = "black",
         strokeWidth = 1,
     }) {
@@ -846,7 +934,6 @@ GirihCanvasHandler.prototype.drawStrapSegment = function( points, {
     girihCanvasHandler.context.strokeStyle = options.strokeStyle;
     //this.context.fillStyle = "";
     girihCanvasHandler.context.lineWidth = options.strokeWidth;
-    girihCanvasHandler.context.strokeOpacity = options.strokeOpacity;
     girihCanvasHandler.context.stroke();
 }
 
@@ -877,16 +964,25 @@ console.log("redraw triggered")
     // in case the canvas has resized...
     this.canvasWidth               = this.canvas.width;
     this.canvasHeight              = this.canvas.height;
+    this.context.globalAlpha = 1;
 
-    this.context.fillStyle = this.getDrawProperties().backgroundColor; // "#F0F0F0";
-    this.context.fillRect( 0, 0, this.canvasWidth, this.canvasHeight );
+    this.context.clearRect( 0, 0, this.canvasWidth, this.canvasHeight );
+    //this.context.fillStyle = this.getDrawProperties().backgroundColor; // "#F0F0F0";
+    //this.context.fillRect( 0, 0, this.canvasWidth, this.canvasHeight );
+
 
     if( this.getDrawProperties().drawCoordinateSystem ) {
         this._drawCoordinateSystem();
     }
 
-    this._drawTiles();
-
+    if( this.getDrawProperties().drawTileOrder ) {
+        this.context.globalAlpha = 0.5;
+        this._drawTiles();
+        this.context.globalAlpha = 1;
+        this._drawTileOrder();
+    } else {
+        this._drawTiles();
+    }
 };
 
 
@@ -1330,5 +1426,501 @@ GirihCanvasHandler.prototype._drawLine = function( line ) {
     this.context.strokeStyle = "#0000FF";
     this.context.stroke();
 };
+
+
+/* need to fix circumscribeTiles a bit.
+currently does not find such a circle.
+
+Need to find candiates points outside of the circle and their radius and angle
+from the circumcenter.
+
+find least number of outside points
+    Pick three points from list of candidates
+    find circumcircle of those points
+    if nothing outside
+        if radius is smaller than previous solution
+           replace solution
+    else if number outside is less than previous number outside
+        replace next list of canditates
+Try again with the next list of candidates
+If the number of candiates is increasing, stop... may be oscillating
+
+may want to skip candiates with a large radius...(say 10* max(boundingBoxWidth,boundBoxHeight)) too inline.
+*/
+
+
+
+function findAveragePositionOfTiles() {
+    // this gives a crude estimate of the center.
+    var averagePosition, number, index;
+    averagePosition = new Point2 (0,0);
+    number = girihCanvasHandler.girih.tiles.length;
+    for (index in girihCanvasHandler.girih.tiles) {
+        averagePosition.x += girihCanvasHandler.girih.tiles[ index].position.x;
+        averagePosition.y += girihCanvasHandler.girih.tiles[ index].position.y;
+    }
+    averagePosition.x /= number;
+    averagePosition.y /= number;
+    return averagePosition;
+}
+
+
+function getAngle( x, y) {
+    var angle = Math.atan( y/x);
+    if (x < 0) {
+        angle += Math.PI;
+    }
+    if (angle <0) {
+        angle += 2* Math.PI;
+    }
+    return angle
+}
+
+
+function findMostDistantPointsSectored( center, sectors) {
+    var sectorAngle, mostDistant, i, tile, distance, angle, sector;
+    sectorAngle = 2* Math.PI / sectors;
+    mostDistant = new Array( sectors);
+    i = 0;
+    for (tile of girihCanvasHandler.girih.tiles) {
+        distance = tile.position.distanceTo( center);
+        if (distance > 0) { // tile is not at center
+            angle = getAngle( tile.position.x - center.x,
+                              tile.position.y - center.y)
+            sector = Math.floor( angle / sectorAngle);
+            if (mostDistant[ sector] === undefined ||
+                    distance > mostDistant[ sector].distance) {
+                mostDistant[ sector] = { tileIndex: i,
+                                         distance: distance,
+                                         point: tile.position,
+                                       }
+            }
+        }
+        i++;
+    }
+    // refine and find the most distant vertex of each tile in the most distant
+    var result, vertex;
+    result = [];
+    if (mostDistant !== undefined) {
+        for ( i=0; i < mostDistant.length; i++) {
+            if (mostDistant[ i] !== undefined) {
+                for ( vertex of girihCanvasHandler.girih.
+                        tiles[ mostDistant[ i].tileIndex ].polygon.vertices) {
+                    distance = vertex.distanceTo( center);
+                    if (distance >  mostDistant[ i].distance) {
+                        mostDistant[ i].distance = distance;
+                        mostDistant[ i].point = vertex;
+                    }
+                }
+                result.push( mostDistant[ i].point); // just return the point
+            }
+        }
+    }
+    return  result;
+}
+
+
+function findMostDistantTiles() {
+    var number, i, j, pointI, pointJ, distance, maximumDistance, tileA, tileB;
+    number = girihCanvasHandler.girih.tiles.length;
+    for (i=0; i < number; i++) {
+        for (j=i+1; j < number; j++) {
+            pointI= girihCanvasHandler.girih.tiles[i].position.clone();
+            pointJ= girihCanvasHandler.girih.tiles[j].position.clone();
+            distance = pointI.distanceTo( pointJ);
+            if (maximumDistance === undefined ||
+                       distance > maximumDistance) {
+                 maximumDistance = distance;
+                 tileA = girihCanvasHandler.girih.tiles[i];
+                 tileB = girihCanvasHandler.girih.tiles[j];
+            }
+        }
+    }
+    return { distance: maximumDistance, tileA: tileA, tileB: tileB} ;
+}
+
+
+function findMostDistantPointsOfTileFromAPoint( tile, point) {
+    var vertex, distance, maximumDistance, savedPoint;
+    for ( vertex of tile.polygon.vertices) {
+        distance = vertex.distanceTo( point);
+        if (maximumDistance === undefined || distance > maximumDistance) {
+            maximumDistance = distance;
+            savedPoint = vertex;
+        }
+    }
+    return { distance: maximumDistance, point: savedPoint}
+}
+
+
+function findMostDistantPointsOfTwoTiles( tileA, tileB) {
+    var vertexA, vertexB, distance, maximumDistance, pointA, pointB;
+    for ( vertexA of tileA.polygon.vertices) {
+        for ( vertexB of tileB.polygon.vertices) {
+            distance = vertexA.distanceTo( vertexB);
+            if (maximumDistance === undefined || distance > maximumDistance) {
+                maximumDistance = distance;
+                pointA = vertexA;
+                pointB = vertexB;
+            }
+        }
+    }
+    return [ pointA, pointB ];
+}
+
+
+function findMaximumDistanceBetweenTiles() {
+    var tiles, points;
+    tiles = findMostDistantTiles(); // this may not work for skinny tiles
+    points = findMostDistantPointsOfTwoTiles( tiles.tileA, tiles.tileB);
+    return points;
+}
+
+
+function estimateCircleWithMaximumDistance() {
+    var estimate, center, radius, circle, angle;
+    estimate = findMaximumDistanceBetweenTiles()
+    center = new Point2( ( estimate.pointA.x + estimate.pointB.x ) / 2,
+                         ( estimate.pointA.y + estimate.pointB.y ) / 2);
+    radius = estimate.distance /2;
+    circle = new Circle (center, radius);
+    angle = getAngle( estimate.pointB.x - estimate.pointA.x,
+                      estimate.pointB.y - estimate.pointA.y);
+    // angle can be useful in establishing sector boundaries
+    return circle;
+}
+
+
+function findTilePointsOutsideCircle( circle) {
+    var decagonRadius, minRadius, outsiders, tile, maxDistance, maxPoint;
+    var secondMaxPoint, vertex, distance;
+
+    // set up limit for tiles completely within circle
+    decagonRadius = girihCanvasHandler.girih.tiles[0].size *
+            Girih.TILE_FACES[ Girih.TILE_TYPE.DECAGON][0].radialCoefficient;
+    minRadius = circle.radius - decagonRadius;
+    if (minRadius < 0) {
+        minRadius = 0;
+    }
+    outsiders = [];
+
+    for (tile of girihCanvasHandler.girih.tiles) {
+        // skip tiles completely within circle
+        if (tile.position.distanceTo( circle.center) < minRadius) {
+            continue;
+        }
+        maxDistance = undefined; // reset for this tile
+        secondMaxPoint = undefined; // reset for this tile
+        for (vertex of tile.polygon.vertices) {
+            distance = vertex.distanceTo( circle.center);
+            if (distance - circle.radius > 0.002) { // outside of circle
+                if (maxDistance === undefined || distance - maxDistance < 3) {
+                    secondMaxPoint = vertex; // doesn't matter which is bigger
+                } else if (distance > maxDistance) {
+                    maxDistance = distance;
+                    maxPoint = vertex;
+                    secondMaxPoint = undefined; // in case minimium
+                }
+            }
+        }
+        if (maxDistance !== undefined) {
+            outsiders.push( maxPoint);
+        }
+        if (secondMaxPoint !== undefined) {
+            outsiders.push( secondMaxPoint);
+        }
+    }
+    return outsiders;
+}
+
+
+function findBoundingVertices () {
+    var tile, point;
+    var minX = girihCanvasHandler.girih.tiles[0].polygon.vertices[0].clone()
+    var maxX = minX.clone()
+    var minY = minX.clone()
+    var maxY = minX.clone()
+
+    for (tile of girihCanvasHandler.girih.tiles) {
+        for (point of tile.polygon.vertices) {
+            if ( point.x < minX.x) {
+                minX = point.clone();
+            }
+            if ( point.x > maxX.x) {
+                maxX = point.clone();
+            }
+            if ( point.y < minY.y) {
+                minY = point.clone();
+            }
+            if ( point.y > maxY.y) {
+                maxY = point.clone();
+            }
+        }
+    }
+    return [minX, minY, maxX, maxY];
+}
+
+
+findBestCircleFromPoints = function( points) {
+    // for each triplet of points, find a circle
+    var i, j, k, outsiders, savedCircle, savedOutsiders;
+    var savedPointA, savedPointB, savedPointC;
+    const outsiderLimit = 10;
+    const outsiderThreshold = 4;
+
+    for (i=0; i< points.length; i++) {
+        if (points[i] === undefined) {
+            continue;
+        }
+        for (j=i+1; j< points.length; j++) {
+            if (points[j] === undefined) {
+                continue;
+            }
+            for (k=j+1; k< points.length; k++) {
+                if (points[k] === undefined) {
+                    continue;
+                }
+                circle = girihCanvasHandler.circumscribeCircle (
+                        points[i], points[j], points[k] );
+
+                //if this cirle is better than other circles, save it.
+                outsiders = findTilePointsOutsideCircle( circle);
+                console.log("circle "+ i +" "+ j +" "+ k +" "+
+                             points[i] +" "+ points[j] +" "+ points[k]
+                             +" radius:"+ circle.radius
+                             +" outsiders:"+ outsiders.length);
+
+                if (outsiders.length< outsiderLimit && circle.radius < Infinity) {
+                    if (savedCircle === undefined ||
+                            outsiders.length < savedOutsiders.length ||
+                            (outsiders.length === savedOutsiders.length &&
+                            circle.radius < savedCircle.radius)) {
+
+//                    if (savedCircle === undefined ||
+//                            (circle.radius < savedCircle.radius &&
+//                             outsiders.length <
+//                                savedOutsiders.length + outsiderThreshold) ) {
+
+                        console.log("radius:"+ circle.radius +" outsiders:"+ outsiders.length);
+                        savedOutsiders = outsiders;
+                        savedCircle = circle;
+                        savedPointA = points[i];
+                        savedPointB = points[j];
+                        savedPointC = points[k];
+                    }
+                }
+            }
+        }
+    }
+    return { circle: savedCircle, outsiders: savedOutsiders,
+             pointA: savedPointA,
+             pointB: savedPointB,
+             pointC: savedPointC };
+}
+
+
+GirihCanvasHandler.prototype.circumscribeTiles = function () {
+    var center, points, circle, outsiders, goodEnough, result;
+    var radius;
+    const sectors = 10;
+    const outsiderThreshold = 0; // max outsider difference to consider
+    const outsiderLimit = 10;     // maximum number of outsiders to consider
+
+    //fifth attempt
+    if ( girihCanvasHandler.girih.tiles.length === 1) { // center on the tile
+        tile = girihCanvasHandler.girih.tiles[0];
+        radius = findMostDistantPointsOfTileFromAPoint( tile, tile.position).distance;
+        circle = new Circle( tile.position, radius);
+        girihCanvasHandler.circumcircle = circle;
+        girihCanvasHandler.drawCircumcircle ( undefined, undefined, undefined);
+        return;
+    }
+    //fourth attempt
+    points = findMaximumDistanceBetweenTiles(); // align points and center
+    center = new Point2( ((points[0].x + points[1].x) / 2),
+                         ((points[0].y + points[1].y) / 2));
+    radius = points[0].distanceTo( center);
+    circle = new Circle( center, radius);
+    outsiders = findTilePointsOutsideCircle( circle);
+    //if ( outsiders.length === 0) { // good enough
+    if ( outsiders.length < 2) { // good enough
+        girihCanvasHandler.circumcircle = circle;
+        girihCanvasHandler.drawCircumcircle ( points[0], points[1], undefined);
+        return;
+    }
+
+    // have at least on point not aligned with the maximim axis
+    center = findAveragePositionOfTiles()
+    points = findMostDistantPointsSectored( center, sectors)
+//4    if (points.length === 2) {
+/*
+//third try
+        // the cirle defined by 2 points may be the best. it alwasy should
+        // be done to set the base for three points
+        // need to find the outsiders to see how good it is
+        points = findMaximumDistanceBetweenTiles(); // align points and center
+        center = new Point2( ((points[0].x + points[1].x) / 2),
+                             ((points[0].y + points[1].y) / 2));
+        radius = points[0].distanceTo( center);
+        girihCanvasHandler.circumcircle = new Circle( center, radius);
+        girihCanvasHandler.drawCircumcircle ( points[0], points[1], undefined);
+*/
+/* second try
+        // really should look into the most distant first to elminate in-line patterns
+        center = new Point2( ((points[0].x + points[1].x) / 2),
+                             ((points[0].y + points[1].y) / 2));
+        radius = points[0].distanceTo( center);
+        girihCanvasHandler.circumcircle = new Circle( center, radius);
+        girihCanvasHandler.drawCircumcircle ( points[0], points[1], undefined);
+*/
+/* first try
+        var distance0 = points[0].distanceTo( center);
+        var distance1 = points[1].distanceTo( center);
+        var radius = Math.max( distance0, distance1);
+        girihCanvasHandler.circumcircle = new Circle( center, radius);
+        girihCanvasHandler.drawCircumcircle ( points[0], points[1], undefined);
+*/
+//4    } else {
+        goodEnough = 3;
+        while (goodEnough > 0) {
+            console.log("looping " + goodEnough)
+            result = findBestCircleFromPoints (points);
+            if (result.outsiders === undefined || result.outsiders.length === 0) {
+//what about two solutions with no outsiders... want the smallest radius
+                goodEnough = 0;
+            } else {
+                points = [].concat(result.outsiders);
+                points.push( result.pointA);
+                points.push( result.pointB);
+                points.push( result.pointC);
+                goodEnough--;
+            }
+        }
+        girihCanvasHandler.circumcircle = result.circle;
+        girihCanvasHandler.drawCircumcircle ( result.pointA,
+                                              result.pointB,
+                                              result.pointC);
+}
+
+
+GirihCanvasHandler.prototype.circumscribeTilesOld = function () {
+// find points on tiles that define bounding box
+    var i, j, point;
+
+    /* This is not very good for skinny arrays of tiles. Maybe need to propose
+       a center based on the centers of the tiles.
+       this is obvious visually, but how to program it.
+       ... in the case of skinmy you want all of the points to be on the ends
+       and none in the center
+       this could be something simple like the average of the sum of tile points
+       This gets messed up 
+       need an algorithm to eliminate points. so in an array, oyou try to choose
+       points on the outside (sides, top, bottom)
+       for missing points you chose the points in a vicinity that are further from center
+
+       another way to do it is to find the vectors between the tiles. Find the longest
+       one in each of n sectors. That (nearly) defines a reasonable diameter of the circle.
+       The resulting n*2 points could be a starting point for finding the circle.
+       find the vectors, sort by into sectors, sort by distance. if some sectors
+       are much weaker than other sectors, ignore them. if there aren't enough points
+       go back and augment from strongest sector. or just to a circle with two
+       points and average for center.
+       refine the vector by finding the maximum distance of vertices of the pair
+       of tiles.
+
+
+
+*/
+
+/*
+    // find the three points farthest from the center of the bounding box
+    var dx = Math.abs(maxX.x - minX.x);
+    var dy = Math.abs(maxY.y - minY.y);
+    var minXd = Math.abs( minX.y - dy/2);
+    var maxXd = Math.abs( maxX.y - dy/2);
+    var minYd = Math.abs( minY.x - dx/2);
+    var maxYd = Math.abs( maxY.x - dx/2);
+
+
+    var minD = Math.min( minXd, maxXd, minYd, maxYd);
+    if (minXd === minD) {
+        this.circumscribeCircle( maxX, minY, maxY);
+    } else if (maxXd === minD) {
+        this.circumscribeCircle( minX, minY, maxY);
+    } else if (minYd === minD) {
+        this.circumscribeCircle( minX, maxX, maxY);
+    } else {
+        this.circumscribeCircle( minX, maxX, minY);
+    }
+*/
+    // find the three points farthest apart
+/*
+*/
+    points = findBoundingVertices();
+    results = findBestCircleFromPoints( points);
+    girihCanvasHandler.circumcircle = results.circle;
+    girihCanvasHandler.drawCircumcircle (results.pointA, results.pointB, results.pointC);
+}
+
+
+GirihCanvasHandler.prototype.circumscribeCircle = function ( A, B, C) {
+//console.log("A:"+ A +" B:"+ B +" C:"+ C);
+    // from Wikipedia circumscribed circle calculation for cartesian coordinates
+    var Axy2 = A.x * A.x + A.y * A.y
+    var Bxy2 = B.x * B.x + B.y * B.y
+    var Cxy2 = C.x * C.x + C.y * C.y
+    var D = 2 * ( A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y))
+    // changing y because it is upside down in Javascript Canvas
+    //var D = 2 * ( A.x * (-B.y + C.y) + B.x * (-C.y + A.y) + C.x * (-A.y + B.y))
+
+    var U = new Point2();
+    U.x = ( Axy2 * (B.y - C.y) + Bxy2 * (C.y - A.y) + Cxy2 * (A.y - B.y)) / D;
+    U.y = ( Axy2 * (C.x - B.x) + Bxy2 * (A.x - C.x) + Cxy2 * (B.x - A.x)) / D;
+    // changing y because it is upside down in Javascript Canvas
+    //U.x = ( Axy2 * (-B.y + C.y) + Bxy2 * (-C.y + A.y) + Cxy2 * (-A.y + B.y)) / D;
+    //U.y = ( Axy2 * (-C.x + B.x) + Bxy2 * (-A.x + C.x) + Cxy2 * (-B.x + A.x)) / D;
+    // changing y because it is upside down in Javascript Canvas
+    var radius = Math.sqrt( (A.x - U.x) *( A.x - U.x) + (A.y - U.y) *( A.y - U.y) );
+//console.log("U:"+ U +" radius:"+ radius);
+
+    return new Circle( U, radius);
+}
+
+GirihCanvasHandler.prototype.drawCircumcircle = function ( A, B, C) {
+    var U;
+    if ( girihCanvasHandler.circumcircle !== undefined &&
+         girihCanvasHandler.circumcircle.center !== undefined) {
+        U = girihCanvasHandler.circumcircle.center;
+        var circleU1 = new Circle (U, 3);
+        var circleU2 = new Circle (U, 6);
+        this._drawCircle( circleU1 );
+        this._drawCircle( circleU2 );
+        this._drawCircle( this.circumcircle );
+    }
+
+    if (A !== undefined) {
+        var circleA = new Circle (A, 5);
+        this._drawCircle( circleA );
+    }
+    if (B !== undefined) {
+        var circleB = new Circle (B, 5);
+        this._drawCircle( circleB );
+    }
+    if (C !== undefined) {
+        var circleC = new Circle (C, 5);
+        this._drawCircle( circleC );
+    }
+};
+
+
+GirihCanvasHandler.prototype._drawCircleIntersections = function( circleA, circleB ) {
+
+    var intersection = circleA.computeIntersectionPoints( circleB );
+    if( intersection ) {
+        this._drawCrosshairAt( intersection.pointA, false );
+        this._drawCrosshairAt( intersection.pointB, false );
+    }
+    this._drawCircle( circleA );
+}
 
 // ### END DRAW METHOD TESTING ################################################

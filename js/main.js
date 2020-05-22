@@ -4,6 +4,7 @@
  * @version 1.0.0
  **/
 
+console.log(" full restart")
 var girihCanvasHandler = null;
 var defaultTextureImage = null;
 
@@ -22,6 +23,7 @@ window.onresize = function () {
 }
 
 function onLoad() {
+    console.log( "onLoad")
     // adjust the size of the canvas
     adjustCanvasSize();
 /*
@@ -282,34 +284,41 @@ console.log( "zoom: " + girihCanvasHandler.zoomFactor)
         //                                  0.167* girihCanvasHandler.canvasCenter.y;
     }
     redrawGirih();
+    return false;
 }
 
 function moveLeft() {
     girihCanvasHandler.drawOffset.x += 50; 
     redrawGirih();
+    return false;
 }
 
 function moveRight() {
     girihCanvasHandler.drawOffset.x -= 50;
     redrawGirih();
+    return false;
 }
 
 function moveUp() {
     girihCanvasHandler.drawOffset.y += 50; 
     redrawGirih();
+    return false;
 }
 
 function moveDown() {
     girihCanvasHandler.drawOffset.y -= 50;
     redrawGirih();
+    return false;
 }
 
 function rotateLeft() {
     rotateByAmount( -Girih.MINIMAL_ANGLE );
+    return false;
 }
 
 function rotateRight() {
     rotateByAmount( Girih.MINIMAL_ANGLE );
+    return false;
 }
 
 function rotateByAmount( amount ) {
@@ -318,7 +327,32 @@ function rotateByAmount( amount ) {
     var index     = girihCanvasHandler._locateSelectedTile();
 
     if( rotateAll ) {
+        // center on the selected tile or current coordinate center as selected.. can use function?
+        // center position is expressed as absolute coordinates
+        var centerType = girihCanvasHandler.drawProperties.axesType;
+        if (centerType === "none" || centerType === "canvas") {
+            var index = girihCanvasHandler._locateSelectedTile();
+            if (index !== -1) {
+                tile = girihCanvasHandler.girih.tiles[ index]
+                angle = tile.angle;
+                center = tile.position.clone();
+            } else { // tile not selected, find center of canvas
+                center = new Point2( (girihCanvasHandler.canvasCenter.x -
+                             girihCanvasHandler.drawOffset.x) / girihCanvasHandler.zoomFactor,
+                             (girihCanvasHandler.canvasCenter.y -
+                             girihCanvasHandler.drawOffset.y) / girihCanvasHandler.zoomFactor);
+                angle = girihCanvasHandler.angle;
+            }
+        } else if (centerType === "absolute") {
+            center = new Point2( 0,0);
+            angle = girihCanvasHandler.angle;
+        } else if (centerType === "circumcenter") {
+            center = girihCanvasHandler.circumcircle.center.clone();
+            angle = girihCanvasHandler.angle;
+        }
+        tmpCenter = center;
 
+/*
 	if( index == -1 ) {
             var tmpCenter = new Point2(
                  (girihCanvasHandler.canvasCenter.x -
@@ -328,6 +362,7 @@ function rotateByAmount( amount ) {
 	} else {
 	    var tmpCenter = girihCanvasHandler.girih.tiles[ index ].position;
 	}
+*/
 	for( var i = 0; i < girihCanvasHandler.girih.tiles.length; i++ ) {
 	    var tmpTile = girihCanvasHandler.girih.tiles[i];
 	    tmpTile.position.rotate( tmpCenter, amount );
@@ -338,6 +373,9 @@ function rotateByAmount( amount ) {
 	    _rotatePolygons( tmpTile.innerTilePolygons, tmpCenter, amount);
 	    _rotatePolygons( tmpTile.outerTilePolygons, tmpCenter, amount);
 	}
+
+        // not wholely right because dependent on rotation center...
+        girihCanvasHandler.angle += amount;
     } else { // rotate a single tile
 	if( index == -1 ) {
 	    DEBUG( "No tile selected." );
@@ -372,12 +410,31 @@ function rotateByAmount( amount ) {
 };
 
 
+function translateTilesToNewCenter( offset ) {
+    // for all tiles
+    for (tile of girihCanvasHandler.girih.tiles) {
+        // translate tile
+        tile.position.add( offset);
+
+        // translate base, inner and outer polygons
+        tile.polygon.translate( offset);
+        for (polygon of tile.innerTilePolygons) {
+            polygon.translate( offset);
+        }
+        for (polygon of tile.outerTilePolygons) {
+            polygon.translate( offset);
+        }
+    }
+}
+
+
 function _rotatePolygons( polygonArray, center, angle) {
     if (polygonArray !== undefined) {
 	for (var i = 0; i < polygonArray.length; i++) {
 	    _rotatePolygon( polygonArray[i], center, angle)
 	}
     }
+    return false;
 }
 
 
@@ -385,6 +442,7 @@ function _rotatePolygon( polygon, center, angle) {
     for (var j = 0; j < polygon.vertices.length; j++) {
 	polygon.vertices[j] = polygon.vertices[j].rotate(center, angle)
     }
+    return false;
 }
 
 
@@ -412,6 +470,7 @@ function moreStrapWidth () {
     this.document.getElementById("strapWidth").value =
             girihCanvasHandler.drawProperties.strappingWidth;
     redrawGirih();
+    return false;
 };
 
 
@@ -422,6 +481,7 @@ function lessStrapWidth () {
     this.document.getElementById("strapWidth").value =
             girihCanvasHandler.drawProperties.strappingWidth;
     redrawGirih();
+    return false;
 };
 
 
@@ -454,12 +514,181 @@ function morePixelFactor () {
 function lessPixelFactor () {
     girihCanvasHandler.drawProperties.strappingPixelFactor -= 0.25;
     if (girihCanvasHandler.drawProperties.strappingPixelFactor <0.25)
-        girihCanvasHandler.drawProperties.strappingStrokeWidth = 0.25;
-    this.document.getElementById("strapPixelFactor").value =
+        girihCanvasHandler.drawProperties.strappingPixelFactor = 0.25;
+    this.document.getElementById("pixelFactor").value =
             girihCanvasHandler.drawProperties.strappingPixelFactor;
     redrawGirih();
 };
 
+
+function recenterTile() {
+    var index     = girihCanvasHandler._locateSelectedTile();
+    if (index != -1) {
+        translateTilesToNewCenter( girihCanvasHandler.girih.tiles[ index].
+                position.clone().multiplyScalar(-1 ));
+        girihCanvasHandler.drawOffset = new Point2( girihCanvasHandler.canvas.width/2,
+                                                    girihCanvasHandler.canvas.height/2);
+        redrawGirih();
+        console.log( "recenter on the selected tile");
+    }
+}
+
+function recenterCanvas() {
+    // current center = (canvasCenter -drawOffset)/zoomFactor
+    var x = (girihCanvasHandler.canvas.width/2 - girihCanvasHandler.drawOffset.x)/
+             girihCanvasHandler.zoomFactor;
+    var y = (girihCanvasHandler.canvas.height/2 - girihCanvasHandler.drawOffset.y)/
+             girihCanvasHandler.zoomFactor;
+    translateTilesToNewCenter( new Point2( -x, -y));
+    girihCanvasHandler.drawOffset = new Point2( girihCanvasHandler.canvas.width/2,
+                                                girihCanvasHandler.canvas.height/2);
+    redrawGirih();
+    console.log( "recenter on the current canvas center");
+}
+
+function recenterCircumcenter() {
+    translateTilesToNewCenter( girihCanvasHandler.circumcircle.center.clone().
+            multiplyScalar(-1 ));
+    girihCanvasHandler.drawOffset = new Point2( girihCanvasHandler.canvas.width/2,
+                                                girihCanvasHandler.canvas.height/2);
+    redrawGirih();
+    console.log( "recenter on the current circumcenter");
+}
+
+
+/*
+angle functions
+        x   y
+quad 1  +   +  straight angle
+quad 2  -   +  180 -angle
+quad 3  -   -  180 + angle
+quad 4  +   -  - angle
+
+base = 0
+if x<0 base = 180
+if sign x = sign y  base + angle
+else base - angle
+
+*/
+function getAngle( x, y) {
+    var angle = Math.atan( y/x);
+    if (x < 0) {
+        angle += Math.PI;
+    }
+    if (angle <0) {
+        angle += 2* Math.PI;
+    }
+    return angle
+}
+
+
+function renumberRadially() {
+    var i;
+    var radTiles = [];
+    var orderedTiles = [];
+    console.log( "renumber the tiles radially for the current center and angle");
+    i = 0;
+    for ( tile of girihCanvasHandler.girih.tiles) {
+        var posRadius = Math.sqrt ( tile.position.x * tile.position.x +
+                                 tile.position.y * tile.position.y);
+        var posAngle = getAngle( tile.position.x, tile.position.y);
+        console.log( "tile["+ i +"]:"+ tile.position + " rad:" + posRadius +" ang:"+ posAngle);
+        radTiles.push ( {
+                          index: i,
+                          radius: posRadius,
+                          angle: posAngle,
+                        } );
+        i++;
+    }
+
+    radTiles.sort( function( a,b) {
+                                    if (Math.abs(a.radius - b.radius) < .005) {
+                                        return a.angle - b.angle
+                                    } else {
+                                        return a.radius - b.radius
+                                    }
+                                  }  )
+    var i = 0;
+    for ( radTile of radTiles) {
+        orderedTiles.push( girihCanvasHandler.girih.tiles[ radTile.index ]);
+        console.log( "radTiles ["+ i +"]:"+ radTile.index + " rad:" + radTile.radius +" ang:"+ radTiles[i].angle);
+        i++;
+    }
+    girihCanvasHandler.girih.tiles = orderedTiles;
+    redrawGirih();
+}
+
+
+function renumberTangentially() {
+    var i, j, midsector, angle, radius, localAngle, midRadius, midBeam;
+    var tanTiles = [];
+    var orderedTiles = [];
+    console.log( "renumber the tiles tangentially for the current center and angle");
+    console.log( "angle:"+ girihCanvasHandler.angle);
+    // figure out what sector the tile is in base on its angle
+    i = 0;
+    for (tile of girihCanvasHandler.girih.tiles) {
+        var numberOfSectors = girihCanvasHandler.drawProperties.symmetryType;
+        if (numberOfSectors === "none" || numberOfSectors === "2fold")     {
+            numberOfSectors = 4;
+        } else if (numberOfSectors === "5fold") {
+            numberOfSectors = 5;
+        } else if (numberOfSectors === "10fold") {
+            numberOfSectors = 10;
+        }
+        // angle is the angle of the tile w.r.t. 0,0 angle 0
+        angle = getAngle( tile.position.x, tile.position.y);
+        // radius is the normal radius of the tile position w.r.t 0,0
+        radius = Math.sqrt( tile.position.x * tile.position.x +
+                            tile.position.y * tile.position.y)
+        for (j=0; j< numberOfSectors; j++) {
+            if (angle < (j+1)* 2* Math.PI/numberOfSectors) { // in this sector)
+                midSectorAngle = (j+0.5)* 2* Math.PI/numberOfSectors;
+                localAngle = angle - midSectorAngle;
+                // midRadius is the radius on the mid sector line forming right angle to beam
+                midRadius = radius * Math.cos( localAngle)
+                // midBeam is the distance from  the mid sector line to the tile
+                midBeam = radius * Math.sin( localAngle)
+                girihCanvasHandler.girih.tiles[i].sector = j;
+                break;
+            }
+        }
+        tanTiles.push ( {
+                          index: i,
+                          midRadius: midRadius,
+                          midBeam: midBeam,
+                          angle: angle,
+                        } );
+        console.log( "index:"+ i +" sector:"+ j +" localAngle:"+ localAngle +" angle:"+ angle +" radius:"+ radius);
+        i++;
+    }
+    tanTiles.sort( function( a,b) {
+                                    if (Math.abs(a.midRadius - b.midRadius) < .005) {
+                                        return a.angle - b.angle
+                                    } else {
+                                        return a.midRadius - b.midRadius
+                                    }
+                                  } )
+    for ( tanTile of tanTiles) {
+        orderedTiles.push( girihCanvasHandler.girih.tiles[ tanTile.index ]);
+        console.log( "tanTiles ["+ i +"]:"+ tanTile.index + " rad:" + tanTile.midRadius +" beam:"+ tanTile.midBeam);
+    }
+    girihCanvasHandler.girih.tiles = orderedTiles;
+    redrawGirih();
+}
+
+
+function resetAngleRight() {
+    console.log( "reset the angle to the midpoint of the right side");
+    girihCanvasHandler.angle = 0;
+    redrawGirih();
+}
+
+function resetAngleTop() {
+    console.log( "reset the angle to the midpoint of the top");
+    girihCanvasHandler.angle = -Math.PI/2;
+    redrawGirih();
+}
 
 console.log( "mSG: " + typeof moreStrapGap);
 console.log( "mSG: " + moreStrapGap.toString());
@@ -495,10 +724,16 @@ function redrawGirih() {
     this.document.getElementById("pixelFactor").value =
             girihCanvasHandler.drawProperties.strappingPixelFactor;
 
-    girihCanvasHandler.getDrawProperties().strappingGap          = parseFloat(document.forms["girih_form"].elements["strapGap"].value);
-    girihCanvasHandler.getDrawProperties().strappingWidth        = parseFloat(document.forms["girih_form"].elements["strapWidth"].value);
-    girihCanvasHandler.getDrawProperties().strappingStrokeWidth  = parseFloat(document.forms["girih_form"].elements["strapStrokeWidth"].value);
-    girihCanvasHandler.getDrawProperties().strappingPixelFactor  = parseFloat(document.forms["girih_form"].elements["pixelFactor"].value);
+    girihCanvasHandler.drawProperties.strappingGap          = parseFloat(document.forms["girih_form"].elements["strapGap"].value);
+    girihCanvasHandler.drawProperties.strappingWidth        = parseFloat(document.forms["girih_form"].elements["strapWidth"].value);
+    girihCanvasHandler.drawProperties.strappingStrokeWidth  = parseFloat(document.forms["girih_form"].elements["strapStrokeWidth"].value);
+    girihCanvasHandler.drawProperties.strappingPixelFactor  = parseFloat(document.forms["girih_form"].elements["pixelFactor"].value);
+
+    girihCanvasHandler.drawProperties.axesType          = document.forms["extras"].elements["axes"].value;
+    girihCanvasHandler.drawProperties.symmetryType      = document.forms["extras"].elements["symmetry"].value;
+    girihCanvasHandler.drawProperties.drawSymmetrically     = document.forms["extras"].elements["draw_symmetrically"].checked;
+    girihCanvasHandler.drawProperties.drawCircumcircle      = document.forms["extras"].elements["draw_circumcircle"].checked;
+    girihCanvasHandler.drawProperties.drawTileOrder         = document.forms["extras"].elements["draw_tile_order"].checked;
 
     // Then trigger redraw
     girihCanvasHandler.redraw();
@@ -508,11 +743,9 @@ function redrawGirih() {
 //console.log( "strapPixelFactor: " + girihCanvasHandler.getDrawProperties().strappingPixelFactor);
 }
 
-/*
-   function DEBUG( msg ) {
+function DEBUG( msg ) {
    this.document.getElementById("debug").innerHTML = msg;
-   }
- */
+}
 
 window.addEventListener( "load", onLoad );
 

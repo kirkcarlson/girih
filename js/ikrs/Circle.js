@@ -10,15 +10,23 @@
 
 
 class Circle {
-    constructor ( center,  // (x,y)
+    constructor ( center,  // (x,y) Point2
                   radius   // float
                 ) {
-        this._center = center;
+        this._center = center.clone();
         this._radius = radius;
     }
 
+    get center () {
+        return this._center;
+    }
+
+    get radius () {
+        return this._radius;
+    }
+
     containsPoint( point ) {
-        return this.center.distanceTo( point ) <= this.radius;
+        return this.center.distanceTo( point ) <= this._radius;
     }
 
     computeIntersectionPoints( circle ) {
@@ -27,8 +35,8 @@ class Circle {
 
     toString() {
         return "[Circle]={ center=" +
-                (this.center ? this.center.toString() : "null" ) +
-                ", radius=" + this.radius + "}";
+                (this.center ? this._center.toString() : "null" ) +
+                ", radius=" + this._radius + "}";
     }
 };
 

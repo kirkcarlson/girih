@@ -298,10 +298,10 @@ Tile.prototype.drawTile = function() {
     }
     girihCanvasHandler.drawPolygonFromPoints ( {
                                                  vertices: this.polygon.vertices,
-                                                 strokeColor: strokeColor,
+                                                 strokeWidth: 1,
+                                                 strokeColor: addAlphaChannel( strokeColor, "80"),
                                                  fillColor: fillColor,
                                                  fillOpacity: 1,
-                                                 strokeOpacity: 0.5, 
                                                } );
 
     // the following relys on polygon context set from _drawPolygonFromPoints above
@@ -334,8 +334,8 @@ Tile.prototype.drawTile = function() {
     };
 
     // draw crosshair
-    if( girihCanvasHandler.drawProperties.drawOutlines || tile._props.selected ) {
-        girihCanvasHandler.drawCrosshairAt( tile.position, tile._props.selected );
+    if( girihCanvasHandler.drawProperties.drawOutlines || this._props.selected ) {
+        girihCanvasHandler.drawCrosshairAt( this.position, this._props.selected );
     }
 };
 
@@ -343,9 +343,8 @@ Tile.prototype.drawTile = function() {
 Tile.prototype.drawPreviewTile = function() {
     girihCanvasHandler.drawPolygonFromPoints(
                                     { vertices:      this.polygon.vertices,
-                                      strokeColor:   "#888888",
+                                      strokeColor:   "#88888880", // has alpha channel
                                       strokeWidth:   1,
-                                      strokeOpacity: 0.5,
                                       fillColor:     null,
                                     } );
 };
@@ -391,8 +390,8 @@ Tile.prototype._drawInnerTile = function( index ) {
 
     girihCanvasHandler.drawPolygonFromPoints ( {
                                                   vertices: polygon.vertices,
-                                                  strokeColor: strokeColor,
-                                                  strokeOpacity: 0.5,
+                                                  strokeColor: addAlphaChannel( strokeColor, "80"),
+                                                  strokeWidth: 1,
                                                   fillColor: fillColor,
                                                   fillOpacity: 0.5,
                                                 } );
@@ -446,7 +445,6 @@ Tile.prototype.drawSimpleStrapping = function() {
         girihCanvasHandler.drawPolygonFromPoints ( {
                                                      vertices: polygon.vertices,
                                                      strokeColor: strokeColor,
-                                                     strokeOpacity: 1,
                                                    } );
     }
 };
@@ -758,7 +756,6 @@ _findStrapSegmentPoints = function( {
  *      fillStyle is optional style parameter used to fill shape
  *      fillOpacity is optional style parameter used to fill shape
  *      strokeStroke is optional style of the stroked line
- *      strokeOpacity is optional opacity of the stroked line (0..1)
  *      strokeWidth is optional width of the stroked line in pixels
  *      turtle is a turtle object and is required
  *          turtle.position is the start point
@@ -849,7 +846,6 @@ function svgPointString( point) {
  *      fillStyle is optional style parameter used to fill shape
  *      fillOpacity is optional style parameter used to fill shape
  *      strokeStroke is optional style of the stroked line
- *      strokeOpacity is optional opacity of the stroked line (0..1)
  *      strokeWidth is optional width of the stroked line in pixels
  *      segmentClass is a string naming the segment
  *      turtle is a turtle object and is required
