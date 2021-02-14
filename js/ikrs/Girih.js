@@ -335,7 +335,7 @@ const Girih = { // an object with various global defines
 
     PI_TENTHS:                  Math.PI/10, // 18 degrees
     MINIMAL_ANGLE:              Math.PI/10, // 18 degrees
-    EPSILON:                    2.0e-3,
+    EPSILON:                    4.0e-3,
     DEFAULT_EDGE_LENGTH:        58,
 
 

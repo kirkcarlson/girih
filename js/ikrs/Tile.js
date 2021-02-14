@@ -863,17 +863,17 @@ Tile.prototype.getStrapSegmentSVG = function(  points, vector, buffer, indent) {
 
     svgLine.push( svgString = indent.now + '<path class="gfill '+ vector.segmentClass +'" d="');
     svgLine.push( 'M' + svgPointString( points[0])); // start point
-    svgLine.push( 'M' + svgPointString( points[1])); // half start cap
-    svgLine.push( 'M' + svgPointString( points[2])); // left side
-    svgLine.push( 'M' + svgPointString( points[3])); // end cap
-    svgLine.push( 'M' + svgPointString( points[4])); // right side
-    svgLine.push( 'M' + svgPointString( points[0])); // other half start cap
+    svgLine.push( 'L' + svgPointString( points[1])); // half start cap
+    svgLine.push( 'L' + svgPointString( points[2])); // left side
+    svgLine.push( 'L' + svgPointString( points[3])); // end cap
+    svgLine.push( 'L' + svgPointString( points[4])); // right side
+    svgLine.push( 'L' + svgPointString( points[0])); // other half start cap
     svgLine.push( '"/>' + indent.eol);
     buffer.push( svgLine.join( ""));
 
     // stroke the segment for the lines
     var svgLine = [] ;
-    svgLine.push( indent.now + '<path class="gstroke '+ vector.segmentClass +'" d="');
+    svgLine.push( indent.now + '<path fill="none" class="gstroke '+ vector.segmentClass +'" d="');
     // ...handle individual style for this segment
     if (vector.startCap) {
         svgLine.push( 'M' + svgPointString( points [0])); //half of start cap
@@ -922,16 +922,6 @@ Tile.prototype.getChainColor = function( linkNumber) {
     }
     return chainColor;
 }
-
-
-/*
-Tile.prototype.getSegmentClass = function( linkNumber, chainNumber) {
-    chain = girihCanvasHandler.girih.chains[ chainNumber];
-    return "link_"+ linkNumber +" chain_"+ chainNumber
-           +" chain_length_"+ chain.links.length
-           + (chain.isLoop ? "L loop" : "")
-}
-*/
 
 
 Tile.prototype.computeBounds = function() {

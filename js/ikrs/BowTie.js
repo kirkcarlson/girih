@@ -417,7 +417,7 @@ BowTie.prototype.getStrapVectors = function( options) {
 
         vectors.push( {
                          turtle: turtle.clone(),
-                         distance: shortBentLength,
+                         distance: shortBentLength - capGap,
                          spacing: options.strappingWidth,
                          startAngle: 4* piTenths,
                          endAngle: 4* piTenths,
